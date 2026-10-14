@@ -6,7 +6,7 @@ import { expect, test } from './fixtures'
  * undoes. Written from the ad hoc browser checks this project ran by hand along the way.
  */
 test('review a run, approve it, and undo inside the window', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?run=run-messy-pending')
   await expect(
     page.getByRole('heading', {
       level: 1,

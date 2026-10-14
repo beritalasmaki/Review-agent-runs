@@ -9,24 +9,24 @@ import { expect, test } from './fixtures'
  * not cover.
  */
 const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> }[] = [
-  { name: 'pending run, Story', url: '/' },
+  { name: 'pending run, Story', url: '/?run=run-messy-pending' },
   {
     name: 'pending run, Evidence',
-    url: '/',
+    url: '/?run=run-messy-pending',
     open: (page) => page.getByRole('tab', { name: 'Evidence' }).click(),
   },
   {
     name: 'pending run, All steps',
-    url: '/',
+    url: '/?run=run-messy-pending',
     open: (page) => page.getByRole('tab', { name: /^All \d+ steps$/ }).click(),
   },
   { name: 'clean run', url: '/?run=run-clean' },
   { name: 'blocked run', url: '/?run=run-blocked' },
   { name: 'decided run, undo window open', url: '/?run=run-messy' },
-  { name: 'My reviews', url: '/?view=reviews' },
+  { name: 'My reviews', url: '/' },
   {
     name: 'My reviews, approved tab with filters open and a run selected',
-    url: '/?view=reviews',
+    url: '/',
     open: async (page) => {
       await page.getByRole('tab', { name: /Approved/ }).click()
       await page.getByRole('button', { name: /^Filters/ }).click()
@@ -38,7 +38,7 @@ const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> 
   },
   {
     name: 'My reviews, requested for change, runs in progress open',
-    url: '/?view=reviews',
+    url: '/',
     open: async (page) => {
       await page.getByRole('tab', { name: /Requested for change/ }).click()
       await page.getByRole('button', { name: /still in progress/ }).click()
@@ -46,7 +46,7 @@ const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> 
   },
   {
     name: 'My reviews, asking before archiving',
-    url: '/?view=reviews',
+    url: '/',
     open: async (page) => {
       await page.getByRole('tab', { name: /Approved/ }).click()
       await page
@@ -58,7 +58,7 @@ const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> 
   },
   {
     name: 'My reviews, decision details',
-    url: '/?view=reviews',
+    url: '/',
     open: async (page) => {
       await page.getByRole('tab', { name: /Approved/ }).click()
       await page
@@ -70,7 +70,7 @@ const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> 
   },
   {
     name: 'My reviews, request a new run',
-    url: '/?view=reviews',
+    url: '/',
     open: async (page) => {
       await page.getByRole('tab', { name: /Approved/ }).click()
       await page
@@ -82,7 +82,7 @@ const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> 
   },
   {
     name: 'My reviews, create a report',
-    url: '/?view=reviews',
+    url: '/',
     open: async (page) => {
       await page.getByRole('tab', { name: /Approved/ }).click()
       await page
@@ -95,7 +95,7 @@ const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> 
   },
   {
     name: 'My reviews, archive with a run in it, and the toast',
-    url: '/?view=reviews',
+    url: '/',
     open: async (page) => {
       await page.getByRole('tab', { name: /Approved/ }).click()
       await page

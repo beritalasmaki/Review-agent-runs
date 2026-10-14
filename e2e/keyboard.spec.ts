@@ -39,7 +39,7 @@ async function tabTo(page: Page, name: RegExp, max = 40) {
 }
 
 test('the whole review, keyboard only', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/?run=run-messy-pending')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const keys = page.keyboard
 
@@ -94,7 +94,7 @@ test('the whole review, keyboard only', async ({ page }) => {
 })
 
 test('My reviews, keyboard only', async ({ page }) => {
-  await page.goto('/?view=reviews')
+  await page.goto('/')
   await expect(page.getByRole('tablist', { name: 'Run types' })).toBeVisible()
   const keys = page.keyboard
 

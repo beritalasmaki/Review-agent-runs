@@ -57,7 +57,7 @@ export interface RunReviewPageProps {
 
 export function RunReviewPage({
   runId,
-  reviewsHref = '?view=reviews',
+  reviewsHref = '/',
   getRunOptions,
   submitDecisionOptions,
   defaultView = 'story',
