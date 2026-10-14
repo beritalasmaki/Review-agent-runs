@@ -6,6 +6,65 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0073 · A flat, true-neutral palette with a magenta-pink primary, replacing 0068's lavender
+
+**Context.** The user's reaction to the lavender-tinted palette 0068 introduced: it "looks
+really bad," reads as a generic "basic beige/AI" palette, and should be "more modern... more
+creative." Asked for direction (style, scope, a reference) before touching anything this
+broad, per AGENTS.md's own Plan Mode rule for changes larger than a small fix. The answers:
+minimal and flat, but with bold contrast colour instead of muted neutrals; foundations first —
+tokens, a couple of screens, sign-off, then propagate; reference "Linear but Barbie.com from
+the 2000s."
+
+**Choice.** Three changes to the primitive layer, each with a reason tied to a piece of that
+brief:
+
+1. **The neutral ramp (`--neutral-0`–`13`) is desaturated to true grey**, every step computed
+   from the old ramp's lightness with saturation zeroed (not hand-picked, so the lightness
+   steps — and therefore every component's existing light/dark relationships — hold exactly).
+   `--page-light`/`--page-dark` follow: `#f5f5f5` and `#121212`, flat, no tint. This is the
+   direct answer to "don't use the basic beige/lavender AI colours" and half of "minimal and
+   flat": a page that doesn't compete with anything on it.
+2. **The decorative gradient blobs (0068's `page-decor` utility, the `--color-decor-*`
+   tokens) are removed outright**, not just recoloured — a flat page has nothing soft blurring
+   its corner. Removed from `App.tsx` and `RunTopBar.tsx`; the now-dead CSS utility, its three
+   primitives and their three `@theme`/dark-theme mappings deleted from `index.css`/
+   `tokens.css`; the e2e accessibility spec's `contrastOverDecor` check (which only existed to
+   verify text over those blobs) deleted with it, since there's no longer a gradient behind
+   any text to measure. `--shadow-card` also loses its page-tinted colour (`rgb(29 34 80 /
+   …)` → plain black) for the same reason: flat has nothing to tint a shadow with.
+3. **`--color-primary` becomes a magenta-pink (`#c2185b` light, `#ff6ec7` dark), replacing
+   indigo-blue; `--color-accent` becomes a chartreuse-lime (`#427000` light, `#a8e063` dark),
+   replacing teal.** This is the "contrast colour, more creative" half, and the literal
+   "Barbie" of the brief — picked as a specific, memorable hue rather than another
+   SaaS-default purple/blue, the thing the first complaint was really about. Every primitive
+   was computed and verified with the same WCAG relative-luminance script this project has
+   used since 0005: both brand colours clear 4.5:1 as text against every surface they appear
+   on, in both themes (5.4:1–7.4:1) — not just checked after picking a colour that looked
+   right. The `--indigo-tint-*` wash (selected rows, the active tab's count) is regenerated
+   from the new primary's hue rather than reused, so it doesn't clash with a pink brand colour
+   while still looking blue.
+
+**What stayed unchanged, on purpose.** Status colours (`--status-green/red/amber/slate/blue`,
+the filled `StatusBadge` tints) and the `--mark-*` candy colours behind My Reviews' tab icons
+are a separate system from brand (`src/styles/README.md`'s own long-standing rule) and already
+gave the app most of its colour variety — touching them was never part of the brief and risks
+the real thing they encode (pass/fail/waived/etc.). Type scale, spacing scale, radius and
+motion are also untouched: the brief was explicitly "foundations first... then propagate
+everywhere once you sign off," and colour is the foundation that was actually asked for.
+
+**Consequence.** Because every component already read colour through semantic tokens
+(`bg-primary`, `text-primary`, …), this propagated to the whole app with zero component edits
+— the full `npm run check` suite, including all 35 Playwright e2e specs (axe WCAG checks on
+every state, both themes), passed unchanged after only `tokens.css`, `index.css` and the two
+files applying `page-decor` were touched. `src/styles/README.md`'s Contrast section numbers
+were recomputed and rewritten to match, not left stale. One naming change worth knowing if
+grepped for later: `--indigo-*`/`--teal-*` primitives are gone, renamed `--magenta-*`/
+`--lime-*` throughout — a deliberate rename, not a partial one, so the primitive names
+describe what they now contain.
+
+---
+
 ## 0072 · The pill tabs' track gets a border, not just a fill
 
 **Context.** The user flagged the pill-variant `TabsList` (Story/Evidence/All steps, and the

@@ -39,6 +39,81 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-14 · A flat, true-neutral palette with a magenta-pink primary
+
+**Goal**
+The user reacted strongly against the previous session's lavender palette — "looks really
+bad," generic "AI beige," needs to be "modern... creative." Asked for direction before
+touching anything this broad (style, scope, a reference), got answers, built a 2-3-screen
+preview for sign-off, then propagated it everywhere once approved.
+
+**What changed**
+- `src/styles/tokens.css` — the neutral ramp desaturated to true grey (computed from the old
+  ramp's lightness, saturation zeroed, so the lightness steps hold); `--page-light`/
+  `--page-dark` become flat `#f5f5f5`/`#121212`; `--indigo-*` renamed and recoloured to
+  `--magenta-*` (`#c2185b` light / `#ff6ec7` dark) as the new primary; `--teal-*` renamed and
+  recoloured to `--lime-*` (`#427000` light / `#a8e063` dark) as the new accent; the selected-
+  row/active-tab tint wash regenerated from the new primary's hue; `--shadow-card` de-tinted
+  to plain black. Status colours and the My Reviews mark colours (amber/blue/red/green) are
+  untouched — a separate system, not part of the brief.
+- `src/styles/index.css` — the `page-decor` utility (the soft gradient blobs) deleted; nothing
+  applies it any more.
+- `src/app/App.tsx`, `src/features/run/RunTopBar.tsx` — `page-decor` class removed from both
+  places it was applied.
+- `src/styles/tokens.css` — the now-dead `--color-decor-*`/`--decor-*` tokens (three
+  primitives, three `@theme`/dark-theme mappings each) deleted along with the utility that was
+  their only consumer.
+- `e2e/accessibility.spec.ts` — the `contrastOverDecor` helper and its branch in the axe
+  undecided-results check deleted; it only ever existed to verify text over the now-removed
+  gradient, so it had nothing left to check.
+- `src/styles/README.md` — the Contrast section's numbers recomputed and rewritten for the new
+  palette (old numbers described the lavender ramp and the old indigo/teal brand colours, and
+  would have been wrong left as they were); the `--color-accent` note updated, since the new
+  lime clears 4.5:1 as text where the old teal didn't even clear 3:1.
+
+**Steps, in order**
+1. Asked three questions (style direction, scope, a reference) via the app's clarifying-
+   question flow rather than guessing at "modern."
+2. Computed candidate neutral, primary and accent values with a throwaway WCAG
+   relative-luminance script (same method as `docs/DECISIONS.md` 0005) — not picked by eye —
+   verifying each against every surface it would actually sit on, in both themes.
+3. Applied the primitives to `tokens.css`, removed the decorative gradient's application,
+   ran `npm run check:theme-bridge` (which verifies every `bg-*`/`text-*` pairing in a real
+   browser) before screenshotting anything.
+4. Screenshotted the home page and a run review page, both themes, plus a decided run for the
+   status badges specifically — sent to the user for sign-off before committing anything.
+5. On approval ("keep the direction, propagate it everywhere, commit"): swept the repo for any
+   remaining references to the old primitive names or the dead decorative utility, removed the
+   now-unused decor tokens and the e2e check that only existed for them, and updated
+   `src/styles/README.md`'s numbers to match reality.
+6. Ran the full `npm run check` (typecheck, lint, format, theme-bridge, format-locale, 274 unit
+   tests, 35 e2e tests including axe WCAG checks on every state in both themes) — all green
+   with zero component edits, since every component already read colour through the semantic
+   tokens.
+
+**Why it was done this way**
+See `docs/DECISIONS.md` 0073 for the full reasoning: why each of the three primitive changes
+answers a specific piece of the brief, and why status colours and the mark palette were left
+alone.
+
+**How to do this by hand**
+Not identical to the steps — the by-hand version has no contrast script: open a colour-
+contrast checker, test each candidate against every surface it would sit on in both themes by
+eye, and skip straight to screenshotting the preview pages in a browser for sign-off.
+
+**Verification**
+`npm run check` full suite green, including all 35 Playwright e2e tests (axe WCAG 2.2 A/AA
+checks, contrast included, across every reachable state in both themes) — the comprehensive
+proof that the new palette propagated cleanly with no contrast regressions anywhere in the
+app, not just the screens that were manually screenshotted for sign-off.
+
+**Open questions / next**
+None outstanding. Type scale, spacing, radius and shadows beyond the card's colour were
+explicitly out of scope for this round ("foundations first" meant colour, per the user's own
+answer) — a candidate for a future round if asked.
+
+---
+
 ### 2026-10-14 · Home page becomes "My reviews"; pill tabs get a visible track
 
 **Goal**
