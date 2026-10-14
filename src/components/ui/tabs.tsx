@@ -20,7 +20,7 @@ const tabsListVariants = cva('', {
   variants: {
     variant: {
       segmented: 'flex divide-x divide-border-subtle border-y border-border-subtle',
-      pill: 'relative inline-flex gap-[var(--space-1)] rounded-full bg-surface-raised p-[var(--space-1)]',
+      pill: 'relative inline-flex gap-[var(--space-1)] rounded-full border border-border-subtle bg-surface-raised p-[var(--space-1)]',
       line: 'scrollbar-none flex gap-[var(--space-2)] overflow-x-auto border-b border-border-subtle px-[var(--space-5)] pt-[var(--space-3)]',
     },
   },

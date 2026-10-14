@@ -17,47 +17,51 @@
 
 :root {
   /*
-   * Neutral ramp, lightest to darkest, tinted cool blue to match the page (0068), numbered
-   * by position rather than an evenly spaced scale — these are exactly the values the product's neutral tokens need,
-   * not a generated palette. Several are shared between the two themes on purpose
-   * (--neutral-1 is both light bg and dark text-primary; --neutral-12 is both
-   * light text-primary and dark surface).
+   * Neutral ramp, lightest to darkest, true (untinted) grey (docs/DECISIONS.md, 0073 —
+   * replacing the lavender-tinted ramp 0068 introduced), numbered by position rather than an
+   * evenly spaced scale — these are exactly the values the product's neutral tokens need, not
+   * a generated palette. Several are shared between the two themes on purpose (--neutral-1 is
+   * both light bg and dark text-primary; --neutral-12 is both light text-primary and dark
+   * surface).
    */
   --neutral-0: #ffffff;
-  --neutral-1: #f7f8fc;
-  --neutral-2: #f1f3f9;
-  --neutral-3: #e2e6f0;
-  --neutral-4: #c8cedd;
-  --neutral-5: #aab1c4;
-  --neutral-6: #959cb0;
-  --neutral-7: #6b7288;
-  --neutral-8: #565d72;
-  --neutral-9: #414759;
-  --neutral-10: #30354a;
-  --neutral-11: #262b3d;
-  --neutral-12: #1d2233;
-  --neutral-13: #141828;
+  --neutral-1: #fafafa;
+  --neutral-2: #f5f5f5;
+  --neutral-3: #e9e9e9;
+  --neutral-4: #d3d3d3;
+  --neutral-5: #b7b7b7;
+  --neutral-6: #a3a3a3;
+  --neutral-7: #797979;
+  --neutral-8: #646464;
+  --neutral-9: #4d4d4d;
+  --neutral-10: #3d3d3d;
+  --neutral-11: #323232;
+  --neutral-12: #282828;
+  --neutral-13: #1e1e1e;
 
   /*
-   * The page behind the cards (docs/DECISIONS.md, 0068): a cool lavender-blue in light, a deep
-   * navy in dark, so white or navy cards stand off it without heavy borders.
+   * The page behind the cards (docs/DECISIONS.md, 0073): a flat, true-neutral grey in light, a
+   * near-black in dark — no colour tint, no decorative gradient (the lavender/mint blobs 0068
+   * added are gone with it). Separation from a white or near-black card comes from the small
+   * step in lightness alone, the flat-minimal look this replaces 0068's softer one with.
    */
-  --page-light: #eef1fb;
-  --page-dark: #111526;
+  --page-light: #f5f5f5;
+  --page-dark: #121212;
 
-  /* Brand — indigo-blue (primary) */
-  --indigo-light: #3d55d4;
-  --indigo-light-hover: #2f44b3;
-  --indigo-dark: #8a9dff;
-  --indigo-dark-hover: #a3b2ff;
-  /* Deeper, for fills and underlines only, not text: 4.1–5.3:1 on the dark surfaces (0069). */
-  --indigo-dark-strong: #6b7fff;
+  /* Brand — magenta-pink (primary), replacing 0068's indigo-blue (docs/DECISIONS.md, 0073) */
+  --magenta-light: #c2185b;
+  --magenta-light-hover: #9e1248;
+  --magenta-dark: #ff6ec7;
+  --magenta-dark-hover: #ff84c6;
+  /* Deeper, for fills and underlines only, not text: ~4.3:1 on the dark surfaces, matching
+   * 0069's precedent for this token's old (indigo) value. */
+  --magenta-dark-strong: #f04c8d;
 
-  /* Brand — teal-green (accent) */
-  --teal-light: #1e9e8c;
-  --teal-light-hover: #187e70;
-  --teal-dark: #5cd9c4;
-  --teal-dark-hover: #7ce3d1;
+  /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
+  --lime-light: #427000;
+  --lime-light-hover: #3c6600;
+  --lime-dark: #a8e063;
+  --lime-dark-hover: #cdeba2;
 
   /*
    * Status — a separate system from brand (src/styles/README.md). One value per
@@ -103,20 +107,11 @@
   --status-blue-tint-fg-light: #1f5fbf; /* 5.02:1 on the tint above */
   --status-blue-tint-bg-dark: #152338; /* paired with --status-blue-dark */
 
-  /* A light wash of the brand indigo: selected rows, the active tab's count. */
-  --indigo-tint-light: #eaeefd;
-  --indigo-tint-border-light: #d2daf8;
-  --indigo-tint-dark: #1f2748;
-  --indigo-tint-border-dark: #33407a;
-
-  /* The page's decorative circles, top right (0068). Never text, never a status. Light
-   * enough that every text colour still clears 4.5:1 over each of them. */
-  --decor-disc-light: #dde5fd;
-  --decor-mint-light: #d4f4e8;
-  --decor-line-light: #dae1f7;
-  --decor-disc-dark: #1c2650;
-  --decor-mint-dark: #143a35;
-  --decor-line-dark: #28325c;
+  /* A light wash of the brand magenta: selected rows, the active tab's count. */
+  --magenta-tint-light: #fce9f0;
+  --magenta-tint-border-light: #f2c0d3;
+  --magenta-tint-dark: #3b1625;
+  --magenta-tint-border-dark: #732644;
 
   /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */
   --mark-amber: #f0a04b;
@@ -162,14 +157,14 @@
    * light, near-black in dark), because the dark-theme brand colours are
    * lightened for their own contrast and need a dark foreground in turn.
    */
-  --color-primary: var(--indigo-light);
-  --color-primary-hover: var(--indigo-light-hover);
+  --color-primary: var(--magenta-light);
+  --color-primary-hover: var(--magenta-light-hover);
   --color-primary-foreground: var(--neutral-0);
   /* The brand as a fill or an underline — progress bars, the selected tab. The same as primary
    * in light; deeper in dark, where text-safe primary has to stay light (0069). */
-  --color-primary-strong: var(--indigo-light);
-  --color-accent: var(--teal-light);
-  --color-accent-hover: var(--teal-light-hover);
+  --color-primary-strong: var(--magenta-light);
+  --color-accent: var(--lime-light);
+  --color-accent-hover: var(--lime-light-hover);
   --color-accent-foreground: var(--neutral-13);
 
   --color-focus-ring: var(--color-primary);
@@ -203,8 +198,8 @@
   /* My reviews (docs/DECISIONS.md, 0060). */
   --color-status-info-tint-bg: var(--status-blue-tint-bg-light);
   --color-status-info-tint-fg: var(--status-blue-tint-fg-light);
-  --color-primary-tint: var(--indigo-tint-light);
-  --color-primary-tint-border: var(--indigo-tint-border-light);
+  --color-primary-tint: var(--magenta-tint-light);
+  --color-primary-tint-border: var(--magenta-tint-border-light);
   --color-mark-pending: var(--mark-amber);
   --color-mark-requested: var(--mark-blue);
   --color-mark-declined: var(--mark-red);
@@ -213,7 +208,7 @@
   /* A toast is the inverse of the page: dark on light, light on dark. */
   --color-toast-bg: var(--neutral-12);
   --color-toast-fg: var(--neutral-1);
-  --color-toast-link: var(--indigo-dark);
+  --color-toast-link: var(--magenta-dark);
   --color-toast-icon: var(--status-green-dark);
 
   /*
@@ -229,18 +224,14 @@
   /* Behind a dialog: dims the page in both themes, never lightens it (0070). */
   --color-modal-scrim: rgb(20 24 40 / 0.45);
 
-  /* The page's decorative circles (0068). */
-  --color-decor-disc: var(--decor-disc-light);
-  --color-decor-mint: var(--decor-mint-light);
-  --color-decor-line: var(--decor-line-light);
-
   /* Radius. Cards are rounded-lg; buttons and fields rounded-md (0068). */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.875rem;
 
-  /* A card's lift off the page: faint, and tinted like the page, never grey (0068). */
-  --shadow-card: 0 1px 2px rgb(29 34 80 / 0.04), 0 6px 20px rgb(29 34 80 / 0.05);
+  /* A card's lift off the page: faint and flat, true black, not tinted (0073 — the flat
+   * neutral replaces 0068's page-tinted shadow along with the rest of that palette). */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
 
   /*
    * Type. Raleway for headings, buttons and the wordmark; Montserrat for body and
@@ -307,12 +298,12 @@
     --color-text-secondary: var(--neutral-5);
     --color-text-disabled: var(--neutral-7);
 
-    --color-primary: var(--indigo-dark);
-    --color-primary-hover: var(--indigo-dark-hover);
-    --color-primary-strong: var(--indigo-dark-strong);
+    --color-primary: var(--magenta-dark);
+    --color-primary-hover: var(--magenta-dark-hover);
+    --color-primary-strong: var(--magenta-dark-strong);
     --color-primary-foreground: var(--neutral-13);
-    --color-accent: var(--teal-dark);
-    --color-accent-hover: var(--teal-dark-hover);
+    --color-accent: var(--lime-dark);
+    --color-accent-hover: var(--lime-dark-hover);
     --color-accent-foreground: var(--neutral-13);
 
     --color-status-pass: var(--status-green-dark);
@@ -329,11 +320,11 @@
     --color-status-fail-tint-fg: var(--status-red-dark);
     --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
     --color-status-info-tint-fg: var(--status-blue-dark);
-    --color-primary-tint: var(--indigo-tint-dark);
-    --color-primary-tint-border: var(--indigo-tint-border-dark);
+    --color-primary-tint: var(--magenta-tint-dark);
+    --color-primary-tint-border: var(--magenta-tint-border-dark);
     --color-toast-bg: var(--neutral-2);
     --color-toast-fg: var(--neutral-12);
-    --color-toast-link: var(--indigo-light);
+    --color-toast-link: var(--magenta-light);
     --color-toast-icon: var(--status-green-light);
     --color-mark-pending: var(--mark-amber-dark);
     --color-mark-requested: var(--mark-blue-dark);
@@ -343,9 +334,6 @@
     --color-mark-requested: var(--mark-blue-dark);
     --color-mark-declined: var(--mark-red-dark);
     --color-mark-approved: var(--mark-green-dark);
-    --color-decor-disc: var(--decor-disc-dark);
-    --color-decor-mint: var(--decor-mint-dark);
-    --color-decor-line: var(--decor-line-dark);
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     --color-modal-scrim: rgb(0 0 0 / 0.6);
   }
@@ -363,12 +351,12 @@
   --color-text-secondary: var(--neutral-5);
   --color-text-disabled: var(--neutral-7);
 
-  --color-primary: var(--indigo-dark);
-  --color-primary-hover: var(--indigo-dark-hover);
-  --color-primary-strong: var(--indigo-dark-strong);
+  --color-primary: var(--magenta-dark);
+  --color-primary-hover: var(--magenta-dark-hover);
+  --color-primary-strong: var(--magenta-dark-strong);
   --color-primary-foreground: var(--neutral-13);
-  --color-accent: var(--teal-dark);
-  --color-accent-hover: var(--teal-dark-hover);
+  --color-accent: var(--lime-dark);
+  --color-accent-hover: var(--lime-dark-hover);
   --color-accent-foreground: var(--neutral-13);
 
   --color-status-pass: var(--status-green-dark);
@@ -385,19 +373,16 @@
   --color-status-fail-tint-fg: var(--status-red-dark);
   --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
   --color-status-info-tint-fg: var(--status-blue-dark);
-  --color-primary-tint: var(--indigo-tint-dark);
-  --color-primary-tint-border: var(--indigo-tint-border-dark);
+  --color-primary-tint: var(--magenta-tint-dark);
+  --color-primary-tint-border: var(--magenta-tint-border-dark);
   --color-toast-bg: var(--neutral-2);
   --color-toast-fg: var(--neutral-12);
-  --color-toast-link: var(--indigo-light);
+  --color-toast-link: var(--magenta-light);
   --color-toast-icon: var(--status-green-light);
   --color-mark-pending: var(--mark-amber-dark);
   --color-mark-requested: var(--mark-blue-dark);
   --color-mark-declined: var(--mark-red-dark);
   --color-mark-approved: var(--mark-green-dark);
-  --color-decor-disc: var(--decor-disc-dark);
-  --color-decor-mint: var(--decor-mint-dark);
-  --color-decor-line: var(--decor-line-dark);
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
   --color-modal-scrim: rgb(0 0 0 / 0.6);
 }

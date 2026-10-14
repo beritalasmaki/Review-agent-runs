@@ -39,6 +39,141 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-14 · A flat, true-neutral palette with a magenta-pink primary
+
+**Goal**
+The user reacted strongly against the previous session's lavender palette — "looks really
+bad," generic "AI beige," needs to be "modern... creative." Asked for direction before
+touching anything this broad (style, scope, a reference), got answers, built a 2-3-screen
+preview for sign-off, then propagated it everywhere once approved.
+
+**What changed**
+- `src/styles/tokens.css` — the neutral ramp desaturated to true grey (computed from the old
+  ramp's lightness, saturation zeroed, so the lightness steps hold); `--page-light`/
+  `--page-dark` become flat `#f5f5f5`/`#121212`; `--indigo-*` renamed and recoloured to
+  `--magenta-*` (`#c2185b` light / `#ff6ec7` dark) as the new primary; `--teal-*` renamed and
+  recoloured to `--lime-*` (`#427000` light / `#a8e063` dark) as the new accent; the selected-
+  row/active-tab tint wash regenerated from the new primary's hue; `--shadow-card` de-tinted
+  to plain black. Status colours and the My Reviews mark colours (amber/blue/red/green) are
+  untouched — a separate system, not part of the brief.
+- `src/styles/index.css` — the `page-decor` utility (the soft gradient blobs) deleted; nothing
+  applies it any more.
+- `src/app/App.tsx`, `src/features/run/RunTopBar.tsx` — `page-decor` class removed from both
+  places it was applied.
+- `src/styles/tokens.css` — the now-dead `--color-decor-*`/`--decor-*` tokens (three
+  primitives, three `@theme`/dark-theme mappings each) deleted along with the utility that was
+  their only consumer.
+- `e2e/accessibility.spec.ts` — the `contrastOverDecor` helper and its branch in the axe
+  undecided-results check deleted; it only ever existed to verify text over the now-removed
+  gradient, so it had nothing left to check.
+- `src/styles/README.md` — the Contrast section's numbers recomputed and rewritten for the new
+  palette (old numbers described the lavender ramp and the old indigo/teal brand colours, and
+  would have been wrong left as they were); the `--color-accent` note updated, since the new
+  lime clears 4.5:1 as text where the old teal didn't even clear 3:1.
+
+**Steps, in order**
+1. Asked three questions (style direction, scope, a reference) via the app's clarifying-
+   question flow rather than guessing at "modern."
+2. Computed candidate neutral, primary and accent values with a throwaway WCAG
+   relative-luminance script (same method as `docs/DECISIONS.md` 0005) — not picked by eye —
+   verifying each against every surface it would actually sit on, in both themes.
+3. Applied the primitives to `tokens.css`, removed the decorative gradient's application,
+   ran `npm run check:theme-bridge` (which verifies every `bg-*`/`text-*` pairing in a real
+   browser) before screenshotting anything.
+4. Screenshotted the home page and a run review page, both themes, plus a decided run for the
+   status badges specifically — sent to the user for sign-off before committing anything.
+5. On approval ("keep the direction, propagate it everywhere, commit"): swept the repo for any
+   remaining references to the old primitive names or the dead decorative utility, removed the
+   now-unused decor tokens and the e2e check that only existed for them, and updated
+   `src/styles/README.md`'s numbers to match reality.
+6. Ran the full `npm run check` (typecheck, lint, format, theme-bridge, format-locale, 274 unit
+   tests, 35 e2e tests including axe WCAG checks on every state in both themes) — all green
+   with zero component edits, since every component already read colour through the semantic
+   tokens.
+
+**Why it was done this way**
+See `docs/DECISIONS.md` 0073 for the full reasoning: why each of the three primitive changes
+answers a specific piece of the brief, and why status colours and the mark palette were left
+alone.
+
+**How to do this by hand**
+Not identical to the steps — the by-hand version has no contrast script: open a colour-
+contrast checker, test each candidate against every surface it would sit on in both themes by
+eye, and skip straight to screenshotting the preview pages in a browser for sign-off.
+
+**Verification**
+`npm run check` full suite green, including all 35 Playwright e2e tests (axe WCAG 2.2 A/AA
+checks, contrast included, across every reachable state in both themes) — the comprehensive
+proof that the new palette propagated cleanly with no contrast regressions anywhere in the
+app, not just the screens that were manually screenshotted for sign-off.
+
+**Open questions / next**
+None outstanding. Type scale, spacing, radius and shadows beyond the card's colour were
+explicitly out of scope for this round ("foundations first" meant colour, per the user's own
+answer) — a candidate for a future round if asked.
+
+---
+
+### 2026-10-14 · Home page becomes "My reviews"; pill tabs get a visible track
+
+**Goal**
+The user asked to flip the home page from a run straight to the reviewer's list, move the
+welcome intro there with it, and — mid-session — fix a reported design bug: the pill-variant
+tabs (Story/Evidence/All steps) had no visible background, blending into the page.
+
+**What changed**
+- `src/app/App.tsx` — routing inverts: no `?run=` shows `MyReviews` (home); `?run=<id>` shows
+  `RunReviewPage`. `?view=reviews` is gone, superseded by a bare `/`. The welcome intro now
+  renders only when there is no `runId`, so it plays over the home page, never over a run
+  opened by direct link. `?delay=<ms>` now threads into `MyReviews` too.
+- `src/features/run/RunReviewPage.tsx` — `reviewsHref`'s default changes from `?view=reviews`
+  to `/`.
+- `src/app/App.test.tsx` — tests updated for the new default (list, not a run) and the intro's
+  new scope (shown on a fresh visit to home, suppressed on a fresh visit straight to a run).
+- `e2e/accessibility.spec.ts`, `e2e/keyboard.spec.ts`, `e2e/approve-flow.spec.ts` — every
+  `/?view=reviews` becomes `/`; every bare `/` that was testing a run becomes
+  `/?run=run-messy-pending` explicitly.
+- `README.md`, `src/app/README.md` — routing table and file notes updated to match.
+- `src/components/ui/tabs.tsx` — the pill variant's track gains `border border-border-subtle`,
+  so it reads as a distinct container even where its fill and the page background sit too
+  close in value to tell apart by eye (see `docs/DECISIONS.md` 0072).
+
+**Steps, in order**
+1. Read `App.tsx`, `MyReviews.tsx`, `RunReviewPage.tsx`, `intro.ts`/`WelcomeIntro.tsx` to
+   understand the existing routing and intro wiring before changing either.
+2. Inverted `currentParams()` and the render branch in `App.tsx`; changed `RunReviewPage`'s
+   `reviewsHref` default.
+3. Updated every test and e2e spec referencing the old routes; `npm install` (missing
+   dependencies from the shadcn/ui migration since this environment's last session).
+4. `npm run check` (typecheck, lint, format, theme-bridge, format-locale, 274 unit tests, 35
+   e2e tests) — all green.
+5. Fixed the pill tabs' track border in `components/ui/tabs.tsx`; re-verified visually in a
+   real browser, both themes.
+
+**Why it was done this way**
+See `docs/DECISIONS.md` 0071 (home page / intro scope) and 0072 (pill tabs' border) for the
+real trade-offs: why the intro is gated on `runId` rather than a separate flag, why a border
+was chosen over darkening a shared token for the tabs fix.
+
+**How to do this by hand**
+Not identical to the steps — manually, open the app with no query string and confirm the list
+loads, then a run via its "Review" button; open `?run=<id>` directly in a fresh private window
+and confirm the intro does not play; toggle both themes and look at the Story/Evidence/All
+steps tabs for a visible edge around the track.
+
+**Verification**
+`npm run check` full suite green (274 unit tests, 35 Playwright e2e tests including axe
+accessibility checks on every state in both themes). Manual Playwright screenshots: home page
+resolves to the My reviews list after the intro completes; a deep-linked run shows no intro;
+the pill tabs' track shows a clear border in both light and dark.
+
+**Open questions / next**
+The user separately raised a broader complaint — the whole UI "needs to be more modern" — which
+is unscoped and needs direction (what "modern" means here, which areas, any reference) before
+touching anything beyond this session's two concrete fixes. Asked, not yet answered.
+
+---
+
 ### 2026-09-29 · Every control on shadcn/ui
 
 **Goal**

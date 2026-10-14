@@ -6,6 +6,127 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0073 · A flat, true-neutral palette with a magenta-pink primary, replacing 0068's lavender
+
+**Context.** The user's reaction to the lavender-tinted palette 0068 introduced: it "looks
+really bad," reads as a generic "basic beige/AI" palette, and should be "more modern... more
+creative." Asked for direction (style, scope, a reference) before touching anything this
+broad, per AGENTS.md's own Plan Mode rule for changes larger than a small fix. The answers:
+minimal and flat, but with bold contrast colour instead of muted neutrals; foundations first —
+tokens, a couple of screens, sign-off, then propagate; reference "Linear but Barbie.com from
+the 2000s."
+
+**Choice.** Three changes to the primitive layer, each with a reason tied to a piece of that
+brief:
+
+1. **The neutral ramp (`--neutral-0`–`13`) is desaturated to true grey**, every step computed
+   from the old ramp's lightness with saturation zeroed (not hand-picked, so the lightness
+   steps — and therefore every component's existing light/dark relationships — hold exactly).
+   `--page-light`/`--page-dark` follow: `#f5f5f5` and `#121212`, flat, no tint. This is the
+   direct answer to "don't use the basic beige/lavender AI colours" and half of "minimal and
+   flat": a page that doesn't compete with anything on it.
+2. **The decorative gradient blobs (0068's `page-decor` utility, the `--color-decor-*`
+   tokens) are removed outright**, not just recoloured — a flat page has nothing soft blurring
+   its corner. Removed from `App.tsx` and `RunTopBar.tsx`; the now-dead CSS utility, its three
+   primitives and their three `@theme`/dark-theme mappings deleted from `index.css`/
+   `tokens.css`; the e2e accessibility spec's `contrastOverDecor` check (which only existed to
+   verify text over those blobs) deleted with it, since there's no longer a gradient behind
+   any text to measure. `--shadow-card` also loses its page-tinted colour (`rgb(29 34 80 /
+   …)` → plain black) for the same reason: flat has nothing to tint a shadow with.
+3. **`--color-primary` becomes a magenta-pink (`#c2185b` light, `#ff6ec7` dark), replacing
+   indigo-blue; `--color-accent` becomes a chartreuse-lime (`#427000` light, `#a8e063` dark),
+   replacing teal.** This is the "contrast colour, more creative" half, and the literal
+   "Barbie" of the brief — picked as a specific, memorable hue rather than another
+   SaaS-default purple/blue, the thing the first complaint was really about. Every primitive
+   was computed and verified with the same WCAG relative-luminance script this project has
+   used since 0005: both brand colours clear 4.5:1 as text against every surface they appear
+   on, in both themes (5.4:1–7.4:1) — not just checked after picking a colour that looked
+   right. The `--indigo-tint-*` wash (selected rows, the active tab's count) is regenerated
+   from the new primary's hue rather than reused, so it doesn't clash with a pink brand colour
+   while still looking blue.
+
+**What stayed unchanged, on purpose.** Status colours (`--status-green/red/amber/slate/blue`,
+the filled `StatusBadge` tints) and the `--mark-*` candy colours behind My Reviews' tab icons
+are a separate system from brand (`src/styles/README.md`'s own long-standing rule) and already
+gave the app most of its colour variety — touching them was never part of the brief and risks
+the real thing they encode (pass/fail/waived/etc.). Type scale, spacing scale, radius and
+motion are also untouched: the brief was explicitly "foundations first... then propagate
+everywhere once you sign off," and colour is the foundation that was actually asked for.
+
+**Consequence.** Because every component already read colour through semantic tokens
+(`bg-primary`, `text-primary`, …), this propagated to the whole app with zero component edits
+— the full `npm run check` suite, including all 35 Playwright e2e specs (axe WCAG checks on
+every state, both themes), passed unchanged after only `tokens.css`, `index.css` and the two
+files applying `page-decor` were touched. `src/styles/README.md`'s Contrast section numbers
+were recomputed and rewritten to match, not left stale. One naming change worth knowing if
+grepped for later: `--indigo-*`/`--teal-*` primitives are gone, renamed `--magenta-*`/
+`--lime-*` throughout — a deliberate rename, not a partial one, so the primitive names
+describe what they now contain.
+
+---
+
+## 0072 · The pill tabs' track gets a border, not just a fill
+
+**Context.** The user flagged the pill-variant `TabsList` (Story/Evidence/All steps, and the
+reviews-page type tabs) as reading as "not tabs" — no visible container, blending into the
+page. The track's only definition was `bg-surface-raised` against `--color-bg`: in the current
+cool-lavender palette (0068) those are `#f1f3f9` and `#eef1fb`, a difference small enough to be
+imperceptible, especially under the page's own decorative gradient (0068's `page-decor`).
+
+**Options.** (a) Darken `--color-surface-raised` itself, app-wide. (b) Add a dedicated token
+just for this track. (c) Add a border to the pill track, matching how the `segmented` variant
+already gets its definition from borders and dividers rather than fill contrast alone.
+
+**Choice.** (c): `border border-border-subtle` added to the pill variant in
+`components/ui/tabs.tsx`'s `tabsListVariants`. (a) would change a token used in many other
+places (cards, hover fills, the pill variant's own active-tab fill is `bg-surface`, a separate
+token) for a problem specific to one low-contrast pairing; (b) adds a token for what a border
+already solves without touching the fill. A border reads as a container's edge regardless of
+how close the fill and page background sit, which is the actual failure mode here — the same
+reason `segmented` was never affected by this in the first place.
+
+**Consequence.** One line changed, verified in both themes: the track now has a visible edge
+distinguishing it from the page at a glance. The fix is local to the pill variant; the
+`segmented` and `line` variants, and every other `bg-surface-raised` use, are untouched.
+
+---
+
+## 0071 · The home page is "My reviews"; the welcome intro moves with it
+
+**Context.** The home page (no `?run=` given) opened straight on a run — `run-messy-pending`
+by default — with "My reviews" one click away on `?view=reviews`. The user asked to flip
+this: a reviewer should land on their list first, and open a run from there. They also asked
+to move the welcome intro (the "Made by" signature animation, 0048/0049) to the new home page.
+
+**Choice.**
+- `App.tsx`'s routing inverts: `runId` (from `?run=`) is now `string | null`, not defaulted.
+  No `runId` renders `MyReviews`; any `runId` renders `RunReviewPage`. `?view=reviews` is
+  gone — a bare `/` already shows the list.
+- `RunReviewPage`'s `reviewsHref` default changes from `?view=reviews` to `/`, so the
+  breadcrumb's "My reviews" link (and `InProgressBox`'s own link back) point at the new home
+  without every caller having to pass it explicitly.
+- The welcome intro now renders only when `!runId` — over the home page, never over a run
+  opened directly. **A reviewer who lands straight on a run** — a shared link, a
+  notification — gets to work immediately; the credit animation is for the app's own front
+  door, not for content someone was sent to. Because `markIntroSeen()` only ever runs inside
+  the intro itself, a visit that starts on a deep-linked run and only later reaches the home
+  page still gets the intro then, once — it is "once per visit the first time you reach
+  home," not "skipped for the whole visit because you happened to land elsewhere first."
+- `?delay=<ms>` now threads into `MyReviews` too (`listRuns` already accepted a delay; it just
+  wasn't wired up), so the README's "any of the above" claim for that param is literally true,
+  not just true for run pages.
+
+**Consequence.** Every `/?view=reviews` reference in the e2e specs (`accessibility.spec.ts`,
+`keyboard.spec.ts`) and the README's URL table moved to `/`; the three accessibility states
+that used to reach the pending run via bare `/` now say `/?run=run-messy-pending` explicitly,
+since `/` is no longer a run. `App.test.tsx` gained one new test (the intro is suppressed on a
+direct run link even on a first visit) and lost the one asserting a bare-`/` default run,
+replaced by one asserting the list heading instead. No change to `MyReviews` or
+`RunReviewPage` themselves beyond the one default prop value — both already worked
+standalone, reachable by URL, before this.
+
+---
+
 ## 0070 · Every control on shadcn/ui
 
 **Context.** AGENTS.md has always listed shadcn/ui in the stack. It was set up early

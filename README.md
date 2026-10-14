@@ -59,16 +59,16 @@ by colour alone, and motion respects `prefers-reduced-motion`.
 
 ## Try it
 
-The app opens on a run awaiting review. Other states are one URL away:
+The app opens on _My reviews_, the reviewer's list. Other states are one URL away:
 
-| URL                 | What it shows                                                           |
-| ------------------- | ----------------------------------------------------------------------- |
-| `/`                 | `run-messy-pending`: checks that did not run, a low score, an open note |
-| `/?run=run-clean`   | everything passed; nothing to solve                                     |
-| `/?run=run-blocked` | a failed check, an exception, and an error and retry in the steps       |
-| `/?run=run-messy`   | the same run as `/`, already approved, inside its undo window           |
-| `/?view=reviews`    | _My reviews_: tabs, search, filters, archive and reports                |
-| `/?delay=3000`      | any of the above, with the load slowed down to show the loading state   |
+| URL                       | What it shows                                                             |
+| ------------------------- | ------------------------------------------------------------------------- |
+| `/`                       | _My reviews_: tabs, search, filters, archive and reports                  |
+| `/?run=run-messy-pending` | a run awaiting review: checks that did not run, a low score, an open note |
+| `/?run=run-clean`         | everything passed; nothing to solve                                       |
+| `/?run=run-blocked`       | a failed check, an exception, and an error and retry in the steps         |
+| `/?run=run-messy`         | the same run as `run-messy-pending`, already approved, in its undo window |
+| `/?delay=3000`            | any of the above, with the load slowed down to show the loading state     |
 
 There is no backend. Runs are typed fixtures in `src/fixtures/`, served through `getRun()` in
 `src/lib/api.ts`, so a real API can replace them without touching the interface. Decisions and
