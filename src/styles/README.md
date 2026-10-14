@@ -8,7 +8,7 @@ component having to.
 
 Two layers:
 
-1. **Primitives** — the raw values: `--indigo-light`, `--neutral-3`. Plain custom properties,
+1. **Primitives** — the raw values: `--magenta-light`, `--neutral-3`. Plain custom properties,
    never Tailwind utilities.
 2. **Semantic tokens** — what the product uses: `--color-primary`, `--color-status-pass`,
    `--color-surface-raised`, `--color-border-subtle`. Components only ever use these.
@@ -105,29 +105,31 @@ text). Full numbers were computed, not estimated — see `docs/DECISIONS.md`, 00
 
 - **Text tokens pass everywhere they're used.** `--color-text-primary` and
   `--color-text-secondary` clear 4.5:1 against `--color-bg`, `--color-surface` and
-  `--color-surface-raised`, in both themes (5.8:1 to 17.1:1). Text straight on the page also
-  clears 4.5:1 over each of the page's decorative circles (`--color-decor-*`, docs/DECISIONS.md
-  0068); the accessibility spec measures it.
-- **`--color-text-disabled` does not clear 4.5:1** (2.4–3.8:1 depending on theme and surface).
+  `--color-surface-raised`, in both themes (5.4:1 to 18:1). The page itself is flat, true-grey,
+  with no decorative gradient over it (docs/DECISIONS.md, 0073) — nothing for text to clear
+  contrast against beyond the surface tokens above.
+- **`--color-text-disabled` does not clear 4.5:1** (2.3–3.4:1 depending on theme and surface).
   Left as given: WCAG 1.4.3 does not require a minimum contrast for inactive UI text, and this
   token is not used for anything else.
-- **Several status/accent colours fail 4.5:1 as literal text colour in light theme** —
-  `--color-accent` (~2.9–3.3:1, under even the 3:1 non-text line on the lavender page, so it is
-  not used there — today no component uses it at all), `--color-status-pass` (~3.9–4.3:1), and
-  `--color-status-not-applicable` on `--color-surface-raised` specifically (4.36:1). This is
+- **`--color-status-pass` and `--color-status-not-applicable` fail 4.5:1 as literal text colour
+  in light theme** (3.98:1 and 4.43:1 against `--color-surface-raised` respectively). This is
   exactly why the usage rule above exists: used for an icon or a border (WCAG's 3:1
-  non-text threshold), every one of these passes; used as running text, several would not. In
-  dark theme every status and brand colour clears 4.5:1 even as text (5.4–10.5:1) — the
-  dark-theme values were lightened with this in mind.
+  non-text threshold), both pass; used as running text, neither would. `--color-accent` (the
+  chartreuse-lime, 0073) actually clears 4.5:1 even as text now (5.4–5.9:1 light, 9.5:1+ dark) —
+  still unused by any component today, but unlike the old teal it would be exempt for this
+  reason too, not just by the usage rule. In dark theme every status and brand colour clears
+  4.5:1 even as text (5.4–10.5:1) — the dark-theme values were lightened with this in mind.
 - **A filled primary (or destructive) surface needs different foreground text per theme.**
-  White text on `--color-primary` passes in light (6.1:1) but fails in dark (2.3:1), because
+  White text on `--color-primary` passes in light (5.9:1) but fails in dark (2.5:1), because
   the dark-theme primary is deliberately lightened for its own contrast; near-black passes in
-  dark (7.5:1) but fails in light (2.9:1). `--color-primary-foreground` (and
+  dark (6.6:1) but fails in light (2.8:1). `--color-primary-foreground` (and
   `--color-destructive-foreground`, which reuses it) is defined to flip per theme rather than
   fixed to white — a real bug this check caught before it shipped.
-- **`--color-border` and `--color-border-subtle` sit at 1.1–2.0:1 against every surface**, in
+- **`--color-border` and `--color-border-subtle` sit at 1.2–1.5:1 against every surface**, in
   both themes. Noted, not changed: borders aren't subject to the text-contrast rule, and these
-  are the values given. Worth knowing if a border ever needs to carry meaning on its own.
+  are the values given. Worth knowing if a border ever needs to carry meaning on its own — and
+  why a container relying on fill contrast alone (not a border) can go invisible even when its
+  *stated* contrast ratio looks adequate (docs/DECISIONS.md, 0072).
 
 Motion tokens live here too, and motion is functional only: state changes, data arriving,
 focus. `prefers-reduced-motion` is respected.
