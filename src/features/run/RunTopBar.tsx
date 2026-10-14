@@ -40,7 +40,7 @@ function AppName() {
 
 export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
   return (
-    <div ref={ref} className="sticky top-0 z-20 page-decor border-b border-border-subtle bg-bg">
+    <div ref={ref} className="sticky top-0 z-20 border-b border-border-subtle bg-bg">
       <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
         <AppName />
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1 md:flex-none">

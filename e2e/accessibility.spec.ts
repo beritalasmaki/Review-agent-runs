@@ -156,37 +156,6 @@ function ownContrast(page: Page, selector: string) {
   }, selector)
 }
 
-/** For text over the page's decorative circles (0068), which axe cannot read through: the
- * lowest contrast of the text against every colour that can be behind it — the page and each
- * `--color-decor-*` token. A worst case, so it is stricter than the real blend. */
-function contrastOverDecor(page: Page, selector: string) {
-  return page.evaluate((sel) => {
-    const element = document.querySelector(sel)
-    if (!element) return 0
-    const hex = (value: string) => {
-      const v = value.trim().replace('#', '')
-      return [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16))
-    }
-    const rgb = (value: string) => value.match(/[\d.]+/g)!.map(Number)
-    const luminance = ([r, g, b]: number[]) => {
-      const channel = (c: number) => {
-        const v = c / 255
-        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
-      }
-      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
-    }
-    const root = getComputedStyle(document.documentElement)
-    const behind = [
-      '--color-bg',
-      '--color-decor-disc',
-      '--color-decor-mint',
-      '--color-decor-line',
-    ].map((name) => luminance(hex(root.getPropertyValue(name))))
-    const fg = luminance(rgb(getComputedStyle(element).color))
-    return Math.min(...behind.map((bg) => (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)))
-  }, selector)
-}
-
 for (const scheme of ['light', 'dark'] as const) {
   test.describe(`${scheme} theme`, () => {
     for (const state of STATES) {
@@ -222,26 +191,7 @@ for (const scheme of ['light', 'dark'] as const) {
           const ratio = await ownContrast(page, String(node.target[node.target.length - 1]))
           expect(ratio, `contrast of ${node.html.slice(0, 60)}`).toBeGreaterThanOrEqual(4.5)
         }
-        // The other kind: text straight on the page, over its decorative circles (0068), which
-        // are a background gradient on <main>. Measured against the worst colour behind it.
-        const overDecor = undecided.filter(
-          (node) =>
-            (node.any[0]?.data as { messageKey?: string } | undefined)?.messageKey ===
-              'bgGradient' &&
-            (node.any[0]?.relatedNodes ?? []).every((related) =>
-              related.html.includes('page-decor'),
-            ),
-        )
-        for (const node of overDecor) {
-          const ratio = await contrastOverDecor(page, String(node.target[node.target.length - 1]))
-          expect(
-            ratio,
-            `contrast over the decor of ${node.html.slice(0, 60)}`,
-          ).toBeGreaterThanOrEqual(4.5)
-        }
-        expect(
-          undecided.filter((node) => !behindModal.includes(node) && !overDecor.includes(node)),
-        ).toEqual([])
+        expect(undecided.filter((node) => !behindModal.includes(node))).toEqual([])
       })
     }
   })
