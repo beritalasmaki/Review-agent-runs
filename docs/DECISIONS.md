@@ -6,6 +6,68 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0072 · The pill tabs' track gets a border, not just a fill
+
+**Context.** The user flagged the pill-variant `TabsList` (Story/Evidence/All steps, and the
+reviews-page type tabs) as reading as "not tabs" — no visible container, blending into the
+page. The track's only definition was `bg-surface-raised` against `--color-bg`: in the current
+cool-lavender palette (0068) those are `#f1f3f9` and `#eef1fb`, a difference small enough to be
+imperceptible, especially under the page's own decorative gradient (0068's `page-decor`).
+
+**Options.** (a) Darken `--color-surface-raised` itself, app-wide. (b) Add a dedicated token
+just for this track. (c) Add a border to the pill track, matching how the `segmented` variant
+already gets its definition from borders and dividers rather than fill contrast alone.
+
+**Choice.** (c): `border border-border-subtle` added to the pill variant in
+`components/ui/tabs.tsx`'s `tabsListVariants`. (a) would change a token used in many other
+places (cards, hover fills, the pill variant's own active-tab fill is `bg-surface`, a separate
+token) for a problem specific to one low-contrast pairing; (b) adds a token for what a border
+already solves without touching the fill. A border reads as a container's edge regardless of
+how close the fill and page background sit, which is the actual failure mode here — the same
+reason `segmented` was never affected by this in the first place.
+
+**Consequence.** One line changed, verified in both themes: the track now has a visible edge
+distinguishing it from the page at a glance. The fix is local to the pill variant; the
+`segmented` and `line` variants, and every other `bg-surface-raised` use, are untouched.
+
+---
+
+## 0071 · The home page is "My reviews"; the welcome intro moves with it
+
+**Context.** The home page (no `?run=` given) opened straight on a run — `run-messy-pending`
+by default — with "My reviews" one click away on `?view=reviews`. The user asked to flip
+this: a reviewer should land on their list first, and open a run from there. They also asked
+to move the welcome intro (the "Made by" signature animation, 0048/0049) to the new home page.
+
+**Choice.**
+- `App.tsx`'s routing inverts: `runId` (from `?run=`) is now `string | null`, not defaulted.
+  No `runId` renders `MyReviews`; any `runId` renders `RunReviewPage`. `?view=reviews` is
+  gone — a bare `/` already shows the list.
+- `RunReviewPage`'s `reviewsHref` default changes from `?view=reviews` to `/`, so the
+  breadcrumb's "My reviews" link (and `InProgressBox`'s own link back) point at the new home
+  without every caller having to pass it explicitly.
+- The welcome intro now renders only when `!runId` — over the home page, never over a run
+  opened directly. **A reviewer who lands straight on a run** — a shared link, a
+  notification — gets to work immediately; the credit animation is for the app's own front
+  door, not for content someone was sent to. Because `markIntroSeen()` only ever runs inside
+  the intro itself, a visit that starts on a deep-linked run and only later reaches the home
+  page still gets the intro then, once — it is "once per visit the first time you reach
+  home," not "skipped for the whole visit because you happened to land elsewhere first."
+- `?delay=<ms>` now threads into `MyReviews` too (`listRuns` already accepted a delay; it just
+  wasn't wired up), so the README's "any of the above" claim for that param is literally true,
+  not just true for run pages.
+
+**Consequence.** Every `/?view=reviews` reference in the e2e specs (`accessibility.spec.ts`,
+`keyboard.spec.ts`) and the README's URL table moved to `/`; the three accessibility states
+that used to reach the pending run via bare `/` now say `/?run=run-messy-pending` explicitly,
+since `/` is no longer a run. `App.test.tsx` gained one new test (the intro is suppressed on a
+direct run link even on a first visit) and lost the one asserting a bare-`/` default run,
+replaced by one asserting the list heading instead. No change to `MyReviews` or
+`RunReviewPage` themselves beyond the one default prop value — both already worked
+standalone, reachable by URL, before this.
+
+---
+
 ## 0070 · Every control on shadcn/ui
 
 **Context.** AGENTS.md has always listed shadcn/ui in the stack. It was set up early

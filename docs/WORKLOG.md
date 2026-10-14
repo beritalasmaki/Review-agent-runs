@@ -39,6 +39,66 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-14 · Home page becomes "My reviews"; pill tabs get a visible track
+
+**Goal**
+The user asked to flip the home page from a run straight to the reviewer's list, move the
+welcome intro there with it, and — mid-session — fix a reported design bug: the pill-variant
+tabs (Story/Evidence/All steps) had no visible background, blending into the page.
+
+**What changed**
+- `src/app/App.tsx` — routing inverts: no `?run=` shows `MyReviews` (home); `?run=<id>` shows
+  `RunReviewPage`. `?view=reviews` is gone, superseded by a bare `/`. The welcome intro now
+  renders only when there is no `runId`, so it plays over the home page, never over a run
+  opened by direct link. `?delay=<ms>` now threads into `MyReviews` too.
+- `src/features/run/RunReviewPage.tsx` — `reviewsHref`'s default changes from `?view=reviews`
+  to `/`.
+- `src/app/App.test.tsx` — tests updated for the new default (list, not a run) and the intro's
+  new scope (shown on a fresh visit to home, suppressed on a fresh visit straight to a run).
+- `e2e/accessibility.spec.ts`, `e2e/keyboard.spec.ts`, `e2e/approve-flow.spec.ts` — every
+  `/?view=reviews` becomes `/`; every bare `/` that was testing a run becomes
+  `/?run=run-messy-pending` explicitly.
+- `README.md`, `src/app/README.md` — routing table and file notes updated to match.
+- `src/components/ui/tabs.tsx` — the pill variant's track gains `border border-border-subtle`,
+  so it reads as a distinct container even where its fill and the page background sit too
+  close in value to tell apart by eye (see `docs/DECISIONS.md` 0072).
+
+**Steps, in order**
+1. Read `App.tsx`, `MyReviews.tsx`, `RunReviewPage.tsx`, `intro.ts`/`WelcomeIntro.tsx` to
+   understand the existing routing and intro wiring before changing either.
+2. Inverted `currentParams()` and the render branch in `App.tsx`; changed `RunReviewPage`'s
+   `reviewsHref` default.
+3. Updated every test and e2e spec referencing the old routes; `npm install` (missing
+   dependencies from the shadcn/ui migration since this environment's last session).
+4. `npm run check` (typecheck, lint, format, theme-bridge, format-locale, 274 unit tests, 35
+   e2e tests) — all green.
+5. Fixed the pill tabs' track border in `components/ui/tabs.tsx`; re-verified visually in a
+   real browser, both themes.
+
+**Why it was done this way**
+See `docs/DECISIONS.md` 0071 (home page / intro scope) and 0072 (pill tabs' border) for the
+real trade-offs: why the intro is gated on `runId` rather than a separate flag, why a border
+was chosen over darkening a shared token for the tabs fix.
+
+**How to do this by hand**
+Not identical to the steps — manually, open the app with no query string and confirm the list
+loads, then a run via its "Review" button; open `?run=<id>` directly in a fresh private window
+and confirm the intro does not play; toggle both themes and look at the Story/Evidence/All
+steps tabs for a visible edge around the track.
+
+**Verification**
+`npm run check` full suite green (274 unit tests, 35 Playwright e2e tests including axe
+accessibility checks on every state in both themes). Manual Playwright screenshots: home page
+resolves to the My reviews list after the intro completes; a deep-linked run shows no intro;
+the pill tabs' track shows a clear border in both light and dark.
+
+**Open questions / next**
+The user separately raised a broader complaint — the whole UI "needs to be more modern" — which
+is unscoped and needs direction (what "modern" means here, which areas, any reference) before
+touching anything beyond this session's two concrete fixes. Asked, not yet answered.
+
+---
+
 ### 2026-09-29 · Every control on shadcn/ui
 
 **Goal**
