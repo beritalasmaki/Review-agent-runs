@@ -12,7 +12,7 @@
  * `ledger:tour-leg` — `'run'`, written the moment Leg 1 finishes its last step on its own
  * (not via Skip): "Leg 1 is done, show Leg 2 next time a run page loads."
  */
-const TOUR_SEEN_KEY = 'ledger:tour-seen'
+export const TOUR_SEEN_KEY = 'ledger:tour-seen'
 const TOUR_LEG_KEY = 'ledger:tour-leg'
 
 function readSeen(): boolean {

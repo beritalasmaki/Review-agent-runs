@@ -47,7 +47,9 @@ not affiliated with any company, and every run in it is fictional.
     to the Archive, where they can be restored for seven days;
   - a finished run can ask for a new run to fix a mistake. The old record never changes.
 - **Around it:** a short welcome intro once per visit (skipped for reduced motion, or on any
-  key or click), a loading state, and "not found" and error states.
+  key or click), then a welcome modal explaining what the screen is and why it exists, with the
+  choice to take a guided spotlight tour of My reviews and the run page or skip it; a loading
+  state; and "not found" and error states.
 
 Nothing on the page is decided by the interface. Every number and status comes from the run's
 data and links to its evidence, and anything unknown says "unknown". The rules behind this are

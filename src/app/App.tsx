@@ -6,6 +6,7 @@ import { LIST_TOUR_STEPS, RUN_TOUR_STEPS } from '../features/run/tourSteps'
 import { shouldShowIntro } from './intro'
 import { markListLegFinished, markTourSeen, shouldShowListTour, shouldShowRunTour } from './tour'
 import { WelcomeIntro } from './WelcomeIntro'
+import { WelcomeModal } from './WelcomeModal'
 
 /*
  * Application shell. The review page lives inside another service platform that owns the
@@ -21,10 +22,11 @@ import { WelcomeIntro } from './WelcomeIntro'
  * of it, and only over the home page: a reviewer who lands straight on a run — a shared link, a
  * notification — gets straight to work, with no decorative "Made by" credit in the way.
  *
- * The onboarding tour (docs/DECISIONS.md, 0078) follows it: Leg 1 plays on My reviews once the
- * intro is no longer in the way. Reaching its last step, or the visitor navigating away mid-
- * tour (its own spotlighted run row is a real link — clicking it, as the step invites, is the
- * common way Leg 1 ends, not just reaching "Done"), records that Leg 2 should continue the
+ * The onboarding tour (docs/DECISIONS.md, 0078, 0079) follows it: once the intro is no longer
+ * in the way, a welcome modal asks directly — take the guided tour, or skip it. Only "take the
+ * tour" starts Leg 1, on My reviews; reaching its last step, or the visitor navigating away
+ * mid-tour (its own spotlighted run row is a real link — clicking it, as the step invites, is
+ * the common way Leg 1 ends, not just reaching "Done"), records that Leg 2 should continue the
  * next time a run page loads.
  */
 function currentParams() {
@@ -41,12 +43,16 @@ const runHref = (id: string) => `?run=${encodeURIComponent(id)}`
 export default function App() {
   const { runId, delayMs } = currentParams()
   const [showIntro, setShowIntro] = useState(shouldShowIntro)
-  // On the home page the tour waits for the intro to finish first, so the two never overlap —
-  // it starts out false here whenever the intro is about to show, and `WelcomeIntro`'s own
-  // `onDone` turns it on. On a run page there is no intro to wait for.
-  const [showTour, setShowTour] = useState(() =>
-    runId ? shouldShowRunTour() : !shouldShowIntro() && shouldShowListTour(),
+  // On the home page the welcome modal waits for the intro to finish first, so the two never
+  // overlap — it starts out false here whenever the intro is about to show, and `WelcomeIntro`'s
+  // own `onDone` turns it on.
+  const [showWelcomeModal, setShowWelcomeModal] = useState(
+    () => !runId && !shouldShowIntro() && shouldShowListTour(),
   )
+  // Leg 1 (My reviews) only ever starts from the welcome modal's "Take the tour", never on its
+  // own. Leg 2 (a run page) has no modal of its own — it is already a continuation of a choice
+  // the visitor made on My reviews — so it still starts automatically.
+  const [showTour, setShowTour] = useState(() => (runId ? shouldShowRunTour() : false))
 
   function dismissTour(reason: 'skip' | 'escape' | 'finished' | 'navigated') {
     setShowTour(false)
@@ -71,7 +77,19 @@ export default function App() {
         <WelcomeIntro
           onDone={() => {
             setShowIntro(false)
-            setShowTour(shouldShowListTour())
+            setShowWelcomeModal(shouldShowListTour())
+          }}
+        />
+      )}
+      {showWelcomeModal && (
+        <WelcomeModal
+          onStartTour={() => {
+            setShowWelcomeModal(false)
+            setShowTour(true)
+          }}
+          onSkip={() => {
+            setShowWelcomeModal(false)
+            markTourSeen()
           }}
         />
       )}
