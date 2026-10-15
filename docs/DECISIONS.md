@@ -6,6 +6,70 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0076 · The design-canvas review propagates: colour usage, grouping, the top bar label
+
+**Context.** The Claude Design mockup (0073's palette, reviewed together) led to concrete
+feedback: the primary pink read as "error," with no rule for where it should and shouldn't
+appear; "Your decision" needed more white space between its sections; the top bar's app-name
+label should go, with the breadcrumb link reading "Back to the reviews list." Applied to the
+real app — both My reviews and the run review page — not just the canvas.
+
+**Pink hue, again.** `#c2185b` sat only ~29° from `--status-red-light` on the colour wheel;
+`#c21895` (light) / `#ff70d9` (dark) sit ~50° away, same saturation and lightness otherwise.
+Computed and contrast-verified the same way as 0073 (≥4.5:1 as text on every surface it
+appears on, both themes). The selected-row/active-tab tint wash regenerated from the new hue
+for the same reason 0073 regenerated it from the old one.
+
+**The usage rule, written down and applied.** *Primary is for interactive affordances only —
+links, and the active/selected state of a real control. Everything else — a section heading's
+icon, an eyebrow label, a step-number badge, a legend dot — is neutral, even where it used to
+be pink.* Audited every `text-primary`/`bg-primary`/`border-primary`/`fill-primary` use in
+`src/` (the brand token; not `text-text-primary`, the neutral one) and reclassified each
+against this rule:
+- **Kept pink**: `OpenItemsNotice`'s and `InProgressBox`'s links, `RunTopBar`'s breadcrumb
+  link, `ScoreCard`'s `<summary>` disclosure trigger, `StepsTab`'s expand-group button,
+  `ThemeToggle`'s current-theme icon, `ReviewsTable`'s active-sort button,
+  `ReviewsToolbar`'s active-filter toggle, the shadcn `RadioGroup`'s own checked indicator,
+  and the `button`/`badge` component's `link`/`primary` variant definitions (real controls,
+  not call-site decisions).
+- **Changed to neutral** (`text-text-primary`, or an equivalent neutral fill): `SectionHeading`
+  (the shared region-heading icon — propagates to every region at once), `RunDetails`' and
+  `RunShape`'s own inline heading icons (same pattern, not yet migrated to `SectionHeading`),
+  `RunOverview`'s `EYEBROW` class ("Why the agent was asked" / "Where the run is now"),
+  `DecisionPanel`'s `StepNumber` badge (both steps, not just one — neither is really
+  "disabled," so differentiating them would invent a distinction the data doesn't have),
+  `ReviewDialogs`' matching numbered-step circles in the "Request a new run" flow, its
+  report-dialog icon, `StoryTimeline`'s "key step" dot and its added/modified file marker, and
+  `MyReviews`' two page-heading icons (`PageTitle`, the inline "Also found in the archive" h2)
+  plus its in-progress collapsible's icon circle.
+
+**"Your decision" regrouped.** The panel's top-level children — heading+caption, "Deciding
+as," the open-items fieldset, the choose-one block, the closing note — all sat at one flat
+`gap-space-4` (16px). The heading block and "Deciding as" are now wrapped into one identity
+group (`gap-space-4` between them, each keeping its own tighter internal gap), and the
+section's own top-level gap becomes `space-6` (32px) between that group, the fieldset, the
+choose-one block, and the closing note. No new spacing value: `--space-6` already existed.
+
+**Top bar.** `RunTopBar`'s `AppName` ("Review agent runs") is deleted outright, not hidden —
+nothing else on the bar needs the divider it used to sit against. The breadcrumb link's text
+changes from "My reviews" to "Back to the reviews list"; its `href` and behaviour are
+unchanged. `MyReviews.tsx`'s own internal "My reviews" back-link (from its Archive sub-view)
+is a different element and was not touched — the request was about the run page's bar.
+
+**What stayed unchanged.** Spacing elsewhere: a repo-wide check for raw pixel values or
+Tailwind's own numeric spacing utilities (`gap-3`, `p-4`, …) in the touched files found none —
+the app already enforces the `--space-*` scale strictly, unlike the hand-written canvas
+mockup, which had several off-scale values now corrected there too. Status colours and the
+`StoryTimeline` "attention" tone (status-amber) are untouched — a separate system, as always.
+
+**Consequence.** One obsolete test deleted (`RunReviewPage.test.tsx`'s "names what the app is
+for in the top bar," which tested a label that no longer exists); two more updated for the new
+breadcrumb text (`App.test.tsx`, `e2e/approve-flow.spec.ts`). Full `npm run check` — 273 unit
+tests (down one, the deleted test, not a regression), all 35 e2e tests including axe WCAG
+checks on every state in both themes — green.
+
+---
+
 ## 0075 · The favicon becomes the signature mark, on a flat grey swatch
 
 **Context.** The user asked to replace the favicon with an attached image: an orange,

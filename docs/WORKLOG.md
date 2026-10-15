@@ -39,6 +39,71 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-15 · Propagating the design-canvas review to the real app
+
+**Goal**
+The user reviewed the Claude Design mockup and asked for all of it applied to the real app —
+both My reviews and the run review page: a less red-adjacent pink used only for interactive
+elements, the spacing-scale discipline, more white space and clearer grouping in "Your
+decision," and the top-bar label change.
+
+**What changed**
+- `src/styles/tokens.css` — `--magenta-light`/`-dark` (and their hover/strong/tint variants)
+  re-hued further from `--status-red` (`#c21895`/`#ff70d9`, ~50° away vs. the previous ~29°),
+  contrast-verified the same way as the original palette change.
+- Audited every `text-primary`/`bg-primary`/`border-primary`/`fill-primary` use in `src/`
+  against a new rule — pink for interactive affordances only, neutral everywhere else — and
+  changed the decorative ones: `SectionHeading`, `RunDetails`, `RunShape` (region-heading
+  icons), `RunOverview`'s `EYEBROW` label, `DecisionPanel`'s `StepNumber` badge,
+  `ReviewDialogs`' matching step circles and report-dialog icon, `StoryTimeline`'s "key step"
+  dot and file-change marker, `MyReviews`' two page-heading icons and its in-progress circle.
+  Left every real link, active-state and form-control indicator alone.
+- `src/features/run/DecisionPanel.tsx` — the heading+caption and "Deciding as" wrapped into
+  one identity group; the panel's top-level gap goes from `space-4` (16px) to `space-6` (32px)
+  between that group, the open-items fieldset, the choose-one block and the closing note.
+- `src/features/run/RunTopBar.tsx` — `AppName` ("Review agent runs") deleted; the breadcrumb
+  link's text becomes "Back to the reviews list."
+- `src/features/run/RunReviewPage.test.tsx`, `src/app/App.test.tsx`,
+  `e2e/approve-flow.spec.ts` — the now-obsolete app-name test deleted; the breadcrumb text
+  updated in the two tests that asserted it.
+
+**Steps, in order**
+1. Computed the new hue (316°, same method as the original palette change) and the
+   regenerated tint wash; applied to `tokens.css`; verified with `check:theme-bridge`.
+2. Grepped every brand-pink utility class in `src/`, read each call site's context, and
+   classified it against the new interactive-only rule before changing anything.
+3. Checked the touched files for raw pixel values or Tailwind's own numeric spacing utilities
+   — found none; the app already enforces `--space-*` strictly, unlike the hand-written canvas
+   mockup.
+4. Regrouped `DecisionPanel`'s JSX and widened its top-level gap.
+5. Removed `RunTopBar`'s `AppName` and relabeled the breadcrumb link.
+6. Ran the full `npm run check` (typecheck, lint, format, theme-bridge, format-locale, 273
+   unit tests, 35 e2e tests including axe WCAG checks on every state in both themes) — green.
+7. Screenshotted both the list and review pages, both themes, in a real browser to confirm the
+   result against the reviewed mockup.
+
+**Why it was done this way**
+See `docs/DECISIONS.md` 0076 for the full reasoning: why each pink usage was kept or changed,
+why `StepNumber`'s two steps get the same neutral treatment rather than inventing a
+current/future distinction the data doesn't have, and why `MyReviews`' own internal
+"My reviews" back-link (a different element, in the Archive sub-view) wasn't touched.
+
+**How to do this by hand**
+Not identical to the steps — by hand, open a colour-contrast checker for the new hue, then
+open each file flagged by a `text-primary`/`bg-primary` search and judge by eye whether that
+use is a real link or active state versus decoration.
+
+**Verification**
+`npm run check` full suite green (273 unit tests — one fewer than before, the deleted obsolete
+test, not a regression; 35 e2e tests). Manual Playwright screenshots of the list and review
+pages, both themes, confirm the new hue, the neutral decorative icons/labels, the regrouped
+decision panel, and the new breadcrumb text all render as intended.
+
+**Open questions / next**
+None outstanding from this round.
+
+---
+
 ### 2026-10-15 · Pill tabs' active colour: `aria-selected`, not `data-state`
 
 **Goal**

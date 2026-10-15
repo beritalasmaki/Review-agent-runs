@@ -159,7 +159,7 @@ function PageTitle({
       tabIndex={-1}
       className="flex items-center gap-[var(--space-3)] text-page-title leading-tight font-bold font-heading text-text-primary outline-none"
     >
-      <Icon aria-hidden className="h-6 w-6 text-primary" />
+      <Icon aria-hidden className="h-6 w-6 text-text-primary" />
       {children}
     </h1>
   )
@@ -598,7 +598,7 @@ function ReviewsBoard({
         <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] pt-[var(--space-2)]">
           <div className="flex flex-col gap-[var(--space-2)]">
             <h2 className="flex items-center gap-[var(--space-3)] text-section-heading font-bold font-heading text-text-primary">
-              <Archive aria-hidden className="h-5 w-5 text-primary" />
+              <Archive aria-hidden className="h-5 w-5 text-text-primary" />
               Also found in the archive
               <Badge variant="muted" size="sm">
                 {archivedRuns.length}
@@ -739,7 +739,7 @@ function InProgress({
       <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-[var(--space-4)] rounded-b-lg data-[state=open]:rounded-b-none px-[var(--space-5)] py-[var(--space-4)] text-left hover:bg-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring">
         <span
           aria-hidden
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-tint text-primary"
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-raised text-text-secondary"
         >
           <RefreshCw className="h-3.5 w-3.5" />
         </span>

@@ -24,7 +24,7 @@ export interface StoryTimelineProps {
 }
 
 const DOT: Record<StoryStepTone, string> = {
-  key: 'bg-primary',
+  key: 'bg-text-primary',
   plain: 'bg-border',
   attention: 'bg-status-waived',
 }
@@ -111,7 +111,10 @@ function StepBody({
               title={file.path}
               className="rounded-sm border border-border-subtle bg-surface px-[var(--space-3)] py-[var(--space-1)] font-mono text-caption whitespace-nowrap text-text-secondary"
             >
-              <b aria-hidden className={file.added ? 'text-status-pass-tint-fg' : 'text-primary'}>
+              <b
+                aria-hidden
+                className={file.added ? 'text-status-pass-tint-fg' : 'text-text-primary'}
+              >
                 {file.added ? '+' : '~'}
               </b>{' '}
               <span className="sr-only">{file.added ? 'Added' : 'Edited'} </span>

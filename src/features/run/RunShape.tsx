@@ -31,7 +31,7 @@ export function RunShape({ run }: RunShapeProps) {
         id="run-shape-heading"
         className="flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary"
       >
-        <ChartColumn aria-hidden className="h-4 w-4 text-primary" />
+        <ChartColumn aria-hidden className="h-4 w-4 text-text-primary" />
         Run shape
       </h2>
       <dl className="flex flex-col">

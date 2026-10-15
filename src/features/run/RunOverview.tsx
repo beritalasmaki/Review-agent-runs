@@ -28,7 +28,7 @@ const STATUS_DOT: Partial<Record<RunStatus, string>> = {
 }
 
 const EYEBROW =
-  'flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading leading-none tracking-wide uppercase text-primary'
+  'flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading leading-none tracking-wide uppercase text-text-primary'
 
 function StatusPill({ status }: { status: RunStatus }) {
   if (status === 'approved')

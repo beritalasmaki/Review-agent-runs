@@ -276,8 +276,8 @@ export function NewRunDialog({ run, onClose, onSend }: NewRunDialogProps) {
                 className={cn(
                   'inline-flex h-6 w-6 items-center justify-center rounded-full text-caption font-semibold',
                   index === 0
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-primary-tint text-primary',
+                    ? 'bg-text-primary text-surface'
+                    : 'bg-surface-raised text-text-secondary',
                 )}
               >
                 {index + 1}
@@ -347,7 +347,7 @@ export function ReportDialog({
   return (
     <Modal title="Create a report" onClose={onClose} className="max-w-[37.5rem]">
       <p className="flex items-center gap-[var(--space-2)] text-body text-text-secondary">
-        <FileBarChart aria-hidden className="h-4 w-4 text-primary" />
+        <FileBarChart aria-hidden className="h-4 w-4 text-text-secondary" />
         {count} run{count === 1 ? '' : 's'} selected
         {fromArchive > 0 && `, ${fromArchive} from the archive`}
       </p>

@@ -48,14 +48,17 @@
   --page-light: #f5f5f5;
   --page-dark: #121212;
 
-  /* Brand — magenta-pink (primary), replacing 0068's indigo-blue (docs/DECISIONS.md, 0073) */
-  --magenta-light: #c2185b;
-  --magenta-light-hover: #9e1248;
-  --magenta-dark: #ff6ec7;
-  --magenta-dark-hover: #ff84c6;
-  /* Deeper, for fills and underlines only, not text: ~4.3:1 on the dark surfaces, matching
+  /* Brand — magenta-pink (primary), replacing 0068's indigo-blue (docs/DECISIONS.md, 0073).
+   * Hue shifted further from --status-red (0076): the original #c2185b sat only ~29° from
+   * red on the colour wheel, close enough to read as "error" under repeated small-dose use;
+   * this value sits ~50° away, same saturation/lightness otherwise. */
+  --magenta-light: #c21895;
+  --magenta-light-hover: #881168;
+  --magenta-dark: #ff70d9;
+  --magenta-dark-hover: #ff99e4;
+  /* Deeper, for fills and underlines only, not text: ~4.6:1 on the dark surfaces, matching
    * 0069's precedent for this token's old (indigo) value. */
-  --magenta-dark-strong: #f04c8d;
+  --magenta-dark-strong: #f547c7;
 
   /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
   --lime-light: #427000;
@@ -108,10 +111,10 @@
   --status-blue-tint-bg-dark: #152338; /* paired with --status-blue-dark */
 
   /* A light wash of the brand magenta: selected rows, the active tab's count. */
-  --magenta-tint-light: #fce9f0;
-  --magenta-tint-border-light: #f2c0d3;
-  --magenta-tint-dark: #3b1625;
-  --magenta-tint-border-dark: #732644;
+  --magenta-tint-light: #fce9f7;
+  --magenta-tint-border-light: #f2c0e4;
+  --magenta-tint-dark: #3b1631;
+  --magenta-tint-border-dark: #73265e;
 
   /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */
   --mark-amber: #f0a04b;

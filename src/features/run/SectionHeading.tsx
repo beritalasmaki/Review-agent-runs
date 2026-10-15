@@ -36,7 +36,7 @@ export function SectionHeading({
         className,
       )}
     >
-      <Icon aria-hidden className={cn('h-5 w-5 shrink-0 text-primary', iconClassName)} />
+      <Icon aria-hidden className={cn('h-5 w-5 shrink-0 text-text-primary', iconClassName)} />
       {children}
     </h2>
   )
