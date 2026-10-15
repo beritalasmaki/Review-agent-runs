@@ -39,6 +39,56 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-15 · Tabs section gets a white card
+
+**Goal**
+The user said 0076's propagation was still incomplete: "I'm talking about the tabs. And it
+still has grey background. It is not inside a white card like other elements." Give the
+Story/Evidence/All-steps tab section the same white card treatment as its sibling regions.
+
+**What changed**
+- `src/features/run/RunReviewPage.tsx` — the div wrapping `RunViewTabs` and the three
+  `TabsContent` blocks gains `rounded-lg border border-border-subtle bg-surface shadow-card`;
+  the `TabsContent` blocks moved into a new inner `px-[var(--space-5)] pb-[var(--space-5)]`
+  div.
+- `src/features/run/RunViewTabs.tsx` — sticky header background changes from `bg-bg` (grey)
+  to `bg-surface`, its `-mx-space-2 px-space-2` bleed replaced with `px-[var(--space-5)]`
+  (matching the new card's own padding) and a `rounded-t-lg` top.
+
+**Steps, in order**
+1. Read `RunReviewPage.tsx`'s grid layout and traced the tabs' render chain
+   (`RunViewTabs.tsx` → `TabsContent` → `StoryTimeline`/`EvidenceTab`/`StepsTab`) to confirm
+   no card styling existed anywhere in it, unlike `RunOverview`/`RunDetails`/`DecisionPanel`.
+2. Wrapped the tabs + content in the same card recipe `RunOverview` uses.
+3. Changed `RunViewTabs`'s sticky header from grey to white, with padding matching the new
+   card so the sticky strip reads as the card's own top rather than a separate grey band.
+4. Ran `npm run check` (typecheck, lint, format, theme-bridge, format-locale, 273 unit tests,
+   35 e2e tests incl. axe WCAG checks in both themes) — green.
+5. Screenshotted the Story, Evidence and All-steps tabs in both themes in a real browser to
+   confirm the card renders correctly and `StepsTab`'s own nested table card doesn't look like
+   a double border.
+
+**Why it was done this way**
+See `docs/DECISIONS.md` 0077. One shared card at the `RunReviewPage.tsx` call site, not three
+copies of the same card recipe inside each tab view, since the tabs and their content are one
+region (0052).
+
+**How to do this by hand**
+Not identical to the steps — by hand, open each sibling card (`RunOverview`) and copy its
+exact Tailwind class string onto the tabs wrapper, then adjust the sticky header's own
+background and padding to match by eye.
+
+**Verification**
+`npm run check` full suite green (273 unit tests, 35 e2e tests, unchanged counts — no test
+needed updating since no DOM text or roles changed, only wrapping divs and class strings).
+Manual Playwright screenshots of all three tab views, both themes, confirm the white card,
+the sticky header's continuity with it, and no double-border artifact around the steps table.
+
+**Open questions / next**
+None outstanding from this round.
+
+---
+
 ### 2026-10-15 · Propagating the design-canvas review to the real app
 
 **Goal**
