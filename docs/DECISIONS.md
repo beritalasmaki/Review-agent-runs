@@ -6,6 +6,47 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0074 · The pill tabs' active colour keys off `aria-selected`, not `data-state`
+
+**Context.** Rebuilding the run review screen as a Claude Design mockup (for the user to
+review the design against the live app) surfaced a real bug: in the live app, the active pill
+tab (Story/Evidence/All steps) never got its dark `text-text-primary` colour — it stayed the
+same grey as the inactive tabs, distinguishable only by the sliding white pill behind it, not
+by its own text. The mockup (built from the component's intended styling) showed the active
+tab in dark text, which is what exposed the gap.
+
+**Root cause.** `RunViewTabs.tsx` passes a `tooltip` prop to each pill trigger, which routes
+through `PillTrigger` (`components/Tabs.tsx`) into `<Tooltip><TooltipTrigger asChild>…`. Radix's
+`asChild` merges `TooltipTrigger`'s own props — including its `data-state` (the tooltip's
+open/closed state) — onto the same DOM node Radix Tabs already writes its own `data-state`
+(active/inactive) to. Once Tooltip's state settles after mount, its value wins: every pill tab
+reads `data-state="closed"`, permanently, regardless of which one is actually selected. The
+CSS selector `data-[state=active]:text-text-primary` (in `tabsTriggerVariants.pill`) and the
+sliding pill's own position query (`[role="tab"][data-state="active"]` in `components/
+Tabs.tsx`'s `place()`, plus its `MutationObserver`'s `attributeFilter`) all silently stopped
+matching anything. The `segmented` and `line` tab variants never wrap in a `Tooltip`, so they
+were never affected — this is specific to a pill tab with a `tooltip` prop, which today means
+exactly `RunViewTabs`.
+
+**Choice.** Switch both to `aria-selected="true"`, which Radix Tabs sets on its trigger as
+part of its own accessibility contract and which Tooltip has no reason to touch — nothing else
+in this composition writes to it. Three call sites changed: the trigger's CSS selector, the
+sliding pill's query, and the `MutationObserver`'s `attributeFilter`.
+
+**Consequence.** Verified in a real browser: the active tab's text is now correctly dark on
+load and after every switch (click or keyboard), and the sliding pill's position and opacity
+track correctly too — before this fix, a *second* tab switch risked the pill query also
+finding nothing (since `data-state` had already been corrupted by the time the `Mutation
+Observer` fired), which would have made the sliding pill disappear on the next click, not just
+leave the label mis-coloured; that risk is gone along with the text-colour bug. Full
+`npm run check` (274 unit tests, all 35 e2e tests including the keyboard-only pass that arrows
+between these exact tabs) passes unchanged. Worth knowing for any future `asChild`-wrapped
+Radix composition: two primitives stacked this way can silently collide on any attribute name
+they both happen to use, not just `data-state` — prefer a semantic, single-owner attribute
+(`aria-*`, here) over a styling-only one when two behaviours are composed onto one DOM node.
+
+---
+
 ## 0073 · A flat, true-neutral palette with a magenta-pink primary, replacing 0068's lavender
 
 **Context.** The user's reaction to the lavender-tinted palette 0068 introduced: it "looks
