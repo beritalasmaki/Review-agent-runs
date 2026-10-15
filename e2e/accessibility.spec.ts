@@ -15,6 +15,12 @@ const STATES: {
   /** This one state exercises the onboarding tour itself, so it needs the opposite of every
    * other state here: the tour's once-per-visit bypass (e2e/fixtures.ts) cleared, not kept. */
   skipTourBypass?: boolean
+  /** The welcome modal and the tour both open on their own, the instant the page loads — not
+   * from a mid-test click like every other dialog here — so the page's own `<h1>` is already
+   * `aria-hidden` behind the open overlay (correctly: Radix hides the rest of the page from
+   * assistive tech while a true modal sits over it) by the time the shared first check would
+   * run. Skips that one check for states where this is expected, not a real regression. */
+  skipInitialHeading?: boolean
 }[] = [
   { name: 'pending run, Story', url: '/?run=run-messy-pending' },
   {
@@ -32,10 +38,23 @@ const STATES: {
   { name: 'decided run, undo window open', url: '/?run=run-messy' },
   { name: 'My reviews', url: '/' },
   {
+    name: 'My reviews, welcome modal open',
+    url: '/',
+    skipTourBypass: true,
+    skipInitialHeading: true,
+    open: async (page) => {
+      await expect(
+        page.getByRole('heading', { name: 'Welcome to Review agent runs' }),
+      ).toBeVisible()
+    },
+  },
+  {
     name: 'My reviews, onboarding tour open',
     url: '/',
     skipTourBypass: true,
+    skipInitialHeading: true,
     open: async (page) => {
+      await page.getByRole('button', { name: 'Take the tour' }).click()
       await expect(page.getByText('Step 1 of 5')).toBeVisible()
     },
   },
@@ -181,7 +200,9 @@ for (const scheme of ['light', 'dark'] as const) {
           await page.addInitScript(() => sessionStorage.removeItem('ledger:tour-seen'))
         }
         await page.goto(state.url)
-        await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        if (!state.skipInitialHeading) {
+          await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+        }
         await state.open?.(page)
 
         const lightness = await backgroundLightness(page)
