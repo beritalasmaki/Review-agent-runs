@@ -361,12 +361,16 @@ export function ReviewsTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {runs.map((run) => {
+        {runs.map((run, index) => {
           const finished = isFinished(run)
           const archive = archiveState(run, manual, now)
           const updated = updatedAt(run)
           return (
-            <TableRow key={run.id} className="border-b border-border-subtle bg-surface hover:bg-bg">
+            <TableRow
+              key={run.id}
+              data-tour={index === 0 ? 'first-run-row' : undefined}
+              className="border-b border-border-subtle bg-surface hover:bg-bg"
+            >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />
               </TableCell>

@@ -254,7 +254,10 @@ export function RunReviewPage({
          * gap in under the overview.
          */}
         <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-start gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-5)] pb-[var(--space-7)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] md:px-[var(--space-6)] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
-          <div className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2">
+          <div
+            className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
+            data-tour="run-overview"
+          >
             <RunOverview run={run} />
           </div>
 
@@ -266,6 +269,7 @@ export function RunReviewPage({
                   ? 'The decision record'
                   : 'Your decision'
             }
+            data-tour="decision-panel"
             className="flex min-w-0 flex-col gap-[var(--space-4)] md:col-start-2 md:row-span-3 md:row-start-1 xl:col-start-3 xl:row-span-2"
           >
             {isStillRunning(run) ? (
@@ -306,7 +310,10 @@ export function RunReviewPage({
             />
           </div>
 
-          <div className="min-w-0 rounded-lg border border-border-subtle bg-surface shadow-card md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2">
+          <div
+            data-tour="run-tabs-view"
+            className="min-w-0 rounded-lg border border-border-subtle bg-surface shadow-card md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
+          >
             <RunViewTabs ref={tabsRef} run={run} />
             <div className="px-[var(--space-5)] pb-[var(--space-5)]">
               <TabsContent value="story">

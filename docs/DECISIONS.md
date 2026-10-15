@@ -6,6 +6,88 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0078 · A two-leg onboarding tour, spotlighting real elements through a true cutout
+
+**Context.** The user asked for onboarding: features explained one at a time, each
+highlighted while the rest of the page dims — a spotlight tour. Confirmed before building:
+the tour covers My reviews first, then continues onto the run review page once the visitor
+opens a run; it plays once per visit, the same mechanism as the existing welcome intro
+(`WelcomeIntro.tsx`, `intro.ts`), not once-ever; no replay affordance.
+
+**Two legs, eight steps.** Leg 1 (My reviews, 5 steps): the "needs your review" badge, the
+status tabs, the search/filter toolbar, the first run row (an invitation to click it), the
+Archive button. Leg 2 (the run page, 3 steps): the overview card, the Story/Evidence/All-steps
+tabs, "Your decision." Content follows `docs/spec-review-screen.md`'s voice rules.
+
+**New files.** `src/components/ui/popover.tsx` (a new shadcn/ui port, 0070's recipe — gives
+the step bubble real collision-aware positioning off a point that isn't a click trigger).
+`src/components/OnboardingTour.tsx` — the generic, product-agnostic engine (steps are just
+`{ id, selector, title, body }`; passes `components/README.md`'s "different product" test).
+`src/app/tour.ts` — sessionStorage sequencing, mirroring `intro.ts`'s shape. `src/lib/motion.ts`
+— `prefersReducedMotion()` extracted out of `intro.ts` so `OnboardingTour` (which cannot import
+from `app/`, by the dependency direction in `AGENTS.md`) can reuse the same real check instead
+of a second copy. `src/features/run/tourSteps.ts` — the eight steps' copy and `data-tour`
+selectors, kept out of the generic component.
+
+**The cutout is four separate dimmed rectangles around the target, not one masked overlay.**
+Nothing ever covers the spotlighted element, so it stays genuinely clickable and focusable —
+load-bearing for the "click this row" step, which invites exactly that.
+
+**Targets are wired with `data-tour="…"` attributes**, not refs threaded through
+`ReviewsTable`/`DecisionPanel` — the least invasive option, and consistent with the
+attribute-hook pattern already in the codebase (`data-testid`, shadcn's own `data-slot`).
+
+**Keyboard model: Tab cycles only the step bubble's own Back/Skip/Next buttons** (a small
+manual wrap, not Radix Dialog's `aria-modal` trap). A keyboard user reaches the live page the
+same way a `Modal.tsx` dialog already works — by dismissing first (Escape or Skip) — rather
+than tabbing through a dimmed page mid-tour. Considered letting Tab reach the live element
+directly, to mirror the mouse behaviour exactly; rejected once drafted, because nothing
+distinguishes a dimmed-but-still-tabbable element from a usable one for a keyboard user, and
+there is no clean way to `inert` everything *except* one descendant.
+
+**Reduced motion shows the tour, just without transitions** — unlike the purely decorative
+welcome intro, which skips outright. `prefersReducedMotion()` governs `scrollIntoView`'s
+`behavior`; `motion-reduce:` Tailwind variants (the same pattern `dialog.tsx`/`tooltip.tsx`
+already use) cut everything else to instant.
+
+**A step's target may not be in the DOM yet, not just never.** My reviews fetches its runs
+asynchronously (`lib/api.ts`'s default 400ms delay); the first build of this tour checked a
+step's target exactly once and, finding nothing (because the page was still loading),
+cascaded through every remaining step as "missing" and ended itself before the real page ever
+rendered — caught by screenshotting the real app, not by the unit tests, which don't have that
+race. Fixed with a `MutationObserver` that waits for the target to appear, up to
+`missingTimeoutMs` (3s default, overridable — a test passes a few ms instead of faking timers),
+before concluding it is genuinely absent (a real possibility too: responsive layout, a step
+whose region isn't always rendered) and skipping ahead.
+
+**The cutout's rect is tied to the step it was measured for**, not just "the latest
+measurement" — found the same way, by looking at a real screenshot: advancing steps quickly
+showed the right title with the *previous* step's cutout for one frame, because the old rect
+stayed in state until the new one replaced it. `rectStepId` gates which rect renders, so a step
+never shows with a stale cutout, however briefly.
+
+**Leg 1 continuing to Leg 2 isn't only "reached the last step."** Step 4 is literally an
+invitation to click the spotlighted row — on the common path a visitor never reaches step 5 or
+the last step's "Done" at all. `OnboardingTour` listens for `pagehide` and calls
+`onDismiss('navigated')` if it is still open when the page unloads; `App.tsx` treats that the
+same as `'finished'` on Leg 1 (continue to Leg 2) and the same as anything else elsewhere (mark
+the whole tour seen) — an explicit Skip or Escape still always ends it outright.
+
+**Sequencing (`App.tsx`).** Intro, then Leg 1 once the intro is no longer in the way, then Leg
+2 on a run page if `shouldShowListTour()`/`shouldShowRunTour()` (`tour.ts`) say so.
+`ledger:tour-leg` carries "Leg 1 finished, show Leg 2 next" across the run page's full page
+load — there is no client router, so React state alone cannot survive that navigation.
+
+**Consequence.** `e2e/fixtures.ts` bypasses the tour for every other spec, the same way it
+already bypasses the intro; `e2e/accessibility.spec.ts` gains one state that clears just that
+bypass; `e2e/onboarding-tour.spec.ts` covers the golden path (Leg 1 → click the row → Leg 2),
+Skip, Escape, and the keyboard model. `npm run check` — typecheck, lint, format, theme-bridge,
+format-locale, 283 unit tests, 41 e2e tests — green. Real-browser screenshots of every Leg 1
+step, Leg 2's first step, both themes, confirm the cutout, the stale-rect fix, and the
+Leg 1 → Leg 2 handoff.
+
+---
+
 ## 0077 · The Story/Evidence/Steps tabs get a white card, matching their siblings
 
 **Context.** After 0076 shipped, the user said the fix was still incomplete: "I'm talking

@@ -40,6 +40,10 @@ and `lib` can be tested on its own with no UI at all.
   next to a colour — docs/DECISIONS.md, 0043), the class-name merger every shadcn/ui component expects at the
   `utils` alias in `components.json`. It lives here because that is where shadcn looks, and
   because `components/` is allowed to import from `lib`.
+- **`motion.ts`** — `prefersReducedMotion()`, a real `matchMedia` check. Shared by `app/intro.ts`
+  (the welcome intro skips itself outright under reduced motion) and
+  `components/OnboardingTour.tsx` (the onboarding tour still shows, just without transitions) —
+  it lives here, not in either caller, because `components/` cannot import from `app/`.
 - **`actors.ts`** — `isSystemActor`, a heuristic (no dedicated data-model field exists) for
   telling a person's name from a system's name-and-version, used to choose a person/system
   icon next to `evaluatedBy`/`waiver.by`/`decision.by`.

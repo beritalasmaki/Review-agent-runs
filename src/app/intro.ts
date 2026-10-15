@@ -1,3 +1,5 @@
+import { prefersReducedMotion } from '../lib/motion'
+
 /**
  * The welcome intro's once-per-visit logic and timing (WelcomeIntro.tsx, docs/DECISIONS.md
  * 0048 and 0049). A visit is a browser session: the intro plays again whenever someone opens
@@ -36,13 +38,6 @@ export function markIntroSeen() {
   } catch {
     // Nothing to do: without storage the intro simply can't remember having run.
   }
-}
-
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
 }
 
 /** Whether this page load should show the intro: not yet seen in this visit, and motion is OK. */
