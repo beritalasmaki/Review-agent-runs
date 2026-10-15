@@ -8,7 +8,14 @@ import { expect, test } from './fixtures'
  * light and dark. Not the full audit AGENTS.md first planned — see 0059 for what this does
  * not cover.
  */
-const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> }[] = [
+const STATES: {
+  name: string
+  url: string
+  open?: (page: Page) => Promise<void>
+  /** This one state exercises the onboarding tour itself, so it needs the opposite of every
+   * other state here: the tour's once-per-visit bypass (e2e/fixtures.ts) cleared, not kept. */
+  skipTourBypass?: boolean
+}[] = [
   { name: 'pending run, Story', url: '/?run=run-messy-pending' },
   {
     name: 'pending run, Evidence',
@@ -24,6 +31,14 @@ const STATES: { name: string; url: string; open?: (page: Page) => Promise<void> 
   { name: 'blocked run', url: '/?run=run-blocked' },
   { name: 'decided run, undo window open', url: '/?run=run-messy' },
   { name: 'My reviews', url: '/' },
+  {
+    name: 'My reviews, onboarding tour open',
+    url: '/',
+    skipTourBypass: true,
+    open: async (page) => {
+      await expect(page.getByText('Step 1 of 5')).toBeVisible()
+    },
+  },
   {
     name: 'My reviews, approved tab with filters open and a run selected',
     url: '/',
@@ -162,6 +177,9 @@ for (const scheme of ['light', 'dark'] as const) {
       test(`${state.name}: no WCAG A/AA violations, contrast included`, async ({ page }) => {
         // Reduced motion, so nothing is mid-transition when axe reads colours.
         await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
+        if (state.skipTourBypass) {
+          await page.addInitScript(() => sessionStorage.removeItem('ledger:tour-seen'))
+        }
         await page.goto(state.url)
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
         await state.open?.(page)
