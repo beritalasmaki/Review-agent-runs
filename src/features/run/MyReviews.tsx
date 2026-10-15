@@ -438,6 +438,7 @@ function ReviewsBoard({
           <div className="flex items-center gap-[var(--space-3)]">
             <Badge
               variant="warning"
+              data-tour="needs-review-badge"
               className="px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
             >
               <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
@@ -447,6 +448,7 @@ function ReviewsBoard({
               variant="outline"
               onClick={() => openView('archive')}
               aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
+              data-tour="archive-button"
               className="gap-[var(--space-2)]"
             >
               <Archive aria-hidden className="h-4 w-4" />
@@ -490,52 +492,56 @@ function ReviewsBoard({
           className="rounded-lg border border-border-subtle bg-surface shadow-card"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
-            <TabsList variant="line" label="Run types">
-              {TABS.map(({ value, label, mark, icon: Icon }) => (
-                <TabsTrigger key={value} variant="line" value={value}>
-                  {mark ? (
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full text-mark-glyph',
-                        mark,
-                      )}
-                    >
-                      <Icon className="h-3 w-3" />
-                    </span>
-                  ) : (
-                    <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
-                  )}
-                  {label}
-                  <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">
-                    {counts[value]}
-                  </Badge>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <div data-tour="run-tabs">
+              <TabsList variant="line" label="Run types">
+                {TABS.map(({ value, label, mark, icon: Icon }) => (
+                  <TabsTrigger key={value} variant="line" value={value}>
+                    {mark ? (
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full text-mark-glyph',
+                          mark,
+                        )}
+                      >
+                        <Icon className="h-3 w-3" />
+                      </span>
+                    ) : (
+                      <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
+                    )}
+                    {label}
+                    <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">
+                      {counts[value]}
+                    </Badge>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
             <TabsContent value={tab}>
-              <ReviewsToolbar
-                searchLabel="Search runs"
-                searchPlaceholder="Search runs, also in the archive"
-                filters={filters}
-                onFilters={patchFilters}
-                open={filtersOpen}
-                onToggleOpen={() => setFiltersOpen((open) => !open)}
-                timeLabel="Time"
-                timeOptions={MAIN_TIMES}
-                type={{
-                  value: tab,
-                  counts: false,
-                  onChange: (value) => chooseTab(value as ReviewTab),
-                  options: [...TABS.filter((t) => t.value !== 'all'), TABS[4]].map((t) => ({
-                    value: t.value,
-                    label: t.value === 'all' ? 'All run types' : t.label,
-                  })),
-                }}
-                people={people}
-                resultLabel={`Showing ${tableRuns.length} of ${plural(active.length, 'active run')}`}
-                onClear={hasFilters ? clearFilters : undefined}
-              />
+              <div data-tour="search-filters">
+                <ReviewsToolbar
+                  searchLabel="Search runs"
+                  searchPlaceholder="Search runs, also in the archive"
+                  filters={filters}
+                  onFilters={patchFilters}
+                  open={filtersOpen}
+                  onToggleOpen={() => setFiltersOpen((open) => !open)}
+                  timeLabel="Time"
+                  timeOptions={MAIN_TIMES}
+                  type={{
+                    value: tab,
+                    counts: false,
+                    onChange: (value) => chooseTab(value as ReviewTab),
+                    options: [...TABS.filter((t) => t.value !== 'all'), TABS[4]].map((t) => ({
+                      value: t.value,
+                      label: t.value === 'all' ? 'All run types' : t.label,
+                    })),
+                  }}
+                  people={people}
+                  resultLabel={`Showing ${tableRuns.length} of ${plural(active.length, 'active run')}`}
+                  onClear={hasFilters ? clearFilters : undefined}
+                />
+              </div>
               {selectionBar(
                 'You can select approved and declined runs, to make a report or to archive them.',
                 true,

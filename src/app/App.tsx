@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { OnboardingTour } from '../components/OnboardingTour'
 import { MyReviews } from '../features/run/MyReviews'
 import { RunReviewPage } from '../features/run/RunReviewPage'
+import { LIST_TOUR_STEPS, RUN_TOUR_STEPS } from '../features/run/tourSteps'
 import { shouldShowIntro } from './intro'
+import { markListLegFinished, markTourSeen, shouldShowListTour, shouldShowRunTour } from './tour'
 import { WelcomeIntro } from './WelcomeIntro'
 
 /*
@@ -17,6 +20,12 @@ import { WelcomeIntro } from './WelcomeIntro'
  * The welcome intro (docs/DECISIONS.md, 0048, 0049, 0071) is laid over the page, not in place
  * of it, and only over the home page: a reviewer who lands straight on a run — a shared link, a
  * notification — gets straight to work, with no decorative "Made by" credit in the way.
+ *
+ * The onboarding tour (docs/DECISIONS.md, 0078) follows it: Leg 1 plays on My reviews once the
+ * intro is no longer in the way. Reaching its last step, or the visitor navigating away mid-
+ * tour (its own spotlighted run row is a real link — clicking it, as the step invites, is the
+ * common way Leg 1 ends, not just reaching "Done"), records that Leg 2 should continue the
+ * next time a run page loads.
  */
 function currentParams() {
   const params = new URLSearchParams(window.location.search)
@@ -32,6 +41,23 @@ const runHref = (id: string) => `?run=${encodeURIComponent(id)}`
 export default function App() {
   const { runId, delayMs } = currentParams()
   const [showIntro, setShowIntro] = useState(shouldShowIntro)
+  // On the home page the tour waits for the intro to finish first, so the two never overlap —
+  // it starts out false here whenever the intro is about to show, and `WelcomeIntro`'s own
+  // `onDone` turns it on. On a run page there is no intro to wait for.
+  const [showTour, setShowTour] = useState(() =>
+    runId ? shouldShowRunTour() : !shouldShowIntro() && shouldShowListTour(),
+  )
+
+  function dismissTour(reason: 'skip' | 'escape' | 'finished' | 'navigated') {
+    setShowTour(false)
+    // Leg 1 reaching its own last step, or the visitor navigating away mid-tour (its own
+    // spotlighted run row is a real link), is what continues the tour rather than ending it:
+    // Leg 2 then plays the next time a run page loads, if the visitor opens one. An explicit
+    // Skip or Escape always ends it outright, even on Leg 1.
+    if ((reason === 'finished' || reason === 'navigated') && !runId) markListLegFinished()
+    else markTourSeen()
+  }
+
   return (
     <>
       <main className="min-h-screen bg-bg">
@@ -41,7 +67,17 @@ export default function App() {
           <MyReviews runHref={runHref} options={delayMs ? { delayMs } : undefined} />
         )}
       </main>
-      {showIntro && !runId && <WelcomeIntro onDone={() => setShowIntro(false)} />}
+      {showIntro && !runId && (
+        <WelcomeIntro
+          onDone={() => {
+            setShowIntro(false)
+            setShowTour(shouldShowListTour())
+          }}
+        />
+      )}
+      {showTour && (
+        <OnboardingTour steps={runId ? RUN_TOUR_STEPS : LIST_TOUR_STEPS} onDismiss={dismissTour} />
+      )}
     </>
   )
 }
