@@ -39,49 +39,33 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
-### 2026-10-15 · The code-reviewer agent, and onboarding planning
+### 2026-10-15 · Onboarding planning; a code-reviewer agent added, then removed
 
 **Goal**
-Add the user's code-reviewer agent to the repository, set up for this project.
+Plan a cockatiel onboarding guide, and try a code-reviewer agent in the repository.
 
 **What changed**
-- `.claude/agents/code-reviewer.md`: the user's agent definition. The `{{…}}` placeholders
-  under STANDING CONTEXT are filled from AGENTS.md; the rest is as supplied, formatted by
-  Prettier.
-- `.claude/review-profiles/react-ts-vite.md`: new. The stack checklist the agent reads.
-- `AGENTS.md`: "How to work" asks for the review before merging.
-- `docs/DECISIONS.md`: 0071.
-- Outside the repository (not committed): a plan for a cockatiel onboarding guide in the
-  welcome intro and a short tour, in the user's Claude Doc "Cockatiel onboarding plan", and
-  a first vector drawing test of the bird. Nothing from it is in the code yet.
+- No lasting change to the code or instructions. A commit added the user's code-reviewer
+  agent (`.claude/agents/code-reviewer.md`), a review checklist
+  (`.claude/review-profiles/react-ts-vite.md`), a line in AGENTS.md and DECISIONS 0071. The
+  user decided against using a subagent, and the next commit removed all of it.
+- Outside the repository (not committed): the plan for a cockatiel guide in the welcome
+  intro and a short tour, in the user's Claude Doc "Cockatiel onboarding plan", and a first
+  vector drawing test of the bird.
 
 **Steps, in order**
-1. Copied the uploaded `code-reviewer.md` to `.claude/agents/code-reviewer.md`.
-2. Replaced the two placeholder lines under STANDING CONTEXT with this project's conventions
-   and threat model, taken from AGENTS.md.
-3. Wrote `.claude/review-profiles/react-ts-vite.md`, the folder the agent looks in.
-4. `npm ci`, then `npx prettier --write .claude/agents/code-reviewer.md`. Prettier pulled
-   "Otherwise just deliver the report." into the last list item, which changed its meaning,
-   so a blank line was added before it.
-5. Added the review step to AGENTS.md and wrote DECISIONS 0071.
+1. Added the agent, its checklist, the AGENTS.md line and DECISIONS 0071; committed and pushed.
+2. Removed them: `git rm -r .claude/agents .claude/review-profiles`, and restored AGENTS.md,
+   DECISIONS.md and README.md from the commit before.
 
 **Why it was done this way**
-A reviewer with blank placeholders checks generic rules only. Filling them from AGENTS.md
-makes it check this project's own rules. Trade-off in DECISIONS 0071.
-
-**How to do this by hand**
-Create `.claude/agents/<name>.md`: a front-matter block (`name`, `description`, `tools`) and
-the instructions below it. Or run `/agents` in Claude Code and follow the prompts. Start a
-new session so it loads. Ask for it by name ("use the code-reviewer agent on this branch"),
-or let Claude call it when the description matches.
+The user chose not to use a subagent. The removal keeps the history: the earlier commit
+still shows what was tried.
 
 **Verification**
-- `npx prettier --check .claude/`: "All matched files use Prettier code style!"
-- `npm run format:check`: "All matched files use Prettier code style!"
-- The agent itself was not run: it loads in the next session.
+`npm run format:check`: "All matched files use Prettier code style!"
 
 **Open questions / next**
-- Run the reviewer on the first real change, and adjust the profile from what it gets wrong.
 - Onboarding: Stage A prototype of the intro and tour, outside the repository first.
 
 ### 2026-09-29 · Every control on shadcn/ui

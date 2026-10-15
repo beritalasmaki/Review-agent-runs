@@ -119,7 +119,7 @@ npm run build-storybook   # static Storybook build
 - **What is being built:** [`docs/spec-review-screen.md`](./docs/spec-review-screen.md)
 - **The rules the repository is built to** (stack, structure, dependency direction, design
   system, definition of done): [`AGENTS.md`](./AGENTS.md)
-- **Every choice with a trade-off**, 71 so far: [`docs/DECISIONS.md`](./docs/DECISIONS.md)
+- **Every choice with a trade-off**, 70 so far: [`docs/DECISIONS.md`](./docs/DECISIONS.md)
 - **What was done in each work session:** [`docs/WORKLOG.md`](./docs/WORKLOG.md)
 - **What belongs in each folder:** the `README.md` in each folder under `src/`
 
