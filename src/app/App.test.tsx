@@ -29,7 +29,10 @@ describe('App', () => {
     window.history.pushState({}, '', `/?run=${runClean.id}`)
     render(<App />)
     expect(await screen.findByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
-    expect(screen.getByRole('link', { name: 'My reviews' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Back to the reviews list' })).toHaveAttribute(
+      'href',
+      '/',
+    )
   })
 
   it('loads the run named by ?run=', async () => {

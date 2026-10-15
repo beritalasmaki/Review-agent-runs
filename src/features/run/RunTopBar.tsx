@@ -6,13 +6,13 @@ import { cn } from '../../lib/utils'
 
 /**
  * The page's own bar, directly under the host platform's navigation: a breadcrumb back to the
- * reviewer's list, and at its right end what is open before a decision (0053). What the app is for, "Review
- * agent runs", comes first, at the far left (0058). The three views of the run sit above the view they switch, in
- * `RunViewTabs` (docs/DECISIONS.md, 0052). No product logo, no main menu — this page sits
- * inside another platform that owns those (docs/DECISIONS.md, 0042); the app's
- * description is plain text, not a product logo. A long initiative name
- * truncates with the full name on hover; the revision chip next to it never truncates, so two
- * runs of the same initiative stay distinguishable.
+ * reviewer's list, and at its right end what is open before a decision (0053). No product logo,
+ * no app name, no main menu — this page sits inside another platform that owns those
+ * (docs/DECISIONS.md, 0042, 0076): the breadcrumb link is the only wayfinding this bar needs.
+ * The three views of the run sit above the view they switch, in `RunViewTabs`
+ * (docs/DECISIONS.md, 0052). A long initiative name truncates with the full name on hover; the
+ * revision chip next to it never truncates, so two runs of the same initiative stay
+ * distinguishable.
  *
  * Sticky at the top of the page, so the way back is always one click away
  * (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so headings scrolled to,
@@ -27,22 +27,10 @@ export interface RunTopBarProps {
   ref?: Ref<HTMLDivElement>
 }
 
-/** What the app is for, at the bar's far left, before the breadcrumb, with a thin rule
- * between them (docs/DECISIONS.md, 0058). Plain text, not a product logo (0042). From md up
- * only: on a phone the breadcrumb needs the room, or the run's name truncates to a letter. */
-function AppName() {
-  return (
-    <span className="hidden shrink-0 border-r border-border-subtle pr-[var(--space-4)] text-meta font-semibold font-heading whitespace-nowrap text-text-primary md:inline">
-      Review agent runs
-    </span>
-  )
-}
-
 export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
   return (
     <div ref={ref} className="sticky top-0 z-20 border-b border-border-subtle bg-bg">
       <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
-        <AppName />
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1 md:flex-none">
           <ol className="flex min-w-0 items-center gap-[var(--space-2)] text-meta font-normal font-body text-text-secondary">
             <li className="shrink-0">
@@ -51,7 +39,7 @@ export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
                 className="inline-flex items-center gap-[var(--space-1)] whitespace-nowrap text-primary no-underline underline-offset-2 hover:underline"
               >
                 <ChevronLeft aria-hidden className="h-4 w-4" />
-                My reviews
+                Back to the reviews list
               </a>
             </li>
             <li aria-hidden className="text-border">

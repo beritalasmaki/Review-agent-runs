@@ -74,7 +74,7 @@ test('a decline made after undoing an approval stays declined, in My reviews too
   await dialog.getByRole('button', { name: 'Reject run' }).click()
   await expect(page.getByRole('heading', { name: 'Rejected' })).toBeVisible()
 
-  await page.getByRole('link', { name: 'My reviews' }).click()
+  await page.getByRole('link', { name: 'Back to the reviews list' }).click()
   await page.getByRole('tab', { name: /Declined/ }).click()
   await page.getByRole('button', { name: /^Decision details: Move refund processing/ }).click()
   await expect(page.getByRole('dialog')).toContainText('The refund rounding is wrong.')

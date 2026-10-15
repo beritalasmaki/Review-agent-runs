@@ -216,11 +216,4 @@ describe('RunReviewPage', () => {
     await user.click(screen.getByRole('button', { name: 'Show the step →' }))
     expect(screen.getByRole('tab', { name: 'All 200 steps', selected: true })).toBeVisible()
   })
-
-  it('names what the app is for in the top bar', async () => {
-    render(<RunReviewPage runId={runMessyPending.id} getRunOptions={{ delayMs: 0 }} />)
-    await screen.findByRole('heading', { level: 1 })
-    expect(screen.getByText('Review agent runs')).toBeVisible()
-    expect(screen.queryByText(/By Berit/)).not.toBeInTheDocument()
-  })
 })
