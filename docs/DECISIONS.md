@@ -6,6 +6,30 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0071 · Changes get a read-only review from a separate code-reviewer agent
+
+**Context.** Code here is written by an agent and reviewed by the user, who designs but does
+not read diffs for a living. The user supplied a reviewer agent definition and asked for it
+to be added to the repository.
+
+**Options.** (a) Keep reviewing by hand only. (b) Add the reviewer as a generic agent, with
+its template placeholders left open. (c) Add it with this project's rules written into it,
+plus a checklist for this stack.
+
+**Choice.** (c). `.claude/agents/code-reviewer.md` is the user's definition, with its
+standing context filled from AGENTS.md (conventions, dependency direction, tokens, shadcn,
+content rules, and a threat model for a static site with fictional data).
+`.claude/review-profiles/react-ts-vite.md` is the checklist it reads for this stack. The
+reviewer has read and search tools and Bash for running checks, and no edit tools: it
+reports, and the implementing session fixes.
+
+**Consequence.** AGENTS.md now asks for this review before merging. The profile repeats
+rules that live in AGENTS.md and the spec, so a rule change there must be copied into the
+profile, or the reviewer checks against an old rule. Agent files load when a session
+starts, so a session already running does not see a new or changed agent.
+
+---
+
 ## 0070 · Every control on shadcn/ui
 
 **Context.** AGENTS.md has always listed shadcn/ui in the stack. It was set up early

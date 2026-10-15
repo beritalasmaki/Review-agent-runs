@@ -95,6 +95,10 @@ extractable into their own packages later, so they must not import from `feature
 - **Check `.claude/skills/` before repeated task types.** `new-component` for any new
   component, `worklog-entry` for the end of every session. Follow the skill rather than
   reconstructing the steps from memory each time — that consistency is the point.
+- **Get an independent review before merging.** The `code-reviewer` agent in
+  `.claude/agents/` reviews a finished change read-only and reports findings; it never
+  edits. Its stack checklist is `.claude/review-profiles/react-ts-vite.md`. Fix or answer
+  every Blocker and High finding before merge (docs/DECISIONS.md, 0071).
 - **Small commits.** One logical change per commit, conventional commit messages
   (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`).
 - **Update `docs/WORKLOG.md` at the end of every session** — see the `worklog-entry` skill.
