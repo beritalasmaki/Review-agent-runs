@@ -39,6 +39,59 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-15 · Pill tabs' active colour: `aria-selected`, not `data-state`
+
+**Goal**
+The user asked to recreate the run review screen in a Claude Design canvas so we could review
+the design together. Rebuilding it from the component's intended styling surfaced a real bug:
+the live app's active pill tab never actually showed its dark active-state text colour.
+
+**What changed**
+- `src/components/ui/tabs.tsx` — `tabsTriggerVariants.pill`'s active-colour selector changes
+  from `data-[state=active]` to `aria-selected`.
+- `src/components/Tabs.tsx` — `PillTabsList`'s sliding-pill `place()` query and its
+  `MutationObserver`'s `attributeFilter` both change from `data-state` to `aria-selected`, for
+  the same reason; the doc comment above it updated to match.
+
+**Steps, in order**
+1. Took a real-browser screenshot and read computed styles off the live app's pill tabs
+   (`?run=run-messy-pending`) to compare against the design mockup — found the "active" tab's
+   text colour was grey, same as the inactive ones, not the dark colour either the component's
+   own CSS rule or the mockup intended.
+2. Found the cause by reading `RunViewTabs.tsx` (passes a `tooltip` prop to each trigger) and
+   `components/Tabs.tsx`'s `PillTrigger` (wraps a tooltipped trigger in Radix's
+   `Tooltip`/`TooltipTrigger asChild`) — confirmed via `getAttribute('data-state')` in the
+   browser that every pill tab reads `"closed"` (Tooltip's own state), never `"active"`/
+   `"inactive"` (Tabs' state), regardless of which is actually selected.
+3. Swapped both consumers to `aria-selected`, which only Radix Tabs writes.
+4. Re-checked in the browser: active tab text now correctly dark on load and after clicking
+   another tab; the sliding pill's position and opacity still track correctly too.
+5. Ran the full `npm run check` (274 unit tests, 35 e2e tests including the keyboard-only pass
+   that arrows between these exact tabs) — all green, unchanged.
+
+**Why it was done this way**
+See `docs/DECISIONS.md` 0074 for the root cause (two Radix primitives composed via `asChild`
+colliding on the same attribute name) and why `aria-selected` is the safer attribute to key
+styling off in this specific composition.
+
+**How to do this by hand**
+Not identical to the steps — by hand, open the app, inspect the active tab's text colour in
+devtools, and read its `data-state` vs `aria-selected` attributes directly to see the mismatch.
+
+**Verification**
+`npm run check` full suite green. Manual check: active pill tab's text is dark on load and
+after every click/keyboard switch; the sliding pill's position and visibility track correctly
+through repeated switches (previously an unverified risk — see 0074 for why this could have
+made the pill disappear on a second switch, not just mis-colour the label).
+
+**Open questions / next**
+The design-canvas review (color usage logic, spacing-scale discipline, whitespace/grouping in
+the decision panel, dropping the "Review agent runs" label) is still in progress in the Design
+artifact, not yet ready to propagate to the app — this entry covers only the one concrete bug
+that review surfaced.
+
+---
+
 ### 2026-10-14 · A flat, true-neutral palette with a magenta-pink primary
 
 **Goal**
