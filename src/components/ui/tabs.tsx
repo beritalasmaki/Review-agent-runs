@@ -57,7 +57,12 @@ const tabsTriggerVariants = cva(
         pill: [
           't-tab inline-flex gap-[var(--space-2)] rounded-full px-[var(--space-4)] py-[var(--space-2)]',
           'text-meta font-semibold font-heading leading-none text-text-secondary',
-          'hover:text-text-primary data-[state=active]:text-text-primary focus-visible:outline-offset-2',
+          // aria-selected, not data-[state=active]: a pill trigger with a tooltip is wrapped in
+          // Radix's Tooltip via `asChild` (components/Tabs.tsx's PillTrigger), which ends up
+          // writing its own data-state (tooltip open/closed) onto the same DOM node — it wins,
+          // so a selector keyed on data-state never matches once Tooltip's state settles.
+          // aria-selected is Radix Tabs' own attribute; nothing else touches it.
+          'hover:text-text-primary aria-selected:text-text-primary focus-visible:outline-offset-2',
         ],
         // No -mb-px onto the list's rule: the list scrolls sideways, which clips anything below
         // its edge, and that clipped the selected tab's underline to nothing. No colour

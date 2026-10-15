@@ -91,9 +91,9 @@ export function TabsList({ children, className, variant = 'segmented', label }: 
  * (src/styles/transitions.css, docs/DECISIONS.md 0047). The active tab is measured and its
  * position and width written onto one pill behind the labels; CSS owns the tween. The first
  * placement, and any placement after a resize (a font finishing loading, a wrap), happens
- * without a transition, so the pill never slides in from the left edge. Watching `data-state`
- * means the pill follows every way a tab can become active: click, Enter, Space, or a caller
- * changing `value`.
+ * without a transition, so the pill never slides in from the left edge. Watching `aria-selected`
+ * (not `data-state` — see the comment in `place()` below) means the pill follows every way a
+ * tab can become active: click, Enter, Space, or a caller changing `value`.
  */
 function PillTabsList({
   children,
@@ -114,7 +114,12 @@ function PillTabsList({
 
     function place(animate: boolean) {
       if (!list || !pill) return
-      const active = list.querySelector<HTMLElement>('[role="tab"][data-state="active"]')
+      // aria-selected, not data-state: a pill trigger with a tooltip is wrapped in Radix's
+      // Tooltip via `asChild` (PillTrigger below), which writes its own data-state (tooltip
+      // open/closed) onto the same DOM node as Tabs' data-state (active/inactive) — once it
+      // settles, a query keyed on data-state finds nothing, and the pill vanishes on the next
+      // switch. aria-selected is Radix Tabs' own attribute; nothing else touches it.
+      const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
       if (!active) {
         pill.style.opacity = '0'
         return
@@ -142,7 +147,7 @@ function PillTabsList({
 
     place(false)
     const mutations = new MutationObserver(() => place(true))
-    mutations.observe(list, { attributes: true, attributeFilter: ['data-state'], subtree: true })
+    mutations.observe(list, { attributes: true, attributeFilter: ['aria-selected'], subtree: true })
     const resizes =
       typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => place(false))
     resizes?.observe(list)
