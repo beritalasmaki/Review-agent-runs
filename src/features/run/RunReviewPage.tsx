@@ -306,17 +306,19 @@ export function RunReviewPage({
             />
           </div>
 
-          <div className="min-w-0 md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2">
+          <div className="min-w-0 rounded-lg border border-border-subtle bg-surface shadow-card md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2">
             <RunViewTabs ref={tabsRef} run={run} />
-            <TabsContent value="story">
-              <StoryTimeline run={run} onShowSteps={showStep} />
-            </TabsContent>
-            <TabsContent value="evidence">
-              <EvidenceTab run={run} onOpenStep={showStep} />
-            </TabsContent>
-            <TabsContent value="steps">
-              <StepsTab run={run} focusEventId={focusEventId} />
-            </TabsContent>
+            <div className="px-[var(--space-5)] pb-[var(--space-5)]">
+              <TabsContent value="story">
+                <StoryTimeline run={run} onShowSteps={showStep} />
+              </TabsContent>
+              <TabsContent value="evidence">
+                <EvidenceTab run={run} onOpenStep={showStep} />
+              </TabsContent>
+              <TabsContent value="steps">
+                <StepsTab run={run} focusEventId={focusEventId} />
+              </TabsContent>
+            </div>
           </div>
         </div>
       </div>

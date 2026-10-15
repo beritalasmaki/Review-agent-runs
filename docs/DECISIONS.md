@@ -6,6 +6,41 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0077 · The Story/Evidence/Steps tabs get a white card, matching their siblings
+
+**Context.** After 0076 shipped, the user said the fix was still incomplete: "I'm talking
+about the tabs. And it still has grey background. It is not inside a white card like other
+elements." `RunOverview`, `RunDetails` and `DecisionPanel` ("Your decision") each supply their
+own `rounded-lg border border-border-subtle bg-surface shadow-card` card styling. The
+Story/Evidence/All-steps tab section never had an equivalent wrapper anywhere in its chain
+(`RunReviewPage.tsx` → `RunViewTabs.tsx`/`TabsContent` → `StoryTimeline`/`EvidenceTab`/
+`StepsTab`) — it sat directly on the page's grey page background (`bg-bg`), a longstanding
+structural gap, not a regression from 0076's work.
+
+**Options.** (a) Add `bg-surface`/border/shadow to each of `StoryTimeline`, `EvidenceTab` and
+`StepsTab` individually. (b) Wrap `RunViewTabs` plus the three `TabsContent` blocks in one
+shared card at the `RunReviewPage.tsx` call site, matching `RunOverview`'s exact recipe.
+
+**Choice.** (b). The three views share one tab strip and are conceptually one region (0052: the
+tabs sit directly above the one view they switch); one shared card avoids three near-identical
+copies of the same card recipe and keeps the sticky tab strip visually continuous with the
+content scrolling under it.
+
+**Consequence.** `RunReviewPage.tsx`'s tabs wrapper div gains
+`rounded-lg border border-border-subtle bg-surface shadow-card`, with the three `TabsContent`
+blocks moved into an inner `px-[var(--space-5)] pb-[var(--space-5)]` div (matching
+`RunOverview`'s own `space-5` padding). `RunViewTabs.tsx`'s sticky header switches from
+`bg-bg` (page-grey, with a `-mx-space-2`/`px-space-2` bleed) to `bg-surface` with
+`px-[var(--space-5)]` and a `rounded-t-lg` top, so the sticky strip reads as the top of the
+same card rather than a grey strip floating over it. `StepsTab`'s own table already carried
+its own `rounded-lg border bg-surface shadow-card`; nested one level inside the new outer
+card, it still reads as a distinct table region, not a double border — checked by eye in both
+themes. `npm run check` (typecheck, lint, format, theme-bridge, format-locale, 273 unit tests,
+35 e2e tests including axe WCAG checks) green; screenshotted the Story, Evidence and All-steps
+tabs in both themes to confirm.
+
+---
+
 ## 0076 · The design-canvas review propagates: colour usage, grouping, the top bar label
 
 **Context.** The Claude Design mockup (0073's palette, reviewed together) led to concrete
