@@ -53,7 +53,7 @@ function StepNumber({ children }: { children: React.ReactNode }) {
   return (
     <span
       aria-hidden
-      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-caption font-semibold font-body leading-none text-primary-foreground"
+      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-text-primary text-caption font-semibold font-body leading-none text-surface"
     >
       {children}
     </span>
@@ -137,20 +137,24 @@ export function DecisionPanel({
   return (
     <section
       aria-labelledby="decision-heading"
-      className="flex flex-col gap-[var(--space-4)] rounded-lg border border-border bg-surface shadow-card p-[var(--space-4)]"
+      className="flex flex-col gap-[var(--space-6)] rounded-lg border border-border bg-surface shadow-card p-[var(--space-4)]"
     >
-      <div className="flex flex-col gap-[var(--space-1)]">
-        <SectionHeading id="decision-heading" icon={ShieldCheck}>
-          Your decision
-        </SectionHeading>
-        <p className="text-meta font-normal font-body text-text-secondary">
-          Made by you, never by the agent. You can undo it for {UNDO_WINDOW_MINUTES} minutes.
-        </p>
-      </div>
+      <div className="flex flex-col gap-[var(--space-4)]">
+        <div className="flex flex-col gap-[var(--space-1)]">
+          <SectionHeading id="decision-heading" icon={ShieldCheck}>
+            Your decision
+          </SectionHeading>
+          <p className="text-meta font-normal font-body text-text-secondary">
+            Made by you, never by the agent. You can undo it for {UNDO_WINDOW_MINUTES} minutes.
+          </p>
+        </div>
 
-      <div className="flex flex-col gap-[var(--space-2)]">
-        <span className="text-caption font-normal font-body text-text-secondary">Deciding as</span>
-        <ActorName name={reviewerName} className="self-start text-body font-medium" />
+        <div className="flex flex-col gap-[var(--space-2)]">
+          <span className="text-caption font-normal font-body text-text-secondary">
+            Deciding as
+          </span>
+          <ActorName name={reviewerName} className="self-start text-body font-medium" />
+        </div>
       </div>
 
       <fieldset

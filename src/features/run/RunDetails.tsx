@@ -96,7 +96,7 @@ export function RunDetails({ run, className, tabIndex, ref }: RunDetailsProps) {
         id="run-details-heading"
         className="flex items-center gap-[var(--space-2)] text-item-title font-semibold font-heading text-text-primary"
       >
-        <Info aria-hidden className="h-4 w-4 text-primary" />
+        <Info aria-hidden className="h-4 w-4 text-text-primary" />
         Run details
       </h2>
 
