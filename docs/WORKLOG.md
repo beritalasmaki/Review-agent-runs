@@ -39,6 +39,72 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-15 · A two-leg onboarding tour
+
+**Goal**
+Build the onboarding the user asked for: features explained one at a time, each highlighted
+while the rest of the page dims — on My reviews, continuing onto a run page once the visitor
+opens one, once per visit.
+
+**What changed**
+- `src/components/ui/popover.tsx` — new shadcn/ui port (Radix Popover), restyled onto tokens.
+- `src/components/OnboardingTour.tsx` (+ `.stories.tsx`, `.test.tsx`) — the generic spotlight
+  tour engine: a four-rectangle dim cutout (not a masked overlay, so the target stays
+  clickable), a `Popover`-anchored step bubble, Back/Skip/Next, a `MutationObserver` that waits
+  for a step's target to appear before giving up on it, Escape and `pagehide` dismissal.
+- `src/app/tour.ts` — `ledger:tour-seen`/`ledger:tour-leg` sessionStorage sequencing, mirroring
+  `intro.ts`.
+- `src/lib/motion.ts` — `prefersReducedMotion()`, extracted from `intro.ts` so both it and
+  `OnboardingTour` can use the same check without `components/` importing from `app/`.
+- `src/features/run/tourSteps.ts` — the eight steps' copy and `data-tour` selectors.
+- `src/features/run/MyReviews.tsx`, `ReviewsTable.tsx`, `RunReviewPage.tsx` — `data-tour="…"`
+  attributes on the eight target elements.
+- `src/app/App.tsx` — sequences intro → Leg 1 → Leg 2.
+- `src/components/README.md`, `src/app/README.md`, `src/lib/README.md` — documented.
+- `e2e/fixtures.ts` — bypasses the tour for every other spec, like the intro already is.
+- `e2e/accessibility.spec.ts` — one state that clears just that bypass.
+- `e2e/onboarding-tour.spec.ts` — golden path, Skip, Escape, the keyboard model.
+
+**Steps, in order**
+1. Planned in Plan Mode: confirmed scope (both pages, once per visit, no replay) with the user
+   before building.
+2. Built the generic `OnboardingTour` engine first, with a mock page in Storybook and unit
+   tests, before wiring it into the real app.
+3. Wired the eight `data-tour` targets and `App.tsx`'s sequencing.
+4. Screenshotted the real app in a browser — found two bugs the unit tests couldn't see (both
+   need real, asynchronously-loaded page content to reproduce): the tour raced My reviews'
+   async data fetch and gave up on every step before the page ever rendered; the cutout lagged
+   a step behind the step bubble's text for one frame when advancing quickly. Fixed both (see
+   `docs/DECISIONS.md`, 0078) and added regression tests/screenshots for each.
+5. Found a third issue the same way: clicking step 4's own spotlighted row (its literal
+   invitation) navigates away before the tour ever reaches its last step, so Leg 2 never got
+   recorded. Fixed with a `pagehide` listener.
+6. Ran the full `npm run check` suite and a real-browser pass, both themes, light and dark,
+   confirming the whole Leg 1 → Leg 2 handoff.
+
+**Why it was done this way**
+See `docs/DECISIONS.md`, 0078, for the full reasoning: the four-rectangle cutout, the soft
+(not hard) focus trap, `data-tour` over threaded refs, and all three bugs found by screenshotting
+the real app rather than relying on unit tests alone.
+
+**How to do this by hand**
+Not identical to the steps — by hand, open each of the eight target elements, note their
+bounding box, and sketch the dim/cutout/bubble layout in Figma before building the engine.
+
+**Verification**
+`npm run check` full suite green: typecheck, lint, format, theme-bridge, format-locale, 283
+unit tests (up from 273), 41 e2e tests (up from 35) — including the 4 new onboarding-tour
+specs and 2 new accessibility states, both themes. Real-browser Playwright screenshots of
+every Leg 1 step and Leg 2's first step, light and dark, confirm the cutout tracks the right
+element, the ring and dim layer render correctly in both themes, and the Leg 1 → Leg 2 handoff
+works when the spotlighted row is clicked directly (not via the tour's own controls).
+
+**Open questions / next**
+None outstanding from this round. The original "help me plan onboarding" ask from earlier in
+the project is now built, not just planned.
+
+---
+
 ### 2026-10-15 · Tabs section gets a white card
 
 **Goal**
