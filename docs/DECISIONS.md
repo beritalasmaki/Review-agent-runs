@@ -6,6 +6,36 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0075 · The favicon becomes the signature mark, on a flat grey swatch
+
+**Context.** The user asked to replace the favicon with an attached image: an orange,
+hand-drawn cursive squiggle on a flat grey background. The image file itself never reached a
+path this session could read (checked the usual upload/scratch locations; nothing newer than
+the previous turn's own screenshot appeared) — but the colour (a vivid orange) and the shape
+(a cursive squiggle/flourish) match `SignatureMark.tsx`'s artwork exactly: the same mark
+already used in the welcome intro, which draws in `--signature-orange` (`#e8590c`) before
+resolving to black. That is strong enough circumstantial evidence (exact colour family, same
+shape category, already-established precedent as "the" piece of real supplied artwork in this
+app) to act on without the file, flagged openly to the user rather than silently assumed.
+
+**Choice.** Replaced `public/favicon.svg` (the "mustache heart," 0065) with the exact,
+unmodified `SignatureMark` path data — not redrawn — filled in `--signature-orange`, centred
+in a 200×200 rounded square (`rx="40"`) filled `#646464` (`--neutral-8`/`text-secondary`, an
+existing token, not a new grey invented for this one file). The original artwork's 178×101
+viewBox doesn't fit a square icon directly, so it's scaled (0.8989×) and translated to sit
+centred with even padding, the same "fit the wide mark into a square box" problem
+`WelcomeIntro.tsx`'s `bottomAligned` prop solves differently (bottom-aligned there, centred
+here, since a favicon has no "title block" to sit above). `index.html`'s existing
+`<link rel="icon" type="image/svg+xml" href="/favicon.svg">` needed no change.
+
+**Consequence.** Verified by screenshotting the SVG directly in a real browser: an orange
+cursive squiggle, clearly legible even at small sizes, on a flat mid-grey rounded square —
+matching the supplied reference image by eye. If the actual uploaded image turns out to differ
+from this assumption once it's visible, redoing this is cheap: one file, no other code depends
+on its exact contents beyond the existing `<link>` tag.
+
+---
+
 ## 0074 · The pill tabs' active colour keys off `aria-selected`, not `data-state`
 
 **Context.** Rebuilding the run review screen as a Claude Design mockup (for the user to
