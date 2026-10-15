@@ -6,6 +6,43 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0079 · The tour is offered, not sprung: a welcome modal gates it
+
+**Context.** 0078's tour auto-started the moment the welcome intro finished — no explanation of
+what the product is, who built it, or why, and no choice in the matter. The user asked for a
+"Welcome to Review agent runs" step between the two: say what the screen is and why it exists,
+then let the visitor choose to take the tour or skip it. Explicitly not attributed to any one
+company — Berit noticed teams adopting agents faster than anyone could watch what those agents
+were doing, and built this to test an idea for that, not for a client.
+
+**Choice.** `src/app/WelcomeModal.tsx`, built on the existing `components/Modal.tsx` (a real
+Dialog, focus trap, Escape to close, no click-outside-to-close — the same recipe every other
+confirmation dialog in the app already uses), not a new overlay primitive. Two short paragraphs
+— what the screen does, then who built it and why, in that order, since "what is this" is the
+question a brand-new visitor actually has first — and two real buttons, "Take the tour" and
+"Skip, I'll look around myself." Lives in `app/`, not `components/`, because its copy is
+specific to this product (same reasoning as `WelcomeIntro.tsx`'s own placement).
+
+**Sequencing.** Inserted between the intro and Leg 1, reusing `tour.ts`'s existing
+sessionStorage state rather than adding a new flag: the modal shows whenever
+`shouldShowListTour()` would previously have auto-started the tour, "Take the tour" opens Leg 1
+exactly as before, and "Skip" (the button, Escape, or any other way the dialog closes) calls
+`markTourSeen()` directly — ending onboarding outright, the same as skipping the tour itself,
+not just postponing it. Leg 2 (a run page) has no modal of its own: it is already a
+continuation of a choice made on My reviews, so it still opens automatically, same as before.
+
+**Consequence.** `App.tsx`'s `showTour` no longer auto-initialises on the home page — only the
+modal's "Take the tour" sets it. `tour.ts`'s `TOUR_SEEN_KEY` is now exported (`App.test.tsx`
+needs it to isolate its own tests from the modal, the same way it already isolates them from
+the intro via `INTRO_SEEN_KEY`). `e2e/onboarding-tour.spec.ts`'s tests now open the modal
+first; `e2e/accessibility.spec.ts` gains a welcome-modal state and a `skipInitialHeading` flag,
+since the modal (like the tour) opens the instant the page loads, correctly hiding the page's
+`<h1>` from assistive tech behind it (Radix's own sibling-hiding for an open dialog) before the
+shared per-state check that every other state relies on would run. `npm run check` — 291 unit
+tests, 44 e2e tests — green.
+
+---
+
 ## 0078 · A two-leg onboarding tour, spotlighting real elements through a true cutout
 
 **Context.** The user asked for onboarding: features explained one at a time, each
