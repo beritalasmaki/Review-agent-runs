@@ -9,8 +9,13 @@ import { Slot } from 'radix-ui'
  * place of shadcn's defaults. The colour rules still hold (src/styles/README.md): the decision
  * actions are never the brand colour, and a red action is an outline, never a red fill.
  *
- * No colour transition, on purpose: one on the line tabs made keyboard tests drop key presses
- * (docs/WORKLOG.md, 2026-09-24).
+ * No colour transition on most variants, on purpose: one on the line tabs made keyboard tests
+ * drop key presses (docs/WORKLOG.md, 2026-09-24) — but that was a transition keyed to rapid
+ * *automatic-activation* state changes from the keyboard. `outline`'s own hover fade (plus a
+ * small grow) is keyed to `:hover`/`:focus-visible` only, pseudo-classes the mouse and keyboard
+ * focus set directly, never a cascading React re-render from arrow-key navigation elsewhere, so
+ * it cannot reproduce that bug — the same reasoning transitions.css's "Button shine" already
+ * relies on for `default`/`ghost` (0083).
  */
 const buttonVariants = cva(
   [
@@ -26,9 +31,10 @@ const buttonVariants = cva(
         /** The page's main action: Approve and release, Review, Undo, Create report. A light
          * stripe sweeps across it on hover/focus — see transitions.css, "Button shine". */
         default: 'btn-shine border-text-primary bg-text-primary text-surface hover:opacity-85',
-        /** The quieter action beside it: Request changes, Cancel, Filters. */
+        /** The quieter action beside it: Request changes, Cancel, Filters. A plain fade on
+         * hover/focus (not the shine — it read poorly here), with a small grow. */
         outline:
-          'btn-shine border-border bg-surface text-text-primary hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
+          'border-border bg-surface text-text-primary transition duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:scale-[1.02] hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
         /** Reject run: a red outline, never a red fill (src/styles/README.md). */
         destructive:
           'border-status-fail bg-surface text-status-fail-tint-fg hover:bg-status-fail-tint-bg active:bg-status-fail-tint-bg',

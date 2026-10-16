@@ -255,10 +255,11 @@
  * 2026-09-24 — a colour transition on the tabs dropped arrow-key presses). A CSS-only diagonal
  * sweep gets the same "shiny" read without either cost: it is keyed to `:hover`/`:focus-visible`
  * — pseudo-classes the mouse sets, never a per-keystroke React re-render — and needs no script.
- * Applied to the three button variants that read as "primary/secondary/tertiary" (0084): `default`
- * (filled), `outline` (bordered) and `ghost` (text-only, filled on hover). Not `destructive` (a
- * red shine would read as an alert, not an affordance) or `link` (already animates its own
- * underline). Scoped via a plain `.btn-shine` class on those three variants (button.tsx) rather
+ * Applied to the `default` (filled) and `ghost` (text-only, filled on hover) button variants.
+ * Not `outline` — tried there too (0084), but read poorly on a bordered, lightly-filled button;
+ * it has its own plain hover fade plus a small grow instead (button.tsx). Not `destructive`
+ * (a red shine would read as an alert, not an affordance) or `link` (already animates its own
+ * underline). Scoped via a plain `.btn-shine` class on those two variants (button.tsx) rather
  * than the `data-slot`/`data-variant` attributes `Button` already carries: a `Button` rendered
  * `asChild` inside another Radix primitive (e.g. the Filters button, inside a
  * `CollapsibleTrigger`) has its own `data-slot` overwritten by the wrapper, the same class of
