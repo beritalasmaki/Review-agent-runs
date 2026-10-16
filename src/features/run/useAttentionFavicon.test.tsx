@@ -7,7 +7,7 @@ describe('useAttentionFavicon', () => {
   beforeEach(() => {
     link = document.createElement('link')
     link.rel = 'icon'
-    link.setAttribute('href', '/favicon.svg')
+    link.setAttribute('href', '/favicon.png')
     document.head.append(link)
   })
   afterEach(() => link.remove())
@@ -18,14 +18,14 @@ describe('useAttentionFavicon', () => {
     })
     expect(link.getAttribute('href')).toBe(ATTENTION_FAVICON)
     rerender({ active: false })
-    expect(link.getAttribute('href')).toBe('/favicon.svg')
+    expect(link.getAttribute('href')).toBe('/favicon.png')
     rerender({ active: true })
     unmount()
-    expect(link.getAttribute('href')).toBe('/favicon.svg')
+    expect(link.getAttribute('href')).toBe('/favicon.png')
   })
 
   it('leaves the icon alone when not active', () => {
     renderHook(() => useAttentionFavicon(false))
-    expect(link.getAttribute('href')).toBe('/favicon.svg')
+    expect(link.getAttribute('href')).toBe('/favicon.png')
   })
 })
