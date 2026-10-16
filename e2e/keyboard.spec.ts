@@ -131,27 +131,26 @@ test('My reviews, keyboard only', async ({ page }) => {
   // The row is gone; focus went to its table, not to <body>.
   await expect(page.getByRole('table', { name: /runs$/ })).toBeFocused()
 
-  // The archive, then restore, all from the keyboard.
+  // Into the archive, all from the keyboard: it is read-only (0085), so there is no restore.
   await keys.press('Shift+Tab')
   await tabTo(page, /^Archive, \d+ archived runs?$/)
   await keys.press('Enter')
   await expect(page.getByRole('heading', { level: 1, name: 'Archive' })).toBeFocused()
-  await tabTo(page, /^Restore “Move refund/)
-  await keys.press('Enter')
-  await expect(page.getByRole('dialog', { name: 'Restore to My reviews?' })).toBeVisible()
-  await tabTo(page, /^Restore$/)
-  await keys.press('Enter')
-  await expect(page.getByText('By you')).toBeHidden()
+  await expect(page.getByText('By you')).toBeVisible()
 
-  // A dialog opens with Enter and closes with Escape, giving focus back.
-  await tabTo(page, /^My reviews$/, 60)
-  await keys.press('Enter')
-  await tabTo(page, /^Decision details: Move refund/, 60)
+  // A dialog opens with Enter and closes with Escape, giving focus back — checked here, on the
+  // run that just moved into the archive.
+  await tabTo(page, /^Decision details: Move refund/)
   await keys.press('Enter')
   await expect(page.getByRole('dialog')).toBeVisible()
   await keys.press('Escape')
   await expect(page.getByRole('dialog')).toBeHidden()
   await expect(page.getByRole('button', { name: /^Decision details: Move refund/ })).toBeFocused()
+
+  // Back to the list.
+  await tabTo(page, /^My reviews$/, 60)
+  await keys.press('Enter')
+  await expect(page.getByRole('heading', { level: 1, name: 'My reviews' })).toBeFocused()
 })
 
 test('the theme switch works from the keyboard and is remembered', async ({ page }) => {

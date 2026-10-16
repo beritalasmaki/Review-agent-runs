@@ -74,46 +74,35 @@ describe('MyReviews', () => {
     expect(sortByRun.closest('th')).toHaveAttribute('aria-sort', 'ascending')
   })
 
-  it('archives a finished run, and restores it from the archive', async () => {
+  it('archives a finished run, by hand', async () => {
     const user = await renderLoaded()
     await user.click(screen.getByRole('tab', { name: /Approved/ }))
     await user.click(screen.getByRole('button', { name: /^Archive “Move refund processing/ }))
     // It asks first, and Cancel changes nothing.
     const ask = screen.getByRole('dialog', { name: 'Move to the archive?' })
-    expect(ask).toHaveTextContent(/restore it from the archive for 7 days/)
+    expect(ask).toHaveTextContent(/record stays exactly as it is/)
     await user.click(within(ask).getByRole('button', { name: 'Cancel' }))
     expect(screen.getByRole('tab', { name: /Approved/ })).toHaveTextContent('5')
     await user.click(screen.getByRole('button', { name: /^Archive “Move refund processing/ }))
     await user.click(screen.getByRole('button', { name: 'Move to the archive' }))
     expect(await screen.findByRole('region', { name: /Notifications/ })).toHaveTextContent(
-      /Archived “Move refund processing.*restore it for 7 days/,
+      'Archived “Move refund processing to the new payment gateway”.',
     )
     expect(screen.getByRole('tab', { name: /Approved/ })).toHaveTextContent('4')
 
     await user.click(screen.getByRole('button', { name: 'Archive, 5 archived runs' }))
     expect(screen.getByRole('heading', { level: 1, name: 'Archive' })).toHaveFocus()
     expect(screen.getByText('By you')).toBeVisible()
-    await user.click(screen.getByRole('button', { name: /^Restore “Move refund processing/ }))
-    expect(screen.getByRole('dialog', { name: 'Restore to My reviews?' })).toHaveTextContent(
-      /7 days left to restore it/,
-    )
-    await user.click(screen.getByRole('button', { name: 'Restore' }))
-    expect(screen.queryByText('By you')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'My reviews' }))
-    expect(screen.getByRole('tab', { name: /Approved/ })).toHaveTextContent('5')
   })
 
-  it('keeps old runs in the archive: one can still be restored, the rest are locked', async () => {
+  it('the archive has no select boxes and no restore: read-only except for a new run', async () => {
     const user = await renderLoaded()
     await user.click(screen.getByRole('button', { name: 'Archive, 4 archived runs' }))
     expect(screen.getAllByText('Automatically, after 6 months')).toHaveLength(4)
-    expect(screen.getByRole('button', { name: /^Restore “Add Klarna/ })).toBeVisible()
-    expect(screen.getAllByRole('img', { name: 'Restore locked' })).toHaveLength(3)
-
-    await user.click(screen.getByRole('button', { name: /^Restore “Add Klarna/ }))
-    await user.click(screen.getByRole('button', { name: 'Restore' }))
-    await user.click(screen.getByRole('button', { name: 'My reviews' }))
-    expect(screen.getByRole('button', { name: 'Archive, 3 archived runs' })).toBeVisible()
+    expect(screen.queryByRole('checkbox', { name: /^Select/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Restore/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: 'Restore locked' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /^Request a new run/ }).length).toBeGreaterThan(0)
   })
 
   it("shows a run's decision details from its own data", async () => {

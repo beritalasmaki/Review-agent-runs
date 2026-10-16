@@ -39,7 +39,6 @@ import type {
 } from '../../lib/reviews'
 import {
   ARCHIVE_AFTER_MONTHS,
-  RESTORE_DAYS,
   archiveState,
   countByTab,
   inTimeRange,
@@ -63,7 +62,6 @@ import {
   DecisionDetailsDialog,
   NewRunDialog,
   ReportDialog,
-  RestoreConfirmDialog,
 } from './ReviewDialogs'
 import type { ReportFormat } from './ReviewDialogs'
 import { StageSteps } from './ReviewParts'
@@ -76,12 +74,12 @@ import { downloadCsvReport, openPdfReport } from './reportExport'
  * "My reviews" — the runs assigned to the reviewer (docs/DECISIONS.md, 0060, built from the
  * Claude Design handoff "My Reviews"). Tabs by run type; search, filters and sorting; the
  * runs still in progress below the table; an archive, where finished runs go after six months
- * or by hand and can be restored for seven days; a report on selected runs; and a request for
- * a new run to fix a mistake.
+ * or by hand, read-only (0085); a report on selected runs; and a request for a new run to fix
+ * a mistake.
  *
- * There is no backend: archiving, restoring and new-run requests change this page's own state
- * only, and are gone after a reload, like decisions (README, "Try it"). Reports are real files,
- * made in the browser from the runs' data.
+ * There is no backend: archiving and new-run requests change this page's own state only, and
+ * are gone after a reload, like decisions (README, "Try it"). Reports are real files, made in
+ * the browser from the runs' data.
  */
 export interface MyReviewsProps {
   runHref: (id: string) => string
@@ -196,7 +194,7 @@ const ARCHIVE_TIMES = MAIN_TIMES.filter((t) =>
 )
 
 type Dialog =
-  | { type: 'details' | 'newrun' | 'restore'; id: string }
+  | { type: 'details' | 'newrun'; id: string }
   | { type: 'archive'; ids: string[] }
   | { type: 'report' }
   | null
@@ -235,8 +233,6 @@ function ReviewsBoard({
     dir: 'desc',
   })
   const [manual, setManual] = useState<ManualArchive>({})
-  // Runs brought back from the archive: they stay in My reviews even past the six-month rule.
-  const [restored, setRestored] = useState<ReadonlySet<string>>(new Set())
   const [requested, setRequested] = useState<ReadonlySet<string>>(new Set())
   const [dialog, setDialog] = useState<Dialog>(null)
   const [progOpen, setProgOpen] = useState(true)
@@ -263,7 +259,7 @@ function ReviewsBoard({
     target?.focus()
   }, [dialog])
 
-  const isArchived = (run: Run) => !restored.has(run.id) && archiveState(run, manual, now).archived
+  const isArchived = (run: Run) => archiveState(run, manual, now).archived
   const matches = (run: Run) =>
     matchesQuery(run, filters.query) &&
     inTimeRange(updatedAt(run), filters.time, now, { from: filters.from, to: filters.to }) &&
@@ -329,25 +325,11 @@ function ReviewsBoard({
   function archive(ids: string[]) {
     const at = new Date().toISOString()
     setManual((current) => ({ ...current, ...Object.fromEntries(ids.map((id) => [id, at])) }))
-    setRestored((current) => new Set([...current].filter((id) => !ids.includes(id))))
     setSelected(new Set())
     const only = ids.length === 1 ? byId(ids[0]) : undefined
-    notify(
-      `${only ? `Archived “${only.initiative}”` : `${plural(ids.length, 'run')} archived`}. You can restore ${
-        ids.length === 1 ? 'it' : 'them'
-      } for ${RESTORE_DAYS} days.`,
-    )
+    notify(only ? `Archived “${only.initiative}”.` : `${plural(ids.length, 'run')} archived.`)
     // The row is gone: focus goes to the table it left, not to <body>.
     focusAfterDialog.current = 'table'
-  }
-  function restore(id: string) {
-    setManual((current) =>
-      Object.fromEntries(Object.entries(current).filter(([key]) => key !== id)),
-    )
-    setRestored((current) => new Set(current).add(id))
-    const run = byId(id)
-    notify(`Restored “${run?.initiative ?? id}” to My reviews.`)
-    focusAfterDialog.current = 'heading'
   }
   function createReport(report: {
     name: string
@@ -404,22 +386,18 @@ function ReviewsBoard({
       </div>
     )
 
-  const archiveTable = (selectable: boolean) => (
+  const archiveTable = () => (
     <ArchiveTable
       runs={archivedRuns}
       caption="Archived runs"
       runHref={runHref}
       sort={aSort}
       onSort={(key, dir) => setASort({ key, dir })}
-      selectable={selectable}
-      selected={selected}
-      onToggle={toggle}
       manual={manual}
       now={now}
       requestedRuns={requested}
       onDetails={(id) => setDialog({ type: 'details', id })}
       onNewRun={(id) => setDialog({ type: 'newrun', id })}
-      onRestore={(id) => setDialog({ type: 'restore', id })}
     />
   )
 
@@ -479,9 +457,8 @@ function ReviewsBoard({
           </PageTitle>
           <p className="max-w-[55rem] text-body text-text-secondary">
             Approved and declined runs move here automatically {ARCHIVE_AFTER_MONTHS} months after
-            the decision. You can also archive them yourself from My reviews. For {RESTORE_DAYS}{' '}
-            days after archiving you can restore a run. After that it is locked, and you can request
-            a new run instead.
+            the decision. You can also archive them yourself from My reviews. The record here never
+            changes; request a new run to fix a mistake.
           </p>
         </div>
       )}
@@ -632,7 +609,7 @@ function ReviewsBoard({
           aria-label="Also found in the archive"
           className="rounded-lg border border-border-subtle bg-surface shadow-card"
         >
-          {archiveTable(false)}
+          {archiveTable()}
         </section>
       )}
 
@@ -663,8 +640,7 @@ function ReviewsBoard({
             people={people}
             resultLabel={`Showing ${archivedRuns.length} of ${plural(archived.length, 'archived run')}`}
           />
-          {selectionBar('Reports can include runs from the archive and from My reviews.', false)}
-          {archiveTable(true)}
+          {archiveTable()}
         </section>
       )}
 
@@ -697,17 +673,6 @@ function ReviewsBoard({
           onConfirm={() => {
             setDialog(null)
             archive(dialog.ids)
-          }}
-        />
-      )}
-      {dialog?.type === 'restore' && byId(dialog.id) && (
-        <RestoreConfirmDialog
-          run={byId(dialog.id)!}
-          daysLeft={archiveState(byId(dialog.id)!, manual, now).restoreDaysLeft}
-          onClose={() => setDialog(null)}
-          onConfirm={() => {
-            setDialog(null)
-            restore(dialog.id)
           }}
         />
       )}
