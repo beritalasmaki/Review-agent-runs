@@ -26,7 +26,6 @@ import type { ManualArchive, SortDirection, SortKey } from '../../lib/reviews'
 import {
   archiveState,
   formatArchivesIn,
-  formatReviewStage,
   isFinished,
   openItemCount,
   reviewStage,
@@ -36,7 +35,7 @@ import {
 import type { Run } from '../../lib/types'
 import { cn } from '../../lib/utils'
 import { ActorName } from './ActorName'
-import { ReviewStatusPill, RunCell, StageSteps } from './ReviewParts'
+import { ReviewStatusPill, RunCell } from './ReviewParts'
 
 /**
  * The My reviews table (docs/DECISIONS.md, 0060): one row per run, with its type, where it
@@ -201,31 +200,6 @@ function OpenItemsCell({ run }: { run: Run }) {
   )
 }
 
-function StageCell({ run }: { run: Run }) {
-  const stage = reviewStage(run)
-  if (stage) {
-    return (
-      <div className="flex flex-col gap-[var(--space-2)]">
-        <StageSteps stage={stage} />
-        <span
-          className={cn(
-            'text-meta leading-snug font-body',
-            stage === 'review'
-              ? 'font-semibold text-status-waived-tint-fg'
-              : 'font-medium text-text-primary',
-          )}
-        >
-          {formatReviewStage(stage)}
-        </span>
-      </div>
-    )
-  }
-  if (reviewStatus(run) === 'requested') {
-    return <span className="text-meta font-medium text-text-primary">Agent is making changes</span>
-  }
-  return <span className="text-meta text-text-secondary">Decided</span>
-}
-
 export function DateCell({ date, sub }: { date: string; sub: ReactNode }) {
   return (
     <div className="flex flex-col gap-[var(--space-1)] whitespace-nowrap">
@@ -252,9 +226,7 @@ export interface ReviewsTableProps {
 }
 
 const INFO = {
-  type: 'Where the run stands overall: Pending, Requested for change, Declined or Approved.',
-  stage:
-    'Pending runs go through three steps: the agent works, the checks run, then a person reviews. Runs that are not ready yet are listed below the table.',
+  status: 'Where the run stands overall: Pending, Requested for change, Declined or Approved.',
   open: 'Things the run could not finish or check. You must look at each one before you approve.',
   requester: 'The person who asked the agent to make this change.',
   updated:
@@ -291,7 +263,6 @@ export function ReviewsTable({
         <col className="w-9" />
         <col />
         <col className="w-44" />
-        <col className="w-44" />
         <col className="w-28" />
         <col className="w-48" />
         <col className="w-36" />
@@ -307,24 +278,13 @@ export function ReviewsTable({
             {...header}
           />
           <ColumnHeader
-            label="Run type"
-            info={INFO.type}
+            label="Status"
+            info={INFO.status}
             sort={{
               key: 'type',
               first: 'asc',
               firstText: 'Pending first',
               otherText: 'Approved first',
-            }}
-            {...header}
-          />
-          <ColumnHeader
-            label="Where it is now"
-            info={INFO.stage}
-            sort={{
-              key: 'stage',
-              first: 'asc',
-              firstText: 'Needs your review first',
-              otherText: 'Decided first',
             }}
             {...header}
           />
@@ -388,9 +348,6 @@ export function ReviewsTable({
               </TableCell>
               <TableCell className={CELL}>
                 <ReviewStatusPill status={reviewStatus(run)} />
-              </TableCell>
-              <TableCell className={CELL}>
-                <StageCell run={run} />
               </TableCell>
               <TableCell className={CELL}>
                 <OpenItemsCell run={run} />

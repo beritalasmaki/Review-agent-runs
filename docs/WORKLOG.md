@@ -39,6 +39,57 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-16 · Drop the redundant "Where it is now" column; rename "Run type" to "Status"
+
+**Goal**
+The user noticed "Where it is now" never added information beyond "Run type" in the My
+reviews table, and asked for a better name for "Run type" too.
+
+**What changed**
+- `src/features/run/ReviewsTable.tsx` — `StageCell` and its `ColumnHeader` removed, along
+  with its `colgroup` width entry and `INFO.stage`; "Run type"'s `ColumnHeader` label becomes
+  "Status" (`INFO.type` renamed to `INFO.status`, text unchanged).
+- `src/lib/reviews.ts` — `'stage'` dropped from `SortKey`, its `COMPARE.stage` entry and the
+  now-unused `stageRank` helper removed.
+- `e2e/keyboard.spec.ts` — the info-tip keyboard-focus test updated for the new label.
+
+**Steps, in order**
+1. Delegated a research pass (an `Explore` subagent) to map every consumer of the column
+   before touching anything: whether `'stage'` as a sort key was dead code once the column's
+   own sort button went away, which imports in `ReviewsTable.tsx` would become unused, every
+   other literal reference to "Where it is now" / "Run type" across tests/e2e/docs, whether
+   `reviewStage`/`formatReviewStage`/`StageSteps` are used anywhere else (they are — the
+   "still in progress" fold and the decision-details dialog), and whether any prior
+   `docs/DECISIONS.md` entry specifically justified keeping both columns (none does).
+2. Removed the column and its sort machinery per that map; renamed the other column's label.
+3. Fixed the one e2e test the research flagged as needing it.
+4. Ran the full `npm run check` suite, then a real-browser screenshot pass, both themes and
+   the "All runs" tab (where the status pill actually varies row to row), to confirm the
+   layout still reads well with one fewer column.
+
+**Why it was done this way**
+See `docs/DECISIONS.md`, 0080: every row left in the table (runs still in progress are already
+folded out separately) sits at exactly one stage per status, so the column was 100% redundant,
+not just usually so — worth removing outright rather than keeping it behind a condition.
+
+**How to do this by hand**
+Not identical to the steps — by hand, open the table with each tab selected and confirm by
+eye that "Where it is now" never shows two different values in the same tab, the same check
+that justified removing it here.
+
+**Verification**
+`npm run check` full suite green: typecheck, lint, format, theme-bridge, format-locale, 291
+unit tests, 44 e2e tests (both counts unchanged — the removed code had no dedicated tests of
+its own). Real-browser Playwright screenshots of the Pending and "All runs" tabs, both themes,
+confirm the column is gone, "Status" reads correctly, and the remaining columns absorb the
+freed width cleanly.
+
+**Open questions / next**
+The Archive table has its own, separate "Run type" column, untouched by this round — the user
+may want the same rename there for consistency, not done since it wasn't asked for.
+
+---
+
 ### 2026-10-15 · A welcome modal gates the onboarding tour
 
 **Goal**
