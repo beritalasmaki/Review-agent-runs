@@ -6,6 +6,43 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0080 · My reviews drops "Where it is now"; "Run type" becomes "Status"
+
+**Context.** The user noticed "Where it is now" was never carrying information beyond what
+the "Run type" column already said: runs still in progress (agent working, checks running)
+are already filtered out of the table into their own "still in progress" fold below it
+(docs/DECISIONS.md, 0061), so every row left in the table is already at its type's one
+settled stage — "Needs your review" for every Pending row, "Agent is making changes" for every
+Requested-for-change row, "Decided" for every Declined/Approved row. Within any single tab
+every row showed the identical value; in "All runs" it just re-derived what the status pill
+already said. Separately, "Run type" was a misnomer for what it actually shows — the column's
+own info tip already called it "where the run stands overall," a status, not a category of
+run.
+
+**Choice.** Removed the "Where it is now" column and its `StageCell` outright, rather than
+keeping it for the "All runs" tab only (a run's status implies its in-table stage one-to-one
+here, so a conditional column would have added complexity for zero new information — a run
+that could be in a different stage despite the same status is exactly the case the
+"still in progress" fold already carries separately, below the table). Renamed "Run type" to
+"Status" — plain, short, matches the info tip's own wording. This departs from the Claude
+Design handoff's own column set (docs/DECISIONS.md, 0060's "built as designed" baseline) on
+this one point; nothing else in that handoff is touched.
+
+**Consequence.** `src/lib/reviews.ts`: `'stage'` dropped from `SortKey`, its `COMPARE.stage`
+entry and the now-fully-unused `stageRank` helper removed; `STAGE_STEP`, `reviewStage`,
+`formatReviewStage` and `StageSteps` all stay exported and in use elsewhere (the "still in
+progress" fold in `MyReviews.tsx`, the decision-details dialog in `ReviewDialogs.tsx`, and
+`ReviewsTable.tsx`'s own Action column, which still reads `reviewStage(run) === 'review'` to
+decide whether to show the Review button). `src/features/run/ReviewsTable.tsx`: `StageCell`,
+its `ColumnHeader`, its `colgroup` width entry and `INFO.stage` all removed; `INFO.type`
+renamed to `INFO.status`, label text unchanged. `e2e/keyboard.spec.ts`'s info-tip focus test
+updated from "About Run type" to "About Status". The Archive table's own, separate "Run type"
+column (`ArchiveTable.tsx`) is untouched — a different view, not part of this request. `npm run
+check` — 291 unit tests, 44 e2e tests — green, unaffected in count (removed code had no tests
+of its own beyond what the shared table/sort tests already covered generically).
+
+---
+
 ## 0079 · The tour is offered, not sprung: a welcome modal gates it
 
 **Context.** 0078's tour auto-started the moment the welcome intro finished — no explanation of
