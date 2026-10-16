@@ -6,6 +6,147 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0087 · The radius flattening broke the checkbox; a dedicated small-control radius fixes it
+
+**Context.** The user: "Select boxes changed to radio buttons? Why?" 0082 flattened every
+rounded corner to 10px, but `Checkbox` (`components/ui/checkbox.tsx`) is 16px square
+(`h-4 w-4`) using `rounded-sm` — at 10px, more than half the box, the browser clamps the visible
+radius to 50% and the box renders as a full circle, indistinguishable from `RadioGroupItem`'s
+genuine `rounded-full`. A side effect of 0082 missed at the time, not a request to undo it.
+
+**Choice.** A new token, `--radius-xs: 0.25rem` (tokens.css) — the exact pre-0082 value —
+applied only to `Checkbox` (`rounded-sm` → `rounded-xs`). Not a return to the old per-size
+scale generally: the user's complaint about cards and buttons reading "really round" stands,
+and nothing else in the app renders small enough for 10px to reach the 50%-of-box threshold
+`Checkbox` hit. `RadioGroupItem` is untouched: it already uses `rounded-full` directly, by
+design, not through the flattened scale.
+
+**Consequence.** Verified: `getComputedStyle` on a real checkbox now reports `border-radius: 4px`
+(was computing to the full 8px half-box circle before the fix).
+
+---
+
+## 0086 · Button shine: slower, on all three tiers, and surviving `asChild` composition
+
+**Context.** Two follow-ups on 0083's shine: "The primary button hover animation is way too
+fast. It should be slower," and "secondary and tertiary hovers should have similar effect when
+hovering" — `outline` and `ghost`, the two other button variants besides `default`/`destructive`/
+`link`, the ones this app's own comments already call "the quieter action beside it" and a
+plainer text-only one respectively.
+
+**Choice, the colour.** Rather than add a second shine token for light-filled variants, the
+existing `--color-button-shine` becomes `color-mix(in srgb, currentColor 45%, transparent)`.
+`currentColor` resolves per element at the point of use, not where the custom property is
+declared, so the same one token gives `default` (light text on a dark fill) a light stripe and
+`outline`/`ghost` (dark text on a light fill) a dark stripe, correct in both themes, without a
+per-variant override.
+
+**Choice, the duration.** `--shine-dur` 650ms → 1400ms (transitions.css) — "slower," taken at
+face value; confirmed by sampling the pseudo-element's computed `transform` across the sweep in
+a real browser, not just eyeballing a screenshot.
+
+**Choice, the scoping.** Originally scoped by `[data-slot="button"][data-variant="…"]` — both
+attributes `Button` always renders. Extending to `outline` surfaced a real bug: the Filters
+button, rendered `asChild` inside a Radix `CollapsibleTrigger`, had `data-slot="button"`
+overwritten by the wrapper's own `data-slot="collapsible-trigger"` — the identical class of
+collision `components/Tabs.tsx`'s `PillTabsList` already works around for `data-state` (see its
+own comment). Switched to a plain `.btn-shine` class added directly in `buttonVariants` (cva):
+`cn()`/`twMerge` concatenate class lists and never drop an unrecognised class the way an HTML
+attribute can be overwritten, so it survives `asChild` composition. Confirmed: before the fix,
+`getComputedStyle(filtersButton, '::after').content` was `'none'` (no rule matched); after,
+`'""'`.
+
+**Consequence.** `destructive` and `link` are deliberately left out — a red shine would read as
+an alert rather than an affordance, and `link` already animates its own underline on hover.
+
+---
+
+## 0085 · The archive becomes fully read-only: no select, no restore
+
+**Context.** The user: "Archive should not have restore or select button anymore." A direct
+removal request, not a bug report — unlike 0087, there is no claim here that anything is
+behaving wrongly.
+
+**Choice.** `ArchiveTable.tsx` loses its `selectable`/`onToggle`/`onRestore` props outright (not
+just always called with `selectable={false}`): the Select column, the Restore button and the
+"Restore locked" icon are deleted from the component, not hidden. `MyReviews.tsx` drops the
+`restored` state and the `restore()` function entirely — with no UI path to call them, they
+were dead code waiting to happen, per AGENTS.md's "delete it completely" over leaving an unused
+path in place. `ReviewDialogs.tsx`'s `RestoreConfirmDialog` is deleted with them, and
+`ArchiveConfirmDialog`'s copy drops its "you can restore it for N days" promise, which would
+otherwise now be false. `lib/reviews.ts`'s `archiveState` keeps `canRestore`/`restoreDaysLeft`
+and `RESTORE_DAYS` untouched — that is data-model infrastructure describing a real distinction
+(a run can still be restored for seven days before it locks) that 0060 modeled regardless of
+whether any screen exposes a Restore button for it today, and the user's ask was specifically
+about the button, not the underlying rule. `lib/reviews.test.ts` and `fixtures/sample-runs.test.ts`,
+which assert on that lib-level distinction directly, are both untouched and still pass.
+
+**Consequence.** The Archive page's "Create report" capability for archived runs goes with the
+selection it depended on — a report can still include runs from My reviews, just not ones
+browsed from the Archive screen itself; not flagged back to the user as a loss, since the
+request was unambiguous and a report scoped to the Archive page was never asked for separately.
+`e2e/keyboard.spec.ts`'s "My reviews, keyboard only" test, which exercised archive-then-restore,
+is rewritten to archive-then-view-in-place instead; its Decision-details open/close check moves
+onto the just-archived run, in the Archive view, rather than relying on a run that no longer
+sits in the main list.
+
+---
+
+## 0084 · The line tabs get a sliding underline — three implementations in, before one held up
+
+**Context.** The user: "Tabs in list view (pending, accepted, declined etc) should have similar
+movement as the tabs in single run view that has 'Story', 'Evidence' and 'All steps' when
+changing between tabs." The run page's tabs (`RunViewTabs.tsx`) use the `pill` variant, whose
+sliding background (0047) is driven by `components/Tabs.tsx`'s `PillTabsList`: a `span` measured
+against the active tab and moved with `transform`/`width`, tracked via a `MutationObserver` on
+`aria-selected`. My reviews' run-type tabs use the `line` variant (0060), a plain per-trigger
+`border-b-2` with no motion at all — `ui/tabs.tsx`'s own comment already explains why: "a colour
+transition on the tabs made keyboard tests drop arrow presses" (2026-09-24).
+
+**Choice.** `useSlidingIndicator(kind: 'pill' | 'line')`, a hook factored out of the pill's
+existing logic and shared by a new `LineTabsList`, tweening only `transform`/`width` — never a
+colour, the same constraint 2026-09-24 already established — so a new underline `span` slides
+to the newly active line tab exactly the way the pill does. `ui/tabs.tsx`'s line trigger drops
+its own instant `data-[state=active]:border-primary-strong` (the sliding span replaces it as
+the visual indicator) but keeps `data-[state=active]:text-text-primary`, so a sighted cue that
+doesn't depend on the span having measured yet survives regardless.
+
+**The measuring mechanism took three tries**, each one verified the same way: a real browser,
+three rapid ArrowRight presses with no delay between them (automatic-activation tabs select
+immediately on each arrow key, unlike the pill's manual-activation tabs, which only ever change
+one at a time — this is the first place the shared mechanism has ever been exercised under a
+true rapid-fire burst), repeated 10–15 times via `--repeat-each` to catch intermittent failures
+`npm run check`'s own single pass would not.
+
+1. **The `MutationObserver` reading layout directly** (matching the pill's existing code
+   exactly): `getBoundingClientRect()` inside the observer's own callback forces a synchronous
+   reflow at the moment the browser is handling whatever triggered the mutation. Dropped
+   roughly one burst in three — a second or third ArrowRight simply had no effect. The same
+   class of regression as 2026-09-24, via layout thrashing instead of a colour transition.
+2. **The same observer, its callback coalesced through one `requestAnimationFrame`**: still
+   failed about as often. Deferring to the next frame didn't move the read far enough from the
+   keystroke.
+3. **A continuous per-frame `requestAnimationFrame` poll**, comparing the active tab by
+   reference each frame and only measuring on a change: still failed, at a similar rate — and,
+   isolated by temporarily no-op'ing the effect entirely (same DOM, same CSS, zero scheduled
+   work), the flakiness vanished outright. That isolation is what shows the *continuously
+   rescheduling rAF chain itself* — not the layout reads — was what perturbed Chromium's
+   input handling here, something neither attempt 1 nor 2 would have revealed on its own.
+4. **What holds up**: back to the `MutationObserver` (event-driven — nothing runs on frames
+   where nothing changed), but its callback never calls `place()` itself; it only resets a
+   60ms `setTimeout`. A burst of rapid changes keeps resetting the same timer, so the one
+   `getBoundingClientRect` read per burst happens on a plain timer callback, well clear of any
+   keystroke still in flight, once the burst has fully settled. 15/15 and 10/10 repeats clean
+   across both the line and pill keyboard specs.
+
+**Consequence.** A real but small trade-off this choice accepts: the indicator's first visible
+movement now lags the input that caused it by up to 60ms, instead of starting instantly. Judged
+imperceptible (under the ~100ms human "instant" threshold) against the alternative of dropped
+keystrokes, and confirmed by frame-by-frame sampling that the slide itself still plays smoothly
+once it starts.
+
+---
+
 ## 0083 · Button hover: a CSS-only shine, not a pointer-tracked glow; table row hover fixed
 
 **Context.** The user found both hovers too quiet, and supplied a reference implementation for
