@@ -39,6 +39,89 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-16 · Hover/motion polish, an accidental checkbox regression, and the archive going read-only
+
+**Goal**
+Four follow-up requests on the previous round's hover work (slower button shine, the same shine
+on secondary/tertiary buttons, a calmer table-row hover fade, the line tabs getting the pill
+tabs' sliding motion), one regression report (the radius flattening made checkboxes look like
+radio buttons), and one feature removal (no restore, no select, in the archive).
+
+**What changed**
+- `tokens.css` — new `--radius-xs: 0.25rem`, used only by `Checkbox`, fixing the accidental
+  radio-button look; `--color-button-shine` now `currentColor`-based. DECISIONS 0086, 0087.
+- `components/ui/checkbox.tsx` — `rounded-sm` → `rounded-xs`.
+- `transitions.css`, `components/ui/button.tsx` — shine duration 650ms → 1400ms; extended from
+  `default` only to `default`/`outline`/`ghost`; scoping moved from a `data-slot`/`data-variant`
+  attribute selector to a plain `.btn-shine` class, after the attribute selector missed the
+  Filters button (rendered `asChild` inside a `CollapsibleTrigger`, which overwrites
+  `data-slot`). DECISIONS 0086.
+- `ReviewsTable.tsx`, `ArchiveTable.tsx` row hover — `transition-colors
+  duration-[var(--motion-duration-base)]`, a real fade confirmed by sampling computed
+  `background-color` across the transition, not just comparing before/after screenshots.
+- `components/Tabs.tsx` — `useSlidingIndicator`, a hook factored out of the pill variant's
+  existing measuring logic, now shared by a new `LineTabsList`; `ui/tabs.tsx`'s line trigger
+  drops its static `data-[state=active]:border-primary-strong` (the sliding span replaces it)
+  but keeps the text-colour change as a non-JS-dependent fallback. DECISIONS 0084.
+- `ArchiveTable.tsx`, `MyReviews.tsx`, `ReviewDialogs.tsx`, `tourSteps.ts` — all restore and
+  select machinery removed from the archive (`RestoreConfirmDialog` deleted, `restore()`/
+  `restored` state deleted, `ArchiveTable`'s `selectable`/`onToggle`/`onRestore` props deleted),
+  copy updated everywhere it promised a restore window. `lib/reviews.ts`'s `archiveState`/
+  `RESTORE_DAYS`/`canRestore` left untouched — still real, tested domain data, just no longer
+  exposed as a button. DECISIONS 0085.
+- `e2e/keyboard.spec.ts` — the archive-then-restore section of "My reviews, keyboard only"
+  rewritten to archive-then-view-in-place; its Decision-details open/close check moved onto the
+  just-archived run, since the original run it used no longer sits in the main list.
+- `MyReviews.test.tsx` — the two restore-flow tests replaced with one plain archive test and one
+  asserting the archive shows no select boxes, no restore button, no "locked" icon.
+
+**Steps, in order**
+1. Fixed the checkbox-radius regression first (small, isolated, clearly a bug): added
+   `--radius-xs`, confirmed with `getComputedStyle` in a real browser.
+2. Made the requested hover/motion changes directly, verifying each with a throwaway Playwright
+   script against the dev server — sampling computed style/position across real animation
+   frames (`requestAnimationFrame` loops reading `getBoundingClientRect`/`getComputedStyle`),
+   not just diffing before/after screenshots, since several of these effects use easing curves
+   front-loaded enough that two screenshots a frame apart can look identical by coincidence.
+3. Ran the full keyboard e2e spec after the tabs change and hit a real, intermittent failure —
+   not a dropped screenshot check, a genuinely flaky arrow-key test. Root-caused it with
+   `--repeat-each` (10–15 runs) across four different implementations of the sliding-indicator
+   mechanism before finding one that held up every time; see DECISIONS 0084 for the full
+   sequence, including the one isolation test (a no-op effect on the same DOM) that revealed
+   the real cause was a continuously-rescheduling `requestAnimationFrame` chain, not the layout
+   reads every earlier attempt had been blamed on.
+4. Removed the archive's restore/select machinery, tracing every reference (`grep` across
+   `src/`) before deleting anything, to catch the dialog, the state, the copy promising a
+   restore window, and the one e2e test that drove the now-gone button.
+5. `npm run build` (not just `check`) run explicitly after every round of changes this session,
+   per the previous entry's own lesson.
+
+**Why it was done this way**
+See DECISIONS 0084 (tabs), 0085 (archive), 0086 (shine), 0087 (checkbox). The table-hover fade
+reused the app's existing `--motion-duration-base`/`--motion-ease-standard` tokens (which
+already carry their own `prefers-reduced-motion` override) rather than inventing a new duration.
+
+**How to do this by hand**
+Tab to any of My reviews' run-type tabs and arrow between them: the underline slides, the way
+Story/Evidence/All steps' pill already did. Hover a table row: it fades to grey instead of
+snapping. Hover any button: a light or dark stripe sweeps across it, over about 1.4 seconds.
+Open the Archive: no checkboxes, no Restore button, only "New run" per row.
+
+**Verification**
+- `npm run check` (full suite) green after every round of changes, `npm run build` included
+  explicitly each time.
+- The "My reviews, keyboard only" e2e spec run 15 times in a row with `--repeat-each=15`
+  (line tabs) and 5 times across all three keyboard specs together (`--repeat-each=5`): 0
+  failures on the final mechanism, after reproducing real, repeatable failures (not flakes) on
+  each of the three earlier attempts.
+- Shine duration, row-hover fade and tab-slide motion each confirmed by sampling real computed
+  values across animation frames in a live browser, not by inference from static screenshots.
+
+**Open questions / next**
+None raised back to the user this round.
+
+---
+
 ### 2026-10-16 · Production build break from the punch-list merge, and why `npm run check` missed it
 
 **Goal**

@@ -144,9 +144,29 @@
   transition: color var(--tabs-dur) var(--tabs-ease);
 }
 
+/* The line variant's underline (0084): only `transform` and `width` are written inline by
+ * `LineTabsList`, never a colour — see its own doc comment in components/Tabs.tsx for why.
+ * `bottom: 0`, not past the list's own edge: the list scrolls sideways (`overflow-x-auto`),
+ * which forces `overflow-y` to clip too (CSS Overflow §3) — anything positioned outside the
+ * list's own box is cut off, the exact bug `ui/tabs.tsx`'s own comment already warns about. */
+.t-tabs-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  transform: translateX(0);
+  transition:
+    transform var(--tabs-dur) var(--tabs-ease),
+    width var(--tabs-dur) var(--tabs-ease);
+  will-change: transform, width;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .t-tabs-pill,
-  .t-tab {
+  .t-tab,
+  .t-tabs-line {
     transition: none !important;
   }
 }
@@ -235,22 +255,29 @@
  * 2026-09-24 — a colour transition on the tabs dropped arrow-key presses). A CSS-only diagonal
  * sweep gets the same "shiny" read without either cost: it is keyed to `:hover`/`:focus-visible`
  * — pseudo-classes the mouse sets, never a per-keystroke React re-render — and needs no script.
- * Scoped to the `default` button variant (`[data-slot="button"]` and `[data-variant="default"]`
- * are both already on every `Button`, so no new class or prop is needed): the one solid-filled
- * button, same as the reference's own `bg-zinc-800` button, where a light stripe reads against
- * a fill. The stripe's own colour is `--color-button-shine` (tokens.css) — the button's own
- * foreground colour, so it is correct in both themes without a separate dark-mode rule here.
+ * Applied to the three button variants that read as "primary/secondary/tertiary" (0084): `default`
+ * (filled), `outline` (bordered) and `ghost` (text-only, filled on hover). Not `destructive` (a
+ * red shine would read as an alert, not an affordance) or `link` (already animates its own
+ * underline). Scoped via a plain `.btn-shine` class on those three variants (button.tsx) rather
+ * than the `data-slot`/`data-variant` attributes `Button` already carries: a `Button` rendered
+ * `asChild` inside another Radix primitive (e.g. the Filters button, inside a
+ * `CollapsibleTrigger`) has its own `data-slot` overwritten by the wrapper, the same class of
+ * collision `components/Tabs.tsx`'s `PillTabsList` already works around for `data-state` — a
+ * plain class survives that composition because `cn()` concatenates class lists, never
+ * overwrites one attribute with another. The stripe's colour is `--color-button-shine`
+ * (tokens.css) — `currentColor` at partial opacity, each variant's own text colour, so it is
+ * correct against any fill in both themes with one rule instead of one per variant.
  */
 :root {
-  --shine-dur: 650ms;
+  --shine-dur: 1400ms;
   --shine-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-[data-slot='button'][data-variant='default'] {
+.btn-shine {
   position: relative;
   overflow: hidden;
 }
-[data-slot='button'][data-variant='default']::after {
+.btn-shine::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -264,14 +291,14 @@
   transform: translateX(-120%);
   pointer-events: none;
 }
-[data-slot='button'][data-variant='default']:hover::after,
-[data-slot='button'][data-variant='default']:focus-visible::after {
+.btn-shine:hover::after,
+.btn-shine:focus-visible::after {
   transform: translateX(120%);
   transition: transform var(--shine-dur) var(--shine-ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-slot='button'][data-variant='default']::after {
+  .btn-shine::after {
     content: none;
   }
 }

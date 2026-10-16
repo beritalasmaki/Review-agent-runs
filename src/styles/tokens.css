@@ -229,21 +229,26 @@
 
   /* Radius. A flat 10px everywhere a corner rounds — cards, dialogs, buttons and fields alike
    * — replacing the old per-size scale (4px/8px/14px) that read as "really round" at the
-   * card size. `rounded-full` (pills, dots, toggles, checkboxes) is untouched: those are
-   * circular by design, not a rounded corner. */
+   * card size. `rounded-full` (pills, dots, toggles) is untouched: those are circular by
+   * design, not a rounded corner. */
   --radius-sm: 0.625rem;
   --radius-md: 0.625rem;
   --radius-lg: 0.625rem;
+  /* A small fixed corner for controls too small for the flat scale above: at 16px, a 10px
+   * radius exceeds half the box and renders as a full circle — indistinguishable from a radio
+   * button on `Checkbox` (0087). Keeps the old pre-flattening value for this one case only. */
+  --radius-xs: 0.25rem;
 
   /* A card's lift off the page: faint and flat, true black, not tinted (0073 — the flat
    * neutral replaces 0068's page-tinted shadow along with the rest of that palette). */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
 
-  /* The default button's hover shine (0083): a stripe in the button's own foreground colour
-   * (`--color-surface`, the colour its label text already uses to read against the fill), so
-   * it reads correctly against the fill in both themes without a separate dark-mode override —
-   * the fill itself flips dark/light with the theme, and this token flips with it. */
-  --color-button-shine: color-mix(in srgb, var(--color-surface) 55%, transparent);
+  /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text
+   * colour — at partial opacity. `currentColor` resolves per element at use time, not here, so
+   * one token gives every variant a correct-looking stripe against its own fill: light over the
+   * default variant's dark fill, dark over the outline/ghost variants' light fill, in both
+   * themes, with no per-variant override needed. */
+  --color-button-shine: color-mix(in srgb, currentColor 45%, transparent);
 
   /*
    * Type. Raleway for headings, buttons and the wordmark; Montserrat for body and

@@ -42,7 +42,7 @@ export const LIST_TOUR_STEPS: TourStep[] = [
     id: 'archive-button',
     selector: '[data-tour="archive-button"]',
     title: 'Nothing is ever deleted',
-    body: 'Approved and declined runs move to the archive automatically. You can restore one for seven days after.',
+    body: 'Approved and declined runs move to the archive automatically. The record there never changes.',
     side: 'bottom',
   },
 ]

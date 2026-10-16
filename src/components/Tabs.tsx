@@ -74,9 +74,9 @@ export function TabsList({ children, className, variant = 'segmented', label }: 
   }
   if (variant === 'line') {
     return (
-      <UI.TabsList variant="line" aria-label={label} className={className}>
+      <LineTabsList className={className} label={label}>
         {children}
-      </UI.TabsList>
+      </LineTabsList>
     )
   }
   return (
@@ -87,14 +87,101 @@ export function TabsList({ children, className, variant = 'segmented', label }: 
 }
 
 /**
- * The pill variant's sliding background — transitions.dev "Tabs sliding"
- * (src/styles/transitions.css, docs/DECISIONS.md 0047). The active tab is measured and its
- * position and width written onto one pill behind the labels; CSS owns the tween. The first
- * placement, and any placement after a resize (a font finishing loading, a wrap), happens
- * without a transition, so the pill never slides in from the left edge. Watching `aria-selected`
- * (not `data-state` — see the comment in `place()` below) means the pill follows every way a
- * tab can become active: click, Enter, Space, or a caller changing `value`.
+ * The shared measuring behind both sliding indicators — transitions.dev "Tabs sliding"
+ * (src/styles/transitions.css, docs/DECISIONS.md 0047, 0084). The active tab is measured and
+ * its position (and, for the pill, its size) written onto one element behind the labels; CSS
+ * owns the tween. The first placement, and any placement after a resize (a font finishing
+ * loading, a wrap), happens without a transition, so the indicator never slides in from the
+ * left edge. A `requestAnimationFrame` poll checks which tab carries `aria-selected="true"`
+ * (not `data-state` — see the comment in `place()` below) once a frame and re-measures only on
+ * a change, so it follows every way a tab can become active — click, Enter, Space, or a caller
+ * changing `value` — without ever running inside input-event handling itself (see `place`'s own
+ * comment for why that distinction matters).
  */
+function useSlidingIndicator(kind: 'pill' | 'line') {
+  const listRef = useRef<HTMLDivElement>(null)
+  const indicatorRef = useRef<HTMLSpanElement>(null)
+
+  useLayoutEffect(() => {
+    const list = listRef.current
+    const indicator = indicatorRef.current
+    if (!list || !indicator) return
+
+    function place(animate: boolean) {
+      if (!list || !indicator) return
+      // aria-selected, not data-state: a pill trigger with a tooltip is wrapped in Radix's
+      // Tooltip via `asChild` (PillTrigger below), which writes its own data-state (tooltip
+      // open/closed) onto the same DOM node as Tabs' data-state (active/inactive) — once it
+      // settles, a query keyed on data-state finds nothing, and the indicator vanishes on the
+      // next switch. aria-selected is Radix Tabs' own attribute; nothing else touches it.
+      const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
+      if (!active) {
+        indicator.style.opacity = '0'
+        return
+      }
+      const listBox = list.getBoundingClientRect()
+      const tabBox = active.getBoundingClientRect()
+      const apply = () => {
+        if (kind === 'pill') {
+          indicator.style.transform = `translate(${tabBox.left - listBox.left}px, ${tabBox.top - listBox.top}px)`
+          indicator.style.height = `${tabBox.height}px`
+        } else {
+          indicator.style.transform = `translateX(${tabBox.left - listBox.left}px)`
+        }
+        indicator.style.width = `${tabBox.width}px`
+        indicator.style.opacity = '1'
+      }
+      if (animate) {
+        apply()
+        return
+      }
+      const previous = indicator.style.transition
+      indicator.style.transition = 'none'
+      apply()
+      // Reading layout makes the browser commit the new position with no transition before
+      // the transition comes back; without it both changes land together and the indicator
+      // slides.
+      void indicator.offsetWidth
+      indicator.style.transition = previous
+    }
+
+    place(false)
+    // Three earlier approaches all broke the same way: a `MutationObserver` calling `place`
+    // straight away, the same observer coalesced through one `requestAnimationFrame`, and a
+    // continuous per-frame `requestAnimationFrame` poll (even debounced, so it rarely measured
+    // layout — the loop itself was still running every frame). All three dropped roughly one
+    // run in three of a fast second arrow-key press under automatic activation — the same class
+    // of bug as docs/WORKLOG.md's 2026-09-24 entry, confirmed directly (several arrow presses
+    // with no delay between them) and confirmed again the other way: no `requestAnimationFrame`
+    // loop running at all, same DOM, same `MutationObserver`, made the flakiness disappear, so
+    // a continuously rescheduling `requestAnimationFrame` chain — not the layout reads
+    // specifically — is what was perturbing Chromium's input handling here. What finally held
+    // up under the same repeated test: back to the `MutationObserver` (event-driven, nothing
+    // runs when nothing changes), but its callback only ever resets a debounce timer — it never
+    // calls `place` itself — so the one `getBoundingClientRect` read per settled burst happens
+    // on a plain timer callback, never inside the observer's own microtask.
+    let debounce: ReturnType<typeof setTimeout> | null = null
+    const mutations = new MutationObserver(() => {
+      if (debounce != null) clearTimeout(debounce)
+      debounce = setTimeout(() => {
+        debounce = null
+        place(true)
+      }, 60)
+    })
+    mutations.observe(list, { attributes: true, attributeFilter: ['aria-selected'], subtree: true })
+    const resizes =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => place(false))
+    resizes?.observe(list)
+    return () => {
+      mutations.disconnect()
+      if (debounce != null) clearTimeout(debounce)
+      resizes?.disconnect()
+    }
+  }, [kind])
+
+  return { listRef, indicatorRef }
+}
+
 function PillTabsList({
   children,
   className,
@@ -104,62 +191,47 @@ function PillTabsList({
   className?: string
   label?: string
 }) {
-  const listRef = useRef<HTMLDivElement>(null)
-  const pillRef = useRef<HTMLSpanElement>(null)
-
-  useLayoutEffect(() => {
-    const list = listRef.current
-    const pill = pillRef.current
-    if (!list || !pill) return
-
-    function place(animate: boolean) {
-      if (!list || !pill) return
-      // aria-selected, not data-state: a pill trigger with a tooltip is wrapped in Radix's
-      // Tooltip via `asChild` (PillTrigger below), which writes its own data-state (tooltip
-      // open/closed) onto the same DOM node as Tabs' data-state (active/inactive) — once it
-      // settles, a query keyed on data-state finds nothing, and the pill vanishes on the next
-      // switch. aria-selected is Radix Tabs' own attribute; nothing else touches it.
-      const active = list.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
-      if (!active) {
-        pill.style.opacity = '0'
-        return
-      }
-      const listBox = list.getBoundingClientRect()
-      const tabBox = active.getBoundingClientRect()
-      const apply = () => {
-        pill.style.transform = `translate(${tabBox.left - listBox.left}px, ${tabBox.top - listBox.top}px)`
-        pill.style.width = `${tabBox.width}px`
-        pill.style.height = `${tabBox.height}px`
-        pill.style.opacity = '1'
-      }
-      if (animate) {
-        apply()
-        return
-      }
-      const previous = pill.style.transition
-      pill.style.transition = 'none'
-      apply()
-      // Reading layout makes the browser commit the new position with no transition before
-      // the transition comes back; without it both changes land together and the pill slides.
-      void pill.offsetWidth
-      pill.style.transition = previous
-    }
-
-    place(false)
-    const mutations = new MutationObserver(() => place(true))
-    mutations.observe(list, { attributes: true, attributeFilter: ['aria-selected'], subtree: true })
-    const resizes =
-      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => place(false))
-    resizes?.observe(list)
-    return () => {
-      mutations.disconnect()
-      resizes?.disconnect()
-    }
-  }, [])
-
+  const { listRef, indicatorRef } = useSlidingIndicator('pill')
   return (
     <UI.TabsList ref={listRef} variant="pill" aria-label={label} className={className}>
-      <span ref={pillRef} aria-hidden className="t-tabs-pill rounded-full bg-surface shadow-sm" />
+      <span
+        ref={indicatorRef}
+        aria-hidden
+        className="t-tabs-pill rounded-full bg-surface shadow-sm"
+      />
+      {children}
+    </UI.TabsList>
+  )
+}
+
+/**
+ * The line variant's sliding underline (0084): the same movement as the pill above, asked for
+ * so switching the run-type tabs (Pending, Requested for change, …) feels like switching the
+ * run page's Story/Evidence/All steps view. Only `transform` and `width` are tweened — never a
+ * colour — the same reason the pill's own `.t-tab` colour change is a plain, untransitioned
+ * swap: a colour transition on these tabs dropped arrow-key presses in the keyboard e2e spec
+ * before (docs/WORKLOG.md, 2026-09-24). Each trigger's own `data-[state=active]:text-text-primary`
+ * (ui/tabs.tsx) still marks the selected tab instantly and independently, so the underline is a
+ * decoration on top of an always-correct state, not the only thing carrying it.
+ */
+function LineTabsList({
+  children,
+  className,
+  label,
+}: {
+  children: ReactNode
+  className?: string
+  label?: string
+}) {
+  const { listRef, indicatorRef } = useSlidingIndicator('line')
+  return (
+    <UI.TabsList
+      ref={listRef}
+      variant="line"
+      aria-label={label}
+      className={cn('relative', className)}
+    >
+      <span ref={indicatorRef} aria-hidden className="t-tabs-line bg-primary-strong" />
       {children}
     </UI.TabsList>
   )

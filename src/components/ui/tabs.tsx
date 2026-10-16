@@ -66,12 +66,17 @@ const tabsTriggerVariants = cva(
         ],
         // No -mb-px onto the list's rule: the list scrolls sideways, which clips anything below
         // its edge, and that clipped the selected tab's underline to nothing. No colour
-        // transition either: one made keyboard tests drop arrow presses (docs/WORKLOG.md).
+        // transition either: one made keyboard tests drop arrow presses (docs/WORKLOG.md,
+        // 2026-09-24). The active underline itself is `components/Tabs.tsx`'s `LineTabsList`,
+        // a single sliding span (0084) — this trigger keeps the transparent border only as
+        // layout spacing, so the sliding span's height never shifts anything, and keeps the
+        // instant text-colour change as a state indicator that doesn't depend on the span
+        // having measured yet.
         line: [
           'inline-flex gap-[var(--space-3)] border-b-2 border-transparent px-[var(--space-5)] py-[var(--space-4)]',
           'text-body font-semibold font-heading leading-none text-text-secondary',
           'hover:border-border hover:text-text-primary',
-          'data-[state=active]:border-primary-strong data-[state=active]:text-text-primary',
+          'data-[state=active]:text-text-primary',
           'focus-visible:outline-offset-[-2px]',
         ],
       },
