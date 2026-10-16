@@ -213,7 +213,7 @@ export function countByTab(runs: Run[]): Record<ReviewTab, number> {
 
 // ---- Sort ------------------------------------------------------------------------------
 
-export type SortKey = 'run' | 'type' | 'stage' | 'open' | 'requester' | 'updated'
+export type SortKey = 'run' | 'type' | 'open' | 'requester' | 'updated'
 export type ArchiveSortKey = 'run' | 'type' | 'requester' | 'decided' | 'archived'
 export type SortDirection = 'asc' | 'desc'
 
@@ -224,19 +224,11 @@ const STATUS_ORDER: Record<ReviewStatus, number> = {
   approved: 3,
 }
 
-/** Needs review, then checks, then agent, then waiting on changes, then decided. */
-function stageRank(run: Run): number {
-  const stage = reviewStage(run)
-  if (stage) return 3 - STAGE_STEP[stage]
-  return reviewStatus(run) === 'requested' ? 3 : 4
-}
-
 const time = (iso: string) => new Date(iso).getTime()
 
 const COMPARE: Record<SortKey, (a: Run, b: Run) => number> = {
   run: (a, b) => a.initiative.localeCompare(b.initiative),
   type: (a, b) => STATUS_ORDER[reviewStatus(a)] - STATUS_ORDER[reviewStatus(b)],
-  stage: (a, b) => stageRank(a) - stageRank(b),
   open: (a, b) => (openItemCount(a) ?? -1) - (openItemCount(b) ?? -1),
   requester: (a, b) => a.requestedBy.localeCompare(b.requestedBy),
   updated: (a, b) => time(updatedAt(a)) - time(updatedAt(b)),

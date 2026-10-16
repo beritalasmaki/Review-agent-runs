@@ -114,7 +114,7 @@ test('My reviews, keyboard only', async ({ page }) => {
   )
 
   // An info tip shows on keyboard focus.
-  await tabTo(page, /^About Run type$/)
+  await tabTo(page, /^About Status$/)
   await expect(page.getByRole('tooltip', { name: /Where the run stands overall/ })).toBeVisible()
 
   // Tick the approved run with Space, then archive it from its row.
