@@ -144,9 +144,29 @@
   transition: color var(--tabs-dur) var(--tabs-ease);
 }
 
+/* The line variant's underline (0084): only `transform` and `width` are written inline by
+ * `LineTabsList`, never a colour — see its own doc comment in components/Tabs.tsx for why.
+ * `bottom: 0`, not past the list's own edge: the list scrolls sideways (`overflow-x-auto`),
+ * which forces `overflow-y` to clip too (CSS Overflow §3) — anything positioned outside the
+ * list's own box is cut off, the exact bug `ui/tabs.tsx`'s own comment already warns about. */
+.t-tabs-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  transform: translateX(0);
+  transition:
+    transform var(--tabs-dur) var(--tabs-ease),
+    width var(--tabs-dur) var(--tabs-ease);
+  will-change: transform, width;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .t-tabs-pill,
-  .t-tab {
+  .t-tab,
+  .t-tabs-line {
     transition: none !important;
   }
 }
