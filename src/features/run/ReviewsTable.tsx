@@ -215,6 +215,9 @@ export interface ReviewsTableProps {
   runHref: (id: string) => string
   sort: { key: SortKey; dir: SortDirection }
   onSort: (key: SortKey, dir: SortDirection) => void
+  /** Tick boxes only where they can do something — not on Pending, where nothing is ever
+   * finished yet to select. */
+  selectable: boolean
   selected: ReadonlySet<string>
   onToggle: (id: string) => void
   manual: ManualArchive
@@ -240,6 +243,7 @@ export function ReviewsTable({
   runHref,
   sort,
   onSort,
+  selectable,
   selected,
   onToggle,
   manual,
@@ -270,7 +274,7 @@ export function ReviewsTable({
       </colgroup>
       <TableHeader className="border-b border-border-subtle bg-surface-raised">
         <TableRow>
-          <ColumnHeader label="Details" hiddenLabel="Decision details" />
+          <ColumnHeader label="Details" />
           <ColumnHeader label="Select" hiddenLabel="Select" />
           <ColumnHeader
             label="Run"
@@ -329,19 +333,21 @@ export function ReviewsTable({
             <TableRow
               key={run.id}
               data-tour={index === 0 ? 'first-run-row' : undefined}
-              className="border-b border-border-subtle bg-surface hover:bg-bg"
+              className="border-b border-border-subtle bg-surface hover:bg-border-subtle"
             >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />
               </TableCell>
               <TableCell className={CELL}>
-                <SelectBox
-                  run={run}
-                  checked={selected.has(run.id)}
-                  disabled={!finished}
-                  disabledReason="Only approved and declined runs can be selected"
-                  onToggle={() => onToggle(run.id)}
-                />
+                {selectable && (
+                  <SelectBox
+                    run={run}
+                    checked={selected.has(run.id)}
+                    disabled={!finished}
+                    disabledReason="Only approved and declined runs can be selected"
+                    onToggle={() => onToggle(run.id)}
+                  />
+                )}
               </TableCell>
               <TableCell className={cn(CELL, 'max-w-0')}>
                 <RunCell run={run} href={runHref(run.id)} />

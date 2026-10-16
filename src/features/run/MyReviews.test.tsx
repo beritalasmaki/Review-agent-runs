@@ -44,8 +44,8 @@ describe('MyReviews', () => {
   })
 
   it('shows runs the agent is still working on, in Pending and in Requested for change', async () => {
+    // Open by default (0082): no click needed to reveal it.
     const user = await renderLoaded()
-    await user.click(screen.getByRole('button', { name: /4 runs still in progress/ }))
     expect(screen.getAllByText('Agent is working')).toHaveLength(2)
     expect(screen.getAllByText('Checks are running')).toHaveLength(2)
 
@@ -165,11 +165,9 @@ describe('MyReviews', () => {
     )
   })
 
-  it('does not let a pending run be selected', async () => {
+  it('shows no select boxes on Pending: nothing there can be selected yet', async () => {
     await renderLoaded()
-    for (const box of screen.getAllByRole('checkbox', { name: /^Select/ })) {
-      expect(box).toBeDisabled()
-    }
+    expect(screen.queryAllByRole('checkbox', { name: /^Select/ })).toHaveLength(0)
   })
 
   it('shows a loading state, and a failed load with Retry', async () => {

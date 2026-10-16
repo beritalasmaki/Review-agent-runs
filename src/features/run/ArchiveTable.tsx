@@ -73,7 +73,7 @@ export function ArchiveTable({
       </colgroup>
       <TableHeader className="border-b border-border-subtle bg-surface-raised">
         <TableRow>
-          <ColumnHeader label="Details" hiddenLabel="Decision details" />
+          <ColumnHeader label="Details" />
           <ColumnHeader label="Select" hiddenLabel="Select" />
           <ColumnHeader
             label="Run"
@@ -132,7 +132,10 @@ export function ArchiveTable({
           const state = archiveState(run, manual, now)
           const sent = requestedRuns.has(run.id)
           return (
-            <TableRow key={run.id} className="border-b border-border-subtle bg-surface hover:bg-bg">
+            <TableRow
+              key={run.id}
+              className="border-b border-border-subtle bg-surface hover:bg-border-subtle"
+            >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />
               </TableCell>
