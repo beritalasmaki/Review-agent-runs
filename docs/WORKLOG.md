@@ -39,6 +39,51 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-16 · Outline button: shine out, a plain fade and a small grow in
+
+**Goal**
+The user tried the secondary (`outline`) button's shine from the previous round and didn't like
+it: "Let's replace it with the original fade. That was better. We could also include small grow
+in effect to it as well."
+
+**What changed**
+- `button.tsx`: `outline` loses the `btn-shine` class; gains `transition
+  duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:scale-[1.02]`,
+  tweening its existing hover border/background/shadow changes alongside the new grow. `default`
+  and `ghost` keep the shine, untouched. File-header comment and `transitions.css`'s shine
+  comment both updated to describe the new split. DECISIONS 0088.
+
+**Steps, in order**
+1. Removed `btn-shine` from the `outline` variant string; added the transition + scale classes.
+2. Verified with a throwaway Playwright script — and hit a false negative first: checked
+   `getComputedStyle(button).transform`, read `'none'`, looked broken. Traced it by walking the
+   actual compiled stylesheet (recursively, through `@layer`/`@media` nesting, which a first,
+   flatter attempt missed) and found Tailwind v4 compiles `scale-[1.02]` to the standalone CSS
+   `scale` property, not `transform`. Re-checked `getComputedStyle(button).scale` — `1.02` on
+   hover, exactly right. The lesson: Tailwind v4's individual transform utilities (`scale`,
+   `rotate`, `translate`) no longer compose through the legacy `transform` property by default.
+3. `npm run check` (full suite, `npm run build` included explicitly) green.
+
+**Why it was done this way**
+See DECISIONS 0088, including why a `:hover`-only transition on a button doesn't reproduce the
+2026-09-24 colour-transition bug that `button.tsx`'s own header comment warns about (that one
+was keyed to rapid automatic-activation keyboard state, not a mouse hover).
+
+**How to do this by hand**
+Hover "Filters" or any other outline button: it fades its border/background/shadow and grows
+very slightly, no diagonal sweep. Hover "Approve and release" or a ghost button: the sweep is
+still there.
+
+**Verification**
+`npm run check` green (typecheck, lint, format, theme-bridge, format-locale, 293 unit tests, 44
+e2e tests). Grow and fade both confirmed via computed style sampling in a real browser, not
+inference from a screenshot.
+
+**Open questions / next**
+None raised back to the user this round.
+
+---
+
 ### 2026-10-16 · Hover/motion polish, an accidental checkbox regression, and the archive going read-only
 
 **Goal**

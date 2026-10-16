@@ -6,6 +6,34 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0088 · The outline button drops the shine for a plain fade and a small grow
+
+**Context.** The user, after trying 0086's wider shine rollout: "the secondary button with
+that hover effect is not good. Let's replace it with the original fade. That was better. We
+could also include small grow in effect to it as well." A direct reversal for one variant, not
+a bug report.
+
+**Choice.** `outline` loses `.btn-shine` outright — back to a plain colour fade (the "original"
+the user is referring to: its hover border/background/shadow changes, now actually animated
+with a `transition` instead of snapping instantly) — plus `hover:scale-[1.02]`, tweened by the
+same `transition`. `default` and `ghost` keep the shine (0086); only `outline` was called out.
+Re-examined the file's own "no colour transition" rule (button.tsx's header comment, tracing to
+2026-09-24) before adding one here: that bug was a transition keyed to rapid *automatic-
+activation* keyboard state changes cascading through React re-renders on the line tabs — a
+plain `:hover`/`:focus-visible` transition on a button is a different trigger entirely, the same
+distinction the shine itself already relied on, so it cannot reproduce that failure mode.
+
+**A verification snag worth recording.** `getComputedStyle(button).transform` read `'none'`
+immediately after confirming the button's own CSS rule existed and `:hover` matched — looked
+like the grow wasn't applying at all. It was: Tailwind v4 compiles `scale-[1.02]` to the
+standalone CSS `scale` property (`scale: 1.02`), not the legacy `transform` property; checking
+the right property (`getComputedStyle(button).scale`) confirmed it was working the whole time.
+
+**Consequence.** `transitions.css`'s "Button shine" comment updated to name only `default`/
+`ghost`; `button.tsx`'s variant doc comment explains the fade+grow in `outline`'s place.
+
+---
+
 ## 0087 · The radius flattening broke the checkbox; a dedicated small-control radius fixes it
 
 **Context.** The user: "Select boxes changed to radio buttons? Why?" 0082 flattened every
