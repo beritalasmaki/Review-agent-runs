@@ -224,6 +224,58 @@
   }
 }
 
+/* ---- Button shine ----------------------------------------------------------------------- */
+
+/*
+ * The user's reference tracks the pointer in React state to centre a glow under the cursor.
+ * This project's `Button` is a generic, reusable primitive (components/README.md) used dozens
+ * of times a page; wiring pointer-position state through every instance for a hover decoration
+ * is the kind of abstraction AGENTS.md asks not to add beyond what a task needs, and a changing
+ * style keyed to rapid state has broken a keyboard test here before (docs/WORKLOG.md,
+ * 2026-09-24 — a colour transition on the tabs dropped arrow-key presses). A CSS-only diagonal
+ * sweep gets the same "shiny" read without either cost: it is keyed to `:hover`/`:focus-visible`
+ * — pseudo-classes the mouse sets, never a per-keystroke React re-render — and needs no script.
+ * Scoped to the `default` button variant (`[data-slot="button"]` and `[data-variant="default"]`
+ * are both already on every `Button`, so no new class or prop is needed): the one solid-filled
+ * button, same as the reference's own `bg-zinc-800` button, where a light stripe reads against
+ * a fill. The stripe's own colour is `--color-button-shine` (tokens.css) — the button's own
+ * foreground colour, so it is correct in both themes without a separate dark-mode rule here.
+ */
+:root {
+  --shine-dur: 650ms;
+  --shine-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-slot='button'][data-variant='default'] {
+  position: relative;
+  overflow: hidden;
+}
+[data-slot='button'][data-variant='default']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    var(--color-button-shine) 42%,
+    var(--color-button-shine) 58%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+[data-slot='button'][data-variant='default']:hover::after,
+[data-slot='button'][data-variant='default']:focus-visible::after {
+  transform: translateX(120%);
+  transition: transform var(--shine-dur) var(--shine-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='button'][data-variant='default']::after {
+    content: none;
+  }
+}
+
 /* ---- Spotlight ------------------------------------------------------------------------- */
 
 /*

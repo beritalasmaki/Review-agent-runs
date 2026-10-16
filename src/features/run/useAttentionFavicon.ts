@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
-/** The favicon with an amber dot in its corner — public/favicon-attention.svg. */
-export const ATTENTION_FAVICON = '/favicon-attention.svg'
+/** The favicon with an amber dot in its corner — public/favicon-attention.png. */
+export const ATTENTION_FAVICON = '/favicon-attention.png'
 
 /**
  * While `active`, the browser tab's icon carries an amber dot, so a reviewer sees from the tab

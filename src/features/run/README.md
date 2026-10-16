@@ -87,7 +87,7 @@ the run, and a right column that stays in place.
 - `DecisionDialog.tsx` — the confirmation (it names the revision and target) or the reason
   form behind each action, plus a failed submit and Scenario S5's conflict.
 - `UnverifiedList.tsx` — "What is not checked" before a decision, "What is still unverified"
-  after, with "Copy this list for the record".
+  after.
 - `RunShape.tsx` — the run in five counted numbers, shown after a decision.
 - `MyReviews.tsx` — "My reviews" (docs/DECISIONS.md, 0060): tabs by run type, search, filters,
   sort, runs in progress, selection, the Archive view and the toast. It holds the list's state;

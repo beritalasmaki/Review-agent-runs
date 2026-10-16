@@ -1,6 +1,4 @@
-import { Button } from '../../components/ui/button'
 import { TriangleAlert } from 'lucide-react'
-import { useState } from 'react'
 import { buildUnverifiedItems } from '../../lib/openItems'
 import type { Run } from '../../lib/types'
 import { cn } from '../../lib/utils'
@@ -20,20 +18,6 @@ export interface UnverifiedListProps {
 export function UnverifiedList({ run }: UnverifiedListProps) {
   const items = buildUnverifiedItems(run)
   const decided = run.decision != null
-  const [copied, setCopied] = useState<'idle' | 'copied' | 'failed'>('idle')
-
-  async function copy() {
-    const text = [
-      `Unverified when ${run.id} (${run.revision}) was decided:`,
-      ...items.map((item) => `- ${item.text}`),
-    ].join('\n')
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied('copied')
-    } catch {
-      setCopied('failed')
-    }
-  }
 
   return (
     <section
@@ -77,25 +61,6 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
             </li>
           ))}
         </ul>
-      )}
-      {decided && items.length > 0 && (
-        <div className="flex flex-col gap-[var(--space-1)]">
-          <Button
-            variant="link"
-            size="inline"
-            onClick={() => void copy()}
-            className="w-fit font-medium font-body"
-          >
-            Copy this list for the record
-          </Button>
-          <span
-            aria-live="polite"
-            className="text-caption font-normal font-body text-text-secondary"
-          >
-            {copied === 'copied' && 'Copied.'}
-            {copied === 'failed' && 'Could not copy. Select the list and copy it by hand.'}
-          </span>
-        </div>
       )}
     </section>
   )

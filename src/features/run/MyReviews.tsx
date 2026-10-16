@@ -239,7 +239,7 @@ function ReviewsBoard({
   const [restored, setRestored] = useState<ReadonlySet<string>>(new Set())
   const [requested, setRequested] = useState<ReadonlySet<string>>(new Set())
   const [dialog, setDialog] = useState<Dialog>(null)
-  const [progOpen, setProgOpen] = useState(false)
+  const [progOpen, setProgOpen] = useState(true)
   const tableRef = useRef<HTMLTableElement>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const focusHeading = useRef(false)
@@ -553,6 +553,7 @@ function ReviewsBoard({
                 runHref={runHref}
                 sort={sort}
                 onSort={(key, dir) => setSort({ key, dir })}
+                selectable={tab !== 'pending'}
                 selected={selected}
                 onToggle={toggle}
                 manual={manual}

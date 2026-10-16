@@ -36,7 +36,7 @@ export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
             <li className="shrink-0">
               <a
                 href={reviewsHref}
-                className="inline-flex items-center gap-[var(--space-1)] whitespace-nowrap text-primary no-underline underline-offset-2 hover:underline"
+                className="inline-flex translate-y-[2px] items-center gap-[var(--space-1)] whitespace-nowrap text-primary no-underline underline-offset-2 hover:underline"
               >
                 <ChevronLeft aria-hidden className="h-4 w-4" />
                 Back to the reviews list

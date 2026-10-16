@@ -23,6 +23,7 @@ import { StoryTimeline } from './StoryTimeline'
 import { UndoBox } from './UndoBox'
 import { UnverifiedList } from './UnverifiedList'
 import { useAttentionFavicon } from './useAttentionFavicon'
+import { useDocumentTitle } from './useDocumentTitle'
 import { useRun } from './useRun'
 
 /**
@@ -158,6 +159,7 @@ export function RunReviewPage({
     !isStillRunning(shownRun) &&
     buildOpenItems(shownRun).length > 0
   useAttentionFavicon(toSolve)
+  useDocumentTitle(shownRun ? `${shownRun.initiative} | Berit Alasmäki` : undefined)
 
   if (state.status === 'loading') {
     return <LoadingState label="Loading run…" />
