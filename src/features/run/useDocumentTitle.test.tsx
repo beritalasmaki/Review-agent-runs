@@ -13,10 +13,12 @@ describe('useDocumentTitle', () => {
   })
 
   it('sets the tab title while given one, and restores it after', () => {
-    const { rerender, unmount } = renderHook(
-      ({ title }: { title: string | undefined }) => useDocumentTitle(title),
-      { initialProps: { title: 'Fix the checkout bug | Berit Alasmäki' } },
-    )
+    const initialProps: { title: string | undefined } = {
+      title: 'Fix the checkout bug | Berit Alasmäki',
+    }
+    const { rerender, unmount } = renderHook(({ title }) => useDocumentTitle(title), {
+      initialProps,
+    })
     expect(document.title).toBe('Fix the checkout bug | Berit Alasmäki')
     rerender({ title: undefined })
     expect(document.title).toBe('Review agent runs | By Berit Alasmäki')
