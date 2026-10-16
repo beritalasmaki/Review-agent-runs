@@ -39,6 +39,56 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-16 · Production build break from the punch-list merge, and why `npm run check` missed it
+
+**Goal**
+PR #20 (below) merged clean on `npm run check`, but Vercel's production build failed on the
+next commit with a `tsc -b` type error the local check never caught. Find out why, fix it, get
+production green again.
+
+**What changed**
+- `useDocumentTitle.test.tsx` — typed `initialProps` explicitly instead of relying on
+  inference from the literal, fixing `rerender({ title: undefined })`'s type error.
+
+**Steps, in order**
+1. User reported "I don't see any changes" on the live site; tried to check the deployed URL
+   myself first (`WebFetch`, then `curl`) — both blocked by this session's own sandboxed
+   network policy, not a real signal about the site. Asked the user to check the Vercel
+   dashboard directly instead of guessing.
+2. User pasted Vercel's failure email: `npm run build` exited 2 on the merge commit, with the
+   exact `tsc -b` error.
+3. Reproduced with `npm run build` locally (not `npm run check`) — same error, immediately.
+4. Fixed the type, confirmed `npm run build` succeeds, then re-ran `npm run lint` and
+   `npm run format:check` to make sure the fix didn't reintroduce the original lint error it
+   grew out of.
+5. Branch `claude/serene-carson-7obhu8` was already merged (PR #20), so restarted it from
+   `origin/main` per this session's own merged-branch convention, committed the fix there,
+   pushed, opened PR #21, and merged it immediately (production was actively down).
+
+**Why it was done this way**
+The root cause: `npm run check`'s `typecheck` script runs `tsc -b` once, early in the chain.
+A later `lint` failure was fixed by editing the same test file again — and nothing re-ran
+`tsc -b` after that edit, so a type error introduced by the lint fix went uncaught. Worse,
+`npm run build` itself (what Vercel actually runs: `tsc -b && vite build`) was never run
+locally at all before merging — `npm run check` doesn't include it, and I treated "check is
+green" as equivalent to "build is green," which it is not whenever a file changes after the
+last `typecheck` run.
+
+**How to do this by hand**
+Run `npm run build` yourself before merging, every time, not just `npm run check` — especially
+after any edit made in response to a lint or format failure, since those edits aren't
+automatically re-typechecked.
+
+**Verification**
+`npm run build` (fails before the fix, exit 2; succeeds after). `npm run lint`,
+`npm run format:check`, full `npm run check` all green after.
+
+**Open questions / next**
+Worth considering a pre-push or pre-merge habit (or a git hook) that runs `npm run build`
+unconditionally, so this class of gap can't recur regardless of what order fixes are made in.
+
+---
+
 ### 2026-10-16 · A punch list: run-page cleanup, the real favicon, a flat radius, obvious hovers
 
 **Goal**
