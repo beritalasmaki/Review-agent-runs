@@ -25,14 +25,15 @@ const buttonVariants = cva(
       variant: {
         /** The page's main action: Approve and release, Review, Undo, Create report. A light
          * stripe sweeps across it on hover/focus — see transitions.css, "Button shine". */
-        default: 'border-text-primary bg-text-primary text-surface hover:opacity-85',
+        default: 'btn-shine border-text-primary bg-text-primary text-surface hover:opacity-85',
         /** The quieter action beside it: Request changes, Cancel, Filters. */
         outline:
-          'border-border bg-surface text-text-primary hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
+          'btn-shine border-border bg-surface text-text-primary hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
         /** Reject run: a red outline, never a red fill (src/styles/README.md). */
         destructive:
           'border-status-fail bg-surface text-status-fail-tint-fg hover:bg-status-fail-tint-bg active:bg-status-fail-tint-bg',
-        ghost: 'border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
+        ghost:
+          'btn-shine border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
         /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". */
         link: 'border-transparent bg-transparent text-primary underline-offset-2 hover:underline',
       },
