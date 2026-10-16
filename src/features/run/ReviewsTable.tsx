@@ -333,7 +333,7 @@ export function ReviewsTable({
             <TableRow
               key={run.id}
               data-tour={index === 0 ? 'first-run-row' : undefined}
-              className="border-b border-border-subtle bg-surface hover:bg-border-subtle"
+              className="border-b border-border-subtle bg-surface transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-border-subtle"
             >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />
