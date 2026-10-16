@@ -39,6 +39,84 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-16 · A punch list: run-page cleanup, the real favicon, a flat radius, obvious hovers
+
+**Goal**
+Nine small fixes to the run page and My reviews, plus the user's own favicon artwork, a flatter
+corner radius app-wide, and a mid-session request to make button and table row hover more
+obvious (the user supplied a reference "shine" hover effect to adapt).
+
+**What changed**
+- `UnverifiedList.tsx` (+ test, README) — dropped "Copy this list for the record" and its
+  clipboard state entirely.
+- `RunTopBar.tsx` — `ol` back to `items-center`; `translate-y-[2px]` on the breadcrumb link,
+  closing a measured ~1.9px baseline gap against the run name beside it (see Verification).
+- `public/favicon.png`, `public/favicon-attention.png` (new, replacing the `.svg` pair),
+  `index.html`, `useAttentionFavicon.ts` (+ test) — the user's actual logo, and a scripted
+  attention-dot variant generated from it. DECISIONS 0081.
+- `ReviewsTable.tsx`, `ArchiveTable.tsx`, `MyReviews.tsx` — `ReviewsTable` takes a new
+  `selectable` prop; `MyReviews` passes `tab !== 'pending'`, so the Pending tab shows no
+  checkboxes (ArchiveTable already had this prop and pattern). Both tables' "Details" column
+  header is now visible text, not sr-only. Both tables' row hover moved from `hover:bg-bg` to
+  `hover:bg-border-subtle`. DECISIONS 0083.
+- `tokens.css` — `--radius-sm`/`-md`/`-lg` all become `0.625rem` (10px), and a new
+  `--color-button-shine` token. DECISIONS 0082, 0083.
+- `MyReviews.tsx` — `progOpen` now starts `true` ("runs still in progress" is open by default).
+- `RunReviewPage.tsx`, new `useDocumentTitle.ts` (+ test) — the browser tab title becomes
+  "{run name} | Berit Alasmäki" while a run is open, restored on unmount.
+- `button.tsx`, `transitions.css` — the `default` button variant gets a CSS-only diagonal
+  shine sweep on hover/focus (`[data-slot="button"][data-variant="default"]::after`); the
+  `outline` variant gains `hover:shadow-card`. DECISIONS 0083.
+
+**Steps, in order**
+1. Read each item against the current code before touching anything, to confirm what it
+   actually referred to (e.g. "wrong favicon" turned out to be a real, separate bug in the
+   attention variant, not the main favicon).
+2. Started the Vite dev server and used a throwaway Playwright script against it for every
+   visual/measurement question in this list — never guessed a CSS fix from reading the JSX
+   alone.
+3. For the breadcrumb misalignment: measured both text runs' rendered bounding boxes with
+   `Range.getBoundingClientRect()` (not `getBoundingClientRect()` on the elements, which
+   includes line-height, not just glyphs) under several `align-items` values, found none of
+   the native flex alignments closed the gap exactly, then measured a small `translateY`
+   nudge until the two centres matched to within 0.125px.
+4. Generated the two new favicons with Pillow (`python3 -I`, writing directly into `public/`)
+   from the attached source image, rather than attempting to hand-redraw it as SVG.
+5. Made each remaining change directly, then re-screenshotted the affected page in both
+   themes after each one.
+6. `npm run check` (full suite, `PLAYWRIGHT_CHROMIUM_EXECUTABLE` set to the available
+   `chromium_headless_shell-1194` binary) — one unit test failure (`MyReviews.test.tsx`
+   expected a click to open what is now open by default) and one lint error (unnecessary type
+   assertion in the new hook's test), both fixed, then green.
+
+**Why it was done this way**
+See DECISIONS 0081 (favicon), 0082 (radius), 0083 (both hovers). The breadcrumb, copy-button
+removal, select-box, column-header, default-open and document-title changes were all small
+enough, single-purpose enough, and uncontested enough not to need their own entries.
+
+**How to do this by hand**
+Open My reviews: the "4 runs still in progress" fold is open on load, the Details column has
+a visible header, there are no select boxes on the Pending tab, and hovering a row darkens it
+visibly in both themes. Open a run: the tab title changes, the breadcrumb and run name line up,
+there is no "Copy this list" button, and hovering "Approve and release" (or any solid button)
+shows a light stripe sweep across it.
+
+**Verification**
+- `npm run check`: typecheck, lint, format, theme-bridge, format-locale, 293 unit tests, 44 e2e
+  tests (WCAG/contrast in both themes, keyboard-only pass, onboarding tour) — all green.
+- Breadcrumb alignment measured precisely: before the fix, the link's text centre sat 1.875px
+  above the run name's; after, 0.125px.
+- Row hover computed-style diff: light `#fff` → `#e9e9e9`, dark `#282828` → `#3d3d3d` (was
+  `#282828` → `#121212`, the wrong direction — see DECISIONS 0083).
+- Button shine verified frame-by-frame across the ~650ms sweep, both themes, on an enabled
+  default-variant button.
+- `getComputedStyle` on a real button after the radius change: `border-radius: 10px`.
+
+**Open questions / next**
+None raised back to the user this round.
+
+---
+
 ### 2026-10-16 · Drop the redundant "Where it is now" column; rename "Run type" to "Status"
 
 **Goal**

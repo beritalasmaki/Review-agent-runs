@@ -6,6 +6,107 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0083 · Button hover: a CSS-only shine, not a pointer-tracked glow; table row hover fixed
+
+**Context.** The user found both hovers too quiet, and supplied a reference implementation for
+a brighter one: a `Button` component that tracks the pointer in React state (`onPointerMove`
+setting `--mx`/`--my`) to centre a radial glow and a diagonal "shine" gradient under the
+cursor, asked to be adapted "according to the style we do." Separately, "table hover" turned
+out to be an actual bug, not just quiet: `ReviewsTable`/`ArchiveTable` rows hovered to
+`--color-bg` (the page background) — in light theme that's the same value as
+`--color-surface-raised` already used for hover everywhere else (barely different from the
+row's own white), and in dark theme `--color-bg` (`#121212`) is *darker* than the row's own
+surface (`#282828`), so hovering made a dark-theme row look like it was sinking into the page
+instead of lifting off it.
+
+**Choice, the button.** Not a literal port. This project's `Button` is a generic, reusable
+primitive (components/README.md) rendered many times a page; wiring pointer-position state
+through every instance for a hover decoration is exactly the kind of abstraction AGENTS.md
+asks not to add beyond what a task needs. It also risks a problem this app has hit before: a
+colour/style change keyed to rapid state updates dropped arrow-key presses in the keyboard e2e
+spec (docs/WORKLOG.md, 2026-09-24, on the line tabs). A CSS-only diagonal sweep gets the same
+"shiny" read without either cost — it keys off `:hover`/`:focus-visible`, pseudo-classes the
+mouse and keyboard focus set natively, never a per-keystroke React re-render, so it cannot
+reproduce that bug (confirmed: the full keyboard spec still passes, all three specs, zero
+dropped presses). It needs no new prop or class either: `Button` already stamps
+`data-slot="button"` and `data-variant="default"` on every instance, so the sweep is pure CSS
+in `transitions.css`, scoped to the one solid-filled variant — the same shape as the
+reference's own `bg-zinc-800` button — where a light stripe reads against a fill. The stripe's
+colour is a new token, `--color-button-shine` (tokens.css): `color-mix(in srgb,
+var(--color-surface) 55%, transparent)`, i.e. the button's own foreground colour (`text-surface`
+is already what the label uses to read against the fill) at partial opacity — correct in both
+themes with no separate dark-mode rule, since the fill itself flips dark/light with the theme
+and this token flips with it. `prefers-reduced-motion` drops the sweep outright (decorative,
+like the welcome intro, not informational like the onboarding tour). The `outline` variant
+(Request changes, Cancel, Filters) isn't filled, so a shine wouldn't read on it; it gets
+`hover:shadow-card` instead, reusing the existing card-shadow token for a small lift.
+
+**Choice, the table.** `hover:bg-bg` → `hover:bg-border-subtle`. Not `surface-raised` (the
+`ghost`-button hover token, and the obvious first guess): checked the actual neutral-scale
+values and `--color-border-subtle` sits one step further from the row's own surface in both
+themes (`#e9e9e9` vs `#f5f5f5` in light; `#3d3d3d` vs `#323232` in dark, both still lighter
+than the row, fixing the inversion) — genuinely more obvious, not just a different name for the
+same colour, and still an existing, principled token (already the table's own border colour),
+not an invented one.
+
+**Consequence.** Verified by computed-style diff in a real browser: light theme row hover is
+now `#fff` → `#e9e9e9` (was `#fff` → `#f5f5f5`, barely perceptible); dark theme is `#282828` →
+`#3d3d3d` (was `#282828` → `#121212`, the wrong direction). The button shine was confirmed
+frame-by-frame in both themes: a light stripe sweeping a dark-filled button in light theme, a
+dark stripe sweeping a light-filled button in dark theme — both read as "shiny," neither
+washes out. `npm run check` is green, keyboard e2e included.
+
+---
+
+## 0082 · A flat 10px radius everywhere, replacing the per-size scale
+
+**Context.** The user's reaction to the app's corners: "Instead of having round corners would
+rather have 10px borders. Now everything is really round." `--radius-sm`/`-md`/`-lg` (0068)
+scaled from 4px to 8px to 14px by element size — cards at 14px read the roundest, and cards are
+also the largest, most visually dominant shape on the page, so that's exactly the complaint.
+
+**Choice.** All three tokens become the same flat `0.625rem` (10px), in tokens.css only — no
+component changes needed, since every rounded corner in the app already goes through
+`rounded-sm`/`-md`/`-lg` and those map straight to these tokens. `rounded-full` (pills, status
+dots, the theme toggle, checkboxes, radios) is untouched on purpose: those are circular by
+design — a full pill has no "corner" to flatten, and the user's complaint was specifically
+about corners reading round, not about rounded controls existing at all.
+
+**Consequence.** Verified: `getComputedStyle` on a real button after the change reports
+`border-radius: 10px` exactly, with no other styling needing to change — a one-file fix.
+
+---
+
+## 0081 · The real favicon artwork arrives; the attention variant gets fixed along with it
+
+**Context.** 0075 reconstructed a favicon from circumstantial evidence because the user's
+actual attached image never reached a readable path that session. This time the file came
+through: a 260×260 PNG, a hand-drawn orange crane/bird mark on a solid black circle — a
+different image from 0075's grey-swatch guess, confirming that reconstruction is now
+superseded rather than correct. Investigating where to apply it surfaced a second, unrelated
+bug: `public/favicon-attention.svg` (the amber-dot variant shown while a run has things to
+solve, 0054) was never updated by 0075 — it was still 0065's "mustache heart" icon, completely
+unrelated to either favicon that came after it. That latent mismatch is what the user was
+actually seeing as "wrong favicon used in single run page."
+
+**Choice.** `public/favicon.svg`/`favicon-attention.svg` are replaced with `favicon.png`/
+`favicon-attention.png` — a format change, not just new artwork: the source is a raster PNG,
+and this session has no reliable way to vectorize hand-drawn brushwork into an accurate SVG
+path, so redrawing it as an SVG (the way 0065 and 0075 both did) would mean approximating the
+art rather than using it as supplied. `index.html`'s `<link rel="icon">` and
+`useAttentionFavicon.ts`'s `ATTENTION_FAVICON` constant both move to the `.png` paths. The
+attention variant is generated from the same source image (Pillow, scripted, not hand-drawn):
+the identical logo with a white-ringed amber dot (`#ffb224`, `--status-amber-dark`, the same
+tone the "needs your review" badge dot already uses) composited in the top-right corner, the
+same position and proportions 0065's SVG version used — so the two favicons are finally the
+same mark again, one plain and one with a dot, instead of two unrelated images.
+
+**Consequence.** `useAttentionFavicon.test.tsx`'s hardcoded `/favicon.svg` strings move to
+`/favicon.png`. Verified by rendering both PNGs directly: the plain mark reads clearly at
+favicon size, and the attention variant's dot is legible in the same corner as before.
+
+---
+
 ## 0080 · My reviews drops "Where it is now"; "Run type" becomes "Status"
 
 **Context.** The user noticed "Where it is now" was never carrying information beyond what
