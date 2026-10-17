@@ -73,13 +73,13 @@
    * Hue shifted further from --status-red (0076): the original #c2185b sat only ~29° from
    * red on the colour wheel, close enough to read as "error" under repeated small-dose use;
    * this value sits ~50° away, same saturation/lightness otherwise. */
-  --magenta-light: #c21895;
-  --magenta-light-hover: #881168;
-  --magenta-dark: #ff70d9;
-  --magenta-dark-hover: #ff99e4;
+  --magenta-light: #125a9c;
+  --magenta-light-hover: #08437a;
+  --magenta-dark: #032243;
+  --magenta-dark-hover: #02172e;
   /* Deeper, for fills and underlines only, not text: ~4.6:1 on the dark surfaces, matching
    * 0069's precedent for this token's old (indigo) value. */
-  --magenta-dark-strong: #f547c7;
+  --magenta-dark-strong: #0d4a85;
 
   /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
   --lime-light: #427000;
