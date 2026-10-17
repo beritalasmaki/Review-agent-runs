@@ -276,6 +276,13 @@
   --color-glass: color-mix(in srgb, var(--neutral-0) 70%, transparent);
   --color-glass-border: rgb(255 255 255 / 0.3);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.12);
+  /* A glass surface that needs to carry a status tint through it and keep its own text's
+   * contrast (0091 — the "N need your review" badge): a neutral `--color-glass` dilutes
+   * `--status-waived-tint-fg` below 4.5:1 once blended with the page's gradient underneath, so
+   * this mixes toward the same amber tint the text was already verified against, more opaque
+   * than the neutral glass needs to be, rather than toward plain white/black. Tuned against a
+   * real contrast measurement of the rendered pixels, the same way `--color-glass` was. */
+  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-light) 97%, transparent);
 
   /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text
    * colour — at partial opacity. `currentColor` resolves per element at use time, not here, so
@@ -402,6 +409,7 @@
     --color-modal-scrim: rgb(0 0 0 / 0.6);
 
     --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
+    --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 95%, transparent);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --page-gradient: var(--page-gradient-dark);
   }
@@ -455,6 +463,7 @@
   --color-modal-scrim: rgb(0 0 0 / 0.6);
 
   --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
+  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 95%, transparent);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --page-gradient: var(--page-gradient-dark);
 }

@@ -6,6 +6,53 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0091 · Glass tabs and badge on My reviews: a status-tinted glass token, and an amber primitive typo axe-core couldn't have caught
+
+**Context.** Continuing the frosted-glass pilot (0089), the user asked for the My reviews
+status tabs and the "N need your review" badge to read as frosted glass too, from a reference
+image (a Google Photos–style floating pill nav bar, the active item in its own capsule).
+
+**Choice.** The status tabs switch from the `line` variant to the existing `pill` variant
+(`components/Tabs.tsx`) — its sliding capsule (`useSlidingIndicator('pill')`) already does
+"active item gets its own highlight," so no new animation code was needed, only a new
+`indicatorClassName` prop (threaded through `TabsList`/`PillTabsList`) so this one page's
+capsule can use the glass tokens without changing the run page's own `pill` tabs
+(Story/Evidence/All steps), which stay on the original `bg-surface shadow-sm`. First pass gave
+the capsule its own `border-glass-border`, matching the outer track's border — visibly a
+double outline in dark theme, reported directly ("should not have double borders, looks weird
+otherwise") and fixed by dropping the capsule's own border entirely: a plain glass fill (bg +
+blur + shadow) reads as the highlight, and the one remaining border is the track's.
+
+The badge needed a second glass token, `--color-glass-warning`: the existing neutral
+`--color-glass` diluted `--status-waived-tint-fg` (amber text) below 4.5:1 once blended with
+the page's gradient, so this one mixes toward the amber tint itself instead of toward white/
+black, more opaque than the neutral glass needs to be, tuned against real measured pixels the
+same way `--color-glass` was (5.5:1 light / 7.6:1 dark, both comfortably clear).
+
+**A real bug, not just a tuning pass.** The first version of `--color-glass-warning`
+referenced `var(--status-waived-tint-bg-light)`/`-dark` — primitives that don't exist; the
+actual names are `--status-amber-tint-bg-light`/`-dark`. An invalid reference inside
+`color-mix()` makes the whole declaration invalid, which (for a non-inherited property like
+`background-color`) silently falls back to `transparent` rather than erroring — so the badge
+*looked* like a plausible amber-tinted glass pill (through to a measured contrast of 3.5–4.2:1,
+still a real failure) while actually just showing the blurred page gradient through, no tint at
+all. `scripts/check-theme-bridge.mjs`'s runtime check (built for a different bug class, 0014)
+caught it immediately — it builds the real CSS and asserts every `bg-*`/`text-*` semantic-token
+utility actually paints a non-transparent/non-inherited colour in a real browser, in all three
+theme states. The static accessibility-contrast infrastructure from 0089/0090 could not have
+caught this on its own: a transparent background still measures *some* contrast against
+whatever is behind it; only a tool that knows what colour a token is supposed to resolve to at
+all catches a reference to a name that silently doesn't exist.
+
+**Consequence.** `check-theme-bridge.mjs` is not just a shadcn-bridge-collision guard anymore
+in practice — any new `--color-*` token, used via its `bg-*`/`text-*` utility anywhere in the
+app, gets the same runtime verification automatically, which is exactly what caught this.
+Worth remembering next time a new token is added: `npm run check` (or
+`node scripts/check-theme-bridge.mjs` directly) running clean is part of "this token actually
+works," not just the format/typecheck/lint steps.
+
+---
+
 ## 0090 · Animated icons: a real morph library for meaning changes, the existing `.t-*` CSS convention for click feedback
 
 **Context.** The user wanted icons to animate on action — two Dribbble references (video
