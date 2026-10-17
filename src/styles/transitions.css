@@ -359,7 +359,7 @@
  * that, for the same reason `.t-pop`'s own comment already gives.
  */
 :root {
-  --icon-pop-dur: 560ms;
+  --icon-pop-dur: 860ms;
   --icon-pop-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -374,7 +374,7 @@
   }
   45% {
     scale: 1.25;
-    filter: drop-shadow(0 0 3px var(--color-primary));
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-primary) 60%, transparent));
   }
   100% {
     scale: 1;
