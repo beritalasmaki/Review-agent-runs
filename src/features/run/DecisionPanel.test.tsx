@@ -89,12 +89,15 @@ describe('DecisionPanel', () => {
     const user = userEvent.setup()
     render(<DecisionPanel run={runBlocked} onRunUpdated={vi.fn()} />)
 
+    // Each confirmation opens a beat after the click, behind the icon's own pop (0090).
     await user.click(screen.getByRole('button', { name: 'Request changes' }))
-    expect(within(screen.getByRole('dialog')).getByLabelText('What should change?')).toBeVisible()
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }))
+    const changesDialog = await screen.findByRole('dialog')
+    expect(within(changesDialog).getByLabelText('What should change?')).toBeVisible()
+    await user.click(within(changesDialog).getByRole('button', { name: 'Cancel' }))
 
     await user.click(screen.getByRole('button', { name: 'Reject run' }))
-    expect(within(screen.getByRole('dialog')).getByLabelText('Why is this rejected?')).toBeVisible()
+    const rejectDialog = await screen.findByRole('dialog')
+    expect(within(rejectDialog).getByLabelText('Why is this rejected?')).toBeVisible()
   })
 
   it('names who is deciding', () => {

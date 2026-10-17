@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { SubmitDecisionOptions } from '../../lib/api'
 import { UNDO_WINDOW_MINUTES } from '../../lib/decision'
 import { formatCount } from '../../lib/format'
+import { prefersReducedMotion } from '../../lib/motion'
 import { approvalNeedsReason, buildOpenItems, missingChecks } from '../../lib/openItems'
 import type { OpenItemTarget } from '../../lib/openItems'
 import type { Decision, Run } from '../../lib/types'
@@ -76,6 +77,13 @@ export function DecisionPanel({
   const [popping, setPopping] = useState(false)
   const popTimer = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(popTimer.current), [])
+  // Request changes / Reject run's icon pops the same way Approve's own button does, briefly,
+  // before its confirmation opens (.t-icon-pop, transitions.css; docs/DECISIONS.md, 0090).
+  const [bouncedAction, setBouncedAction] = useState<Exclude<DecisionAction, 'approved'> | null>(
+    null,
+  )
+  const bounceTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(bounceTimer.current), [])
   const reasonId = useId()
   const hintId = useId()
 
@@ -127,7 +135,18 @@ export function DecisionPanel({
   function openOther(action: Exclude<DecisionAction, 'approved'>) {
     window.clearTimeout(popTimer.current)
     setPopping(false)
-    setOpenAction(action)
+    window.clearTimeout(bounceTimer.current)
+    if (prefersReducedMotion()) {
+      setOpenAction(action)
+      return
+    }
+    setBouncedAction(action)
+    // Matches --icon-pop-dur in transitions.css, so the pop is visible before the confirmation
+    // opens over it — the same reasoning approve()'s own delay already uses.
+    bounceTimer.current = window.setTimeout(() => {
+      setBouncedAction(null)
+      setOpenAction(action)
+    }, 260)
   }
 
   function applyConflict(decision: Decision) {
@@ -289,7 +308,11 @@ export function DecisionPanel({
 
         <div className="flex flex-col gap-[var(--space-2)]">
           <Button variant="outline" onClick={() => openOther('changes_requested')}>
-            <ArrowLeft aria-hidden className="h-4 w-4" />
+            <ArrowLeft
+              aria-hidden
+              data-bounce={bouncedAction === 'changes_requested' || undefined}
+              className="t-icon-pop h-4 w-4"
+            />
             Request changes
           </Button>
           <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">
@@ -300,7 +323,11 @@ export function DecisionPanel({
 
         <div className="flex flex-col gap-[var(--space-2)]">
           <Button variant="destructive" onClick={() => openOther('rejected')}>
-            <X aria-hidden className="h-4 w-4" />
+            <X
+              aria-hidden
+              data-bounce={bouncedAction === 'rejected' || undefined}
+              className="t-icon-pop h-4 w-4"
+            />
             Reject run
           </Button>
           <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">

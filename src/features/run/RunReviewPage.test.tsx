@@ -150,7 +150,8 @@ describe('RunReviewPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Undo this decision' }))
     await user.click(await screen.findByRole('button', { name: 'Reject run' }))
-    const dialog = screen.getByRole('dialog')
+    // The confirmation opens a beat after the click, behind the icon's own pop (0090).
+    const dialog = await screen.findByRole('dialog')
     await user.type(within(dialog).getByRole('textbox'), 'The refund rounding is wrong.')
     await user.click(within(dialog).getByRole('button', { name: 'Reject run' }))
 

@@ -339,3 +339,51 @@
       0 0 0 100vmax var(--color-spotlight-scrim);
   }
 }
+
+/* ---- Icon pop -------------------------------------------------------------------------- */
+
+/*
+ * Not from transitions.dev: a small scale-and-glow pop for an icon the user just acted on — a
+ * My reviews tab becoming selected, or Request changes/Reject run clicked (docs/DECISIONS.md,
+ * 0090). Not a morph (components/MorphIcon.tsx is for an icon whose own meaning changes) — this
+ * icon stays the same, it is just "acknowledged." The glow is a reference-image detail (a
+ * frosted music player's play/pause button), not just the scale.
+ *
+ * `data-bounce` only, set by React for a short, timed window after the actual action — never
+ * derived straight from "is this the active tab right now", which would also be true the
+ * instant the tab first mounts and pop on every page load. Cleared by a `setTimeout` matching
+ * `--icon-pop-dur`, the exact mechanism `.t-pop[data-popping]` above already uses safely. A
+ * bounded `@keyframes` animation gated by attribute presence, never a `transition` tied to a
+ * continuously-changing property — a colour transition keyed to rapid automatic-activation tab
+ * state dropped keypresses here before (docs/WORKLOG.md, 2026-09-24); this cannot reproduce
+ * that, for the same reason `.t-pop`'s own comment already gives.
+ */
+:root {
+  --icon-pop-dur: 260ms;
+  --icon-pop-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.t-icon-pop[data-bounce] {
+  animation: t-icon-pop var(--icon-pop-dur) var(--icon-pop-ease);
+}
+
+@keyframes t-icon-pop {
+  0% {
+    scale: 1;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  45% {
+    scale: 1.35;
+    filter: drop-shadow(0 0 6px var(--color-primary));
+  }
+  100% {
+    scale: 1;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-icon-pop[data-bounce] {
+    animation: none !important;
+  }
+}
