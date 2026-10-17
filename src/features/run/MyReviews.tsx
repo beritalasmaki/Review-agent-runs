@@ -426,7 +426,7 @@ function ReviewsBoard({
             <Badge
               variant="warning"
               data-tour="needs-review-badge"
-              className="px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
+              className="border-glass-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body shadow-glass backdrop-blur-[var(--blur-glass)]"
             >
               <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
               {needsYou} need{needsYou === 1 ? 's' : ''} your review
@@ -479,9 +479,14 @@ function ReviewsBoard({
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
-              <TabsList variant="line" label="Run types">
+              <TabsList
+                variant="pill"
+                label="Run types"
+                className="scrollbar-none w-full max-w-full justify-start overflow-x-auto border-glass-border bg-glass backdrop-blur-[var(--blur-glass)]"
+                indicatorClassName="border-0 bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+              >
                 {TABS.map(({ value, label, mark, icon: Icon }) => (
-                  <TabsTrigger key={value} variant="line" value={value}>
+                  <TabsTrigger key={value} variant="pill" value={value}>
                     {mark ? (
                       <span
                         aria-hidden

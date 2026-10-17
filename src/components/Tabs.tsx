@@ -55,6 +55,10 @@ export interface TabsListProps {
   variant?: TabsVariant
   /** Names the tab list for assistive tech when there is no visible heading for it. */
   label?: string
+  /** Pill variant only: overrides the sliding indicator's own surface (`bg-surface shadow-sm`
+   * by default) — for a caller on a non-default background, e.g. a glass card's own frosted
+   * capsule (docs/DECISIONS.md, 0091), where the plain white pill would read as a mistake. */
+  indicatorClassName?: string
 }
 
 /** A full-width segmented bar (each trigger fills an equal share of the row, not a small
@@ -64,10 +68,16 @@ export interface TabsListProps {
  * edge inside a card that already has its own border, and a caller wanting the bar to bleed
  * to that card's outer edge supplies its own negative margin (this component doesn't assume
  * a specific parent padding value). */
-export function TabsList({ children, className, variant = 'segmented', label }: TabsListProps) {
+export function TabsList({
+  children,
+  className,
+  variant = 'segmented',
+  label,
+  indicatorClassName,
+}: TabsListProps) {
   if (variant === 'pill') {
     return (
-      <PillTabsList className={className} label={label}>
+      <PillTabsList className={className} label={label} indicatorClassName={indicatorClassName}>
         {children}
       </PillTabsList>
     )
@@ -186,10 +196,12 @@ function PillTabsList({
   children,
   className,
   label,
+  indicatorClassName,
 }: {
   children: ReactNode
   className?: string
   label?: string
+  indicatorClassName?: string
 }) {
   const { listRef, indicatorRef } = useSlidingIndicator('pill')
   return (
@@ -197,7 +209,7 @@ function PillTabsList({
       <span
         ref={indicatorRef}
         aria-hidden
-        className="t-tabs-pill rounded-full bg-surface shadow-sm"
+        className={cn('t-tabs-pill rounded-full bg-surface shadow-sm', indicatorClassName)}
       />
       {children}
     </UI.TabsList>
