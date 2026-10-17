@@ -369,10 +369,10 @@
 
 @keyframes t-icon-fade {
   0% {
-     transform: rotate(-20deg) scale(0.9);
+     transform: rotate(-20deg);
   }
   100% {
-    transform: rotate(0deg) scale(1);
+    transform: rotate(0deg);
   }
 }
 
