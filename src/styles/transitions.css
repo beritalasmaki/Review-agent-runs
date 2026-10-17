@@ -340,7 +340,7 @@
   }
 }
 
-/* ---- Icon pop -------------------------------------------------------------------------- */
+/* ---- Icon fade -------------------------------------------------------------------------- */
 
 /*
  * Not from transitions.dev: a small scale-and-glow pop for an icon the user just acted on — a
@@ -359,26 +359,22 @@
  * that, for the same reason `.t-pop`'s own comment already gives.
  */
 :root {
-  --icon-pop-dur: 860ms;
-  --icon-pop-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --icon-fade-dur: 300ms;
+  --icon-fade-ease: ease-in-out;
 }
 
 .t-icon-pop[data-bounce] {
-  animation: t-icon-pop var(--icon-pop-dur) var(--icon-pop-ease);
+  animation: t-icon-fade var(--icon-fade-dur) var(--icon-fade-ease);
 }
 
-@keyframes t-icon-pop {
+@keyframes t-icon-fade {
   0% {
-    scale: 1;
-    filter: drop-shadow(0 0 0 transparent);
-  }
-  45% {
-    scale: 1.25;
-    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-primary) 60%, transparent));
+    opacity: 0;
+    transform: scale(0.95);
   }
   100% {
-    scale: 1;
-    filter: drop-shadow(0 0 0 transparent);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
