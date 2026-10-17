@@ -359,7 +359,7 @@
  * that, for the same reason `.t-pop`'s own comment already gives.
  */
 :root {
-  --icon-fade-dur: 300ms;
+  --icon-fade-dur: 1200ms;
   --icon-fade-ease: ease-in-out;
 }
 
