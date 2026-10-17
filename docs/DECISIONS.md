@@ -6,6 +6,68 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0090 · Animated icons: a real morph library for meaning changes, the existing `.t-*` CSS convention for click feedback
+
+**Context.** The user wanted icons to animate on action — two Dribbble references (video
+files, which this session cannot play) and Material Design's animated-icons guide, plus a
+third inspiration image (a music-player UI with a glowing play/pause button). Clarified
+through Plan Mode and several rounds of questions: both morph (an icon's own meaning changes)
+and a plain click bounce (it doesn't), applied to every currently-interactive icon, and —
+specifically ruling out a cheaper CSS-only approach — literal SVG shape-morphing for the
+meaning-change half.
+
+**Options for the morph half.** (a) CSS rotation/scale only, no new dependency, consistent
+with every existing animation here. (b) A real path-morphing library. (c) Hand-rolled SVG path
+interpolation. The user explicitly chose (b) over (a) before any code (AskUserQuestion), and
+(c) was never seriously considered — tweening between two arbitrary Lucide icons' path data by
+hand, correctly, is its own hard problem a dedicated library already solves.
+
+**Choice.** `morphicons` (MIT, ~6–7 KB gzip, spring-physics path morphing, built specifically
+for icon-to-icon transitions) plus `lucide` (the separate package `morphicons` needs for raw
+icon-node *data* — `lucide-react`, already used everywhere else, only exports rendered
+components, which morphicons can't animate). A thin wrapper, `components/MorphIcon.tsx`,
+defaults `reducedMotion="user"` (morphicons' own default is `"never"`) so every call site gets
+an instant swap under reduced motion for free, matching every other `.t-*` animation's own
+guarantee, without each call site having to remember to pass it.
+
+Applied to every icon whose own meaning changes on an existing boolean/enum the component
+already tracks: the Filters and "runs still in progress" disclosure chevrons, `StepsTab.tsx`'s
+grouped-step chevron (also unified from a `ChevronRight` + `rotate-90` approximation onto the
+same `ChevronDown`/`ChevronUp` pair the other two use, for one consistent disclosure
+convention), and `ReviewsTable.tsx`'s sort-direction arrows. **`ThemeToggle`'s Sun/Moon was
+deliberately left alone** despite being a textbook morph target: it currently shows both icons
+simultaneously as fixed track-end decorations with the thumb sliding between them, a different,
+already-working visual metaphor a literal morph would have to restructure, not drop into — not
+something this task's own scope asked for, so left as is rather than redesigned on the side.
+
+For the bounce half (My reviews tab icons on selection; Request changes/Reject's icons on
+click) — no new dependency: the existing `transitions.css` `.t-*` convention already covers
+this exactly, a new `.t-icon-pop` pattern alongside `.t-pop`/`.t-success-check`, with its own
+motion tokens and its own `prefers-reduced-motion` guard, per `src/styles/README.md`'s own
+rule ("change a transition's feel through its variables, never by editing the keyframes").
+
+**The keyboard-regression risk, and how it was avoided.** This codebase has broken a keyboard
+e2e test from tab-related motion twice before (`docs/WORKLOG.md`, 2026-09-24; this session's
+own four-attempt tabs-sliding-indicator fix) — once from a *colour transition* tied to rapid
+automatic-activation state, once from a continuously-rescheduling `requestAnimationFrame` loop
+perturbing Chromium's synthetic-input handling. `.t-icon-pop` avoids both causes deliberately:
+it is a bounded `@keyframes` animation (not a `transition`) gated by a `data-bounce` attribute's
+*presence*, set once per genuine action and cleared by a `setTimeout`, mirroring `.t-pop[data-
+popping]`'s already-proven-safe mechanism exactly — not derived straight from "is this the
+active tab right now" (which would also play on the very first page load, since the default
+tab starts selected). `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` (both themes)
+confirmed no dropped keypresses before this shipped.
+
+**Consequence.** Two new runtime dependencies (`morphicons`, `lucide`) alongside the
+`lucide-react` the rest of the app still uses for every non-morphing icon — a real, if small,
+addition to the dependency surface and the production bundle (+~25 KB / +~10 KB gzip, measured
+via `npm run build`), for a capability (literal shape-morphing) this app genuinely cannot do
+with hand-written CSS alone. Request changes/Reject's confirmation dialog now opens ~260ms
+later than before the click, matching the delay `approve()`'s own pop already uses, so the pop
+is visible before the dialog covers it — a small, deliberate behaviour change, not a bug.
+
+---
+
 ## 0089 · Frosted glass, piloted on My reviews only, chrome translucent and data solid
 
 **Context.** The user asked for a "frosted glass" theme in both light and dark mode, from two

@@ -39,6 +39,101 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-17 · Animated icons: morph where meaning changes, bounce where it doesn't
+
+**Goal**
+The user wanted icons to animate on action — two Dribbble video references (couldn't be
+played directly), Material Design's animated-icons guide, and a music-player UI image — with
+icon shape itself morphing for meaning changes (chevrons, sort arrows), not just rotation.
+
+**What changed**
+- `package.json` — two new dependencies: `morphicons` (spring-physics SVG path morphing) and
+  `lucide` (the raw icon-node data `morphicons` consumes; `lucide-react`, used everywhere else,
+  only exports rendered components). DECISIONS 0090.
+- `components/MorphIcon.tsx` (+ `.stories.tsx`) — new component wrapping `morphicons/react`,
+  defaulting `reducedMotion="user"` so every call site gets an instant swap under reduced
+  motion without remembering to pass it.
+- Four call sites switched to `MorphIcon`: `ReviewsToolbar.tsx`'s Filters chevron,
+  `MyReviews.tsx`'s "runs still in progress" chevron, `StepsTab.tsx`'s grouped-step chevron
+  (also unified from `ChevronRight` + `rotate-90` onto the same `ChevronDown`/`ChevronUp` pair
+  the other two use), and `ReviewsTable.tsx`'s sort-direction arrows.
+  `ThemeToggle.tsx`'s Sun/Moon deliberately left alone — see Why below.
+- `transitions.css` — new `.t-icon-pop` pattern (own motion tokens, own reduced-motion guard,
+  following every existing `.t-*` pattern's own convention): a small scale-and-glow pop for an
+  icon that doesn't change meaning, just "acted upon."
+- `MyReviews.tsx` — `poppedTab` state, set by `chooseTab` and cleared by timeout, drives
+  `data-bounce` on the selected tab's icon. Not derived straight from "is this tab active",
+  which would also fire on first page load.
+- `DecisionPanel.tsx` — `bouncedAction` state, same mechanism, for Request changes/Reject's
+  icons; `openOther` now delays opening the confirmation dialog by the pop's duration under
+  normal motion (immediately under reduced motion), mirroring `approve()`'s own existing delay.
+- `docs/DECISIONS.md`, `components/README.md` — 0090, and the new component documented.
+
+**Steps, in order**
+1. Plan Mode: two parallel Explore agents (icon inventory across tabs/chevrons/decision
+   buttons; existing motion infrastructure in `transitions.css`/`lib/motion.ts`). Three rounds
+   of `AskUserQuestion` across this and the prior turn settled scope (morph vs. bounce, which
+   icons, CSS-only vs. literal shape-morphing).
+2. Researched morph libraries via `WebSearch` (not guessed from training data, which could be
+   stale) — `morphicons` confirmed on npm (v2.0.0), a `./react` subpath export, React ≥18 peer.
+3. `npm install morphicons lucide` — audit flagged one pre-existing high-severity advisory
+   (`source-map-js`, via `@tailwindcss/vite`/`vite`/`jsdom`); confirmed via `npm ls` it has
+   nothing to do with the new packages, left alone.
+4. Read `node_modules/morphicons/dist/react.d.ts` and its README directly rather than guessing
+   the API: `<MorphIcon icon={open ? X : Menu} />` (uncontrolled — changing the prop animates),
+   `reducedMotion`, `label` (unset → `aria-hidden`, matching this app's existing icon
+   convention) all confirmed from the real type definitions.
+5. Wired the four morph call sites and `MorphIcon.tsx`. `npx tsc -b` and `npm run lint` clean.
+6. Designed `.t-icon-pop` — first version keyed the tab-icon pop straight to
+   `data-state='active'`, then realised that plays on every page load too (the default tab
+   starts active). Reworked to a timed `data-bounce` state set only by the actual selection
+   handler, matching `.t-pop[data-popping]`'s mechanism exactly.
+7. `npm run build` — green; module count and bundle size both grew measurably
+   (~2068 → ~3978 modules, +~25 KB / +~10 KB gzip), tracked in DECISIONS 0090, not alarming.
+8. Real-browser throwaway Playwright script: confirmed the tab icon's computed `scale` actually
+   changes mid-animation and settles afterward; confirmed the chevron's rendered SVG `path d`
+   attribute genuinely changes shape (not just rotates) — caught one bug along the way: the
+   first version of this check accidentally selected the *other* icon in the Filters button
+   (`SlidersHorizontal`, which never changes) instead of the morphing chevron; confirmed sort
+   direction drives the icon prop; confirmed the Request-changes dialog is NOT visible mid-pop
+   and IS visible after, proving the new delay actually works; confirmed `reducedMotion:
+   'reduce'` suppresses both the CSS pop (computed `scale` stays `none`) and the morph (the
+   chevron's path jumps straight to its final shape within one frame, not mid-interpolation).
+9. The non-negotiable stress test: `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`
+   — 16 failures, but all but one were the exact, already-known pre-existing "My reviews,
+   keyboard only" bug (confirmed earlier this session via `git stash` against clean `main`,
+   same assertion, same line). The one new failure ("the theme switch works from the keyboard")
+   looked concerning at first — re-ran that single test in isolation at `--repeat-each=20` on
+   clean `main` (20/20 passed) and again on this branch (20/20 passed): the one failure only
+   showed up running the *whole* keyboard suite 15× concurrently, so it was CPU-contention
+   flake from the stress run itself, not a real regression — confirmed by isolating the
+   variable (same test, same branch, different load) rather than assumed.
+
+**Why it was done this way**
+See DECISIONS 0090 for the morph-vs-bounce split, why `ThemeToggle` was left alone (it shows
+both Sun and Moon simultaneously as track-end decorations with the thumb sliding between them —
+a different, already-working visual metaphor a literal morph would have to restructure, not a
+drop-in icon swap), and the full keyboard-regression reasoning.
+
+**How to do this by hand**
+Click the Filters button, the "runs still in progress" row, a grouped-step row, or a sortable
+column header: the chevron/arrow visibly reshapes rather than snapping or rotating. Click a My
+reviews tab: its icon pops briefly. Click Request changes or Reject: the icon pops, then the
+confirmation opens a beat later.
+
+**Verification**
+`npm run check` green (typecheck, lint, format, theme-bridge, format-locale, unit tests, full
+e2e). `npm run build` explicit, green. `e2e/keyboard.spec.ts --repeat-each=15` (both themes):
+no new dropped-keypress failures, the stress test this plan called non-negotiable.
+`prefers-reduced-motion` confirmed to suppress both the morph and the pop via real computed
+style, not inference from a screenshot.
+
+**Open questions / next**
+`ThemeToggle`'s Sun/Moon stays a dual-icon slider, not a morph — flagged in DECISIONS 0090 as a
+deliberate scope boundary, not an oversight, in case the user wants it reconsidered.
+
+---
+
 ### 2026-10-17 · Frosted-glass theme, piloted on My reviews
 
 **Goal**
