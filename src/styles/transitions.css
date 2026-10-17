@@ -13,9 +13,9 @@
   --check-rotate-dur: 800ms;
   --check-rotate-from: 80deg;
   --check-bob-dur: 800ms;
-  --check-y-amount: 40px;
+  --check-y-amount: 20px;
   --check-blur-dur: 800ms;
-  --check-blur-from: 10px;
+  --check-blur-from: 8px;
   --check-path-dur: 800ms;
   --check-path-delay: 80ms;
   --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
