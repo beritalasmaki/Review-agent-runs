@@ -284,10 +284,10 @@
   inset: 0;
   background: linear-gradient(
     115deg,
-    transparent 20%,
-    var(--color-button-shine) 42%,
-    var(--color-button-shine) 58%,
-    transparent 80%
+    transparent 35%,
+    var(--color-button-shine) 48%,
+    var(--color-button-shine) 52%,
+    transparent 65%
   );
   transform: translateX(-120%);
   pointer-events: none;
