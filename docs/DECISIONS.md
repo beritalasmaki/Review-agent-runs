@@ -6,6 +6,55 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0093 · Tab icon pop replaced: a persistent colour reveal on the active tab, a gentler settle everywhere else
+
+**Context.** Direct feedback once 0092 shipped: "that icon-pop animation is annoying to the
+eye and would rather prefer some gentle fade-in... or something similar," followed by a
+concrete idea for the My reviews status tabs specifically: "inactive tabs icon colors are the
+same colour but once the user clicks it, it shows its true colour (e.g. accepted/success is
+green)." Also, in hindsight, the old pop's glow was always `filter: drop-shadow(... var(--color-
+primary))` — a reference-image detail built around a vivid magenta; once 0092 made primary
+neutral, a colourless glow flashing on click had nothing left to justify "pop."
+
+**Choice, My reviews tabs.** Dropped the pop mechanism there entirely, replaced by the
+suggested interaction: every tab's icon chip sits at a neutral `bg-surface-raised`/
+`text-text-secondary` at rest, and only shows its own status colour (`bg-mark-*`/
+`text-mark-glyph` — the same pair it always rendered unconditionally before) once selected.
+Implemented as plain Tailwind utilities keyed on `aria-selected` (`group-aria-selected:bg-mark-
+pending` etc., each written as a literal string in `TABS` so Tailwind's JIT scanner actually
+generates the class — a template-built string would not), with a `transition-colors` for the
+reveal rather than the old `data-bounce`/`setTimeout` machinery, which is no longer needed at
+all. `aria-selected`, not `data-state`: `Tabs.tsx`'s own comment on `useSlidingIndicator`
+already documents a tooltip-wrapped pill trigger shadowing `data-state` with Radix Tooltip's
+own; these tabs carry no tooltip today, but `aria-selected` is correct either way.
+
+**A transition, not a bounded keyframe — on purpose, and checked.** `transitions.css`'s own
+"Icon pop" comment has warned since 0090 that a *transition* keyed to rapid keyboard tab-
+switching broke a keyboard test before (docs/WORKLOG.md, 2026-09-24) — that was specifically a
+transform/layout-affecting transition on the sliding indicator's own measured position.
+`background-color`/`color` are compositor-only properties with nothing to measure or reflow,
+so the same failure mode doesn't apply in principle — confirmed, not just assumed, with the
+mandatory `--repeat-each=15` keyboard stress test before shipping (clean: only the pre-existing,
+unrelated `My reviews, keyboard only` failure, present identically on clean `main`).
+
+**Choice, everywhere else (Request changes/Reject in `DecisionPanel`).** Still uses
+`.t-icon-pop`/`data-bounce` — a one-shot confirmation pulse still fits there, unlike the tabs,
+which needed a *persistent* state, not a transient click acknowledgement. The keyframe itself
+changed from a springy `scale: 1 → 1.35 → 1` with a coloured `drop-shadow` to a calmer
+`opacity: 0.4 → 1` + `scale: 0.92 → 1` settle, no glow, `cubic-bezier(0.16, 1, 0.3, 1)` (an
+ease-out, not the old back-easing overshoot) — directly answering "gentle fade-in," and
+sidestepping the now-colourless-glow problem outright by not having one.
+
+**Consequence.** `MyReviews.tsx` lost the `poppedTab`/`poppedTabTimer` state and its cleanup
+`useEffect` entirely — the Tailwind/CSS mechanism needs no React-side timing at all, a net
+simplification. A future tab list that wants the same "neutral until selected" treatment should
+follow the same `group` + `group-aria-selected:` pattern (`components/Tabs.tsx`'s own
+`TabsTrigger`/`PillTrigger` already forward `className`, so `className="group"` at the call
+site is enough) rather than reaching for `data-bounce` again, which this round carries forward
+with a changed keyframe but no changed design, for DecisionPanel only.
+
+---
+
 ## 0092 · Primary goes neutral (reversing 0073's magenta), and glass buttons on My reviews
 
 **Context.** Two follow-on requests. First: "replace that pink contrast colour with something

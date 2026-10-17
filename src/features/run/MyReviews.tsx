@@ -169,15 +169,20 @@ const TABS: {
   mark?: string
   icon: ComponentType<{ className?: string }>
 }[] = [
-  { value: 'pending', label: 'Pending', mark: 'bg-mark-pending', icon: Clock },
+  { value: 'pending', label: 'Pending', mark: 'group-aria-selected:bg-mark-pending', icon: Clock },
   {
     value: 'requested',
     label: 'Requested for change',
-    mark: 'bg-mark-requested',
+    mark: 'group-aria-selected:bg-mark-requested',
     icon: ArrowRight,
   },
-  { value: 'declined', label: 'Declined', mark: 'bg-mark-declined', icon: X },
-  { value: 'approved', label: 'Approved', mark: 'bg-mark-approved', icon: Check },
+  { value: 'declined', label: 'Declined', mark: 'group-aria-selected:bg-mark-declined', icon: X },
+  {
+    value: 'approved',
+    label: 'Approved',
+    mark: 'group-aria-selected:bg-mark-approved',
+    icon: Check,
+  },
   { value: 'all', label: 'All runs', icon: List },
 ]
 
@@ -214,11 +219,6 @@ function ReviewsBoard({
   const today = formatCalendarDate(now.toISOString())
   const [view, setView] = useState<'main' | 'archive'>('main')
   const [tab, setTab] = useState<ReviewTab>('pending')
-  // The selected tab's icon pops briefly (.t-icon-pop, transitions.css) — a timed window after
-  // the actual selection, not derived from "is this tab active", so it never plays on mount.
-  const [poppedTab, setPoppedTab] = useState<ReviewTab | null>(null)
-  const poppedTabTimer = useRef<number | undefined>(undefined)
-  useEffect(() => () => window.clearTimeout(poppedTabTimer.current), [])
   const [filters, setFilters] = useState<FilterState>({
     query: '',
     time: 'all',
@@ -313,10 +313,6 @@ function ReviewsBoard({
   function chooseTab(next: ReviewTab) {
     setTab(next)
     setSelected(new Set())
-    window.clearTimeout(poppedTabTimer.current)
-    setPoppedTab(next)
-    // Matches --icon-pop-dur in transitions.css.
-    poppedTabTimer.current = window.setTimeout(() => setPoppedTab(null), 260)
   }
   function toggle(id: string) {
     setSelected((current) => {
@@ -487,24 +483,19 @@ function ReviewsBoard({
                 indicatorClassName="border-0 bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
               >
                 {TABS.map(({ value, label, mark, icon: Icon }) => (
-                  <TabsTrigger key={value} variant="pill" value={value}>
+                  <TabsTrigger key={value} variant="pill" value={value} className="group">
                     {mark ? (
                       <span
                         aria-hidden
-                        data-bounce={poppedTab === value || undefined}
                         className={cn(
-                          't-icon-pop inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full text-mark-glyph',
+                          'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-surface-raised text-text-secondary transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] group-aria-selected:text-mark-glyph',
                           mark,
                         )}
                       >
                         <Icon className="h-3 w-3" />
                       </span>
                     ) : (
-                      <Icon
-                        aria-hidden
-                        data-bounce={poppedTab === value || undefined}
-                        className="t-icon-pop h-4 w-4 text-text-secondary"
-                      />
+                      <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
                     )}
                     {label}
                     <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">

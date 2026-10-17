@@ -39,6 +39,86 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-17 · Tab icon colour reveal, and a gentler icon-pop
+
+**Goal**
+Replace the "annoying" icon-pop bounce on My reviews' status tabs with the user's own idea — a
+neutral icon at rest, revealing its true status colour only once selected — and calm the
+remaining click-feedback pop (Request changes/Reject) from a springy scale+glow to a gentle
+fade-and-settle.
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — `TABS`' `mark` values are now full `group-aria-selected:
+  bg-mark-*` literals (not bare `bg-mark-*`); the tab icon chip is `bg-surface-raised`/
+  `text-text-secondary` at rest with `transition-colors`, revealing `group-aria-selected:
+  bg-mark-*`/`text-mark-glyph` once selected. `TabsTrigger` gets `className="group"`. Removed
+  the `poppedTab`/`poppedTabTimer` state, its cleanup `useEffect`, and the `data-bounce`/
+  `t-icon-pop` wiring on both tab icon branches — no longer needed.
+- `src/styles/transitions.css` — `@keyframes t-icon-pop` changed from `scale: 1 → 1.35 → 1`
+  with a `var(--color-primary)` drop-shadow to `opacity: 0.4 → 1` + `scale: 0.92 → 1`, no glow;
+  `--icon-pop-ease` changed from a back-easing overshoot to `cubic-bezier(0.16, 1, 0.3, 1)`.
+  Doc comments rewritten: "Icon pop" now describes `DecisionPanel`'s Request changes/Reject
+  pulse only; a new "Tab icon colour reveal" section explains the `aria-selected`-keyed
+  mechanism and why a plain `transition` is safe here despite the documented keyboard
+  regression risk for Tabs-territory motion.
+- `src/components/README.md` — updated the `.t-icon-pop` reference (no longer a "bounce";
+  notes the tab icons now use a different, persistent-state mechanism).
+- `docs/DECISIONS.md` — new entry 0093.
+
+**Steps, in order**
+1. Rewrote `TABS` in `MyReviews.tsx` with literal `group-aria-selected:bg-mark-*` strings
+   (a template-built class name would not be picked up by Tailwind's JIT scanner).
+2. Rewrote the tab icon `<span>`/`<Icon>` rendering to the neutral-at-rest/revealed-on-select
+   classes, added `className="group"` to `TabsTrigger`, removed the now-unused pop state/timer.
+3. Redesigned `@keyframes t-icon-pop` in `transitions.css` and its easing token; rewrote the
+   surrounding doc comments.
+4. `npm run build` (picked up the Tailwind class correctly — confirmed by grepping the built
+   CSS for `aria-selected\:bg-mark-pending`, since a silently-missing generated class is exactly
+   the kind of bug this project's `check-theme-bridge.mjs` was built to catch for colour tokens
+   but wouldn't catch here), then a real-browser screenshot pass clicking through every tab in
+   both themes to confirm the reveal reads correctly.
+5. `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` — the mandatory stress test for
+   any `Tabs.tsx`-territory motion change, given this project's history of two prior keyboard
+   regressions from tab/button motion.
+6. `npm run check` (typecheck, lint, format, theme-bridge, format-locale, unit tests, e2e) full
+   pass.
+7. Wrote `docs/DECISIONS.md` 0093 and this entry.
+
+**Why it was done this way**
+- The first screenshot pass (before step 4's rebuild) still showed every tab's true colour at
+  rest — a stale `vite preview` serving the previous `dist/` build, not a code bug. Worth
+  remembering: a `vite preview` server does not pick up source changes; it has to be rebuilt.
+- `aria-selected` over `data-state` for the same reason `Tabs.tsx`'s sliding-indicator code
+  already documents: a tooltip-wrapped pill trigger's own Radix Tooltip writes `data-state`
+  (open/closed) onto the same DOM node, shadowing Tabs' own active/inactive state. Not an issue
+  for these specific tabs (no tooltip), but `aria-selected` is correct regardless and costs
+  nothing extra, so there is no reason to use the less-robust one.
+- A plain CSS `transition` (not the bounded, timed `@keyframes`+`data-bounce` pattern 0090
+  established) is the one real risk in this round: the exact failure mode `transitions.css`'s
+  own "Icon pop" comment warns about was a transition tied to rapid keyboard-driven tab
+  switching. Reasoned through before shipping (colour-only, compositor properties, no layout to
+  measure, unlike the previous bug's transform-on-measured-position transition) and then
+  verified, not just assumed — the stress test is what actually settles it.
+
+**How to do this by hand**
+Not meaningfully different from the steps above — this was all direct component/CSS edits.
+
+**Verification**
+`npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: 32/45 passed, 13/45 failed — all
+13 the same pre-existing `My reviews, keyboard only` failure (`ArrowRight ArrowRight` → expect
+the Approved tab focused), none from the icon colour-reveal transition. `npm run check`: typecheck,
+lint, format, theme-bridge, format-locale and all unit tests green; e2e 43/44 green, the one
+failure being that same pre-existing case. `npm run build` green, and its output CSS grepped to
+confirm `group-aria-selected:bg-mark-pending` (etc.) actually generated. Real-browser screenshots
+in both themes, clicking through every tab, confirm the reveal: a muted chip for every inactive
+tab, the tab's own status colour only on the active one.
+
+**Open questions / next**
+- The same "neutral until selected" pattern could suit other icon-bearing tab/filter lists in
+  the app if one appears later — follow `group` + `group-aria-selected:`, not `data-bounce`.
+
+---
+
 ## 2026-10-17 · Neutral primary colour, and glass buttons on My reviews
 
 **Goal**

@@ -343,15 +343,19 @@
 /* ---- Icon pop -------------------------------------------------------------------------- */
 
 /*
- * Not from transitions.dev: a small scale-and-glow pop for an icon the user just acted on — a
- * My reviews tab becoming selected, or Request changes/Reject run clicked (docs/DECISIONS.md,
- * 0090). Not a morph (components/MorphIcon.tsx is for an icon whose own meaning changes) — this
- * icon stays the same, it is just "acknowledged." The glow is a reference-image detail (a
- * frosted music player's play/pause button), not just the scale.
+ * Not from transitions.dev: a gentle fade-and-settle for an icon the user just acted on —
+ * Request changes/Reject run clicked (docs/DECISIONS.md, 0090, revised 0093). Not a morph
+ * (components/MorphIcon.tsx is for an icon whose own meaning changes) — this icon stays the
+ * same, it is just "acknowledged." Originally a springy scale-and-glow pop with the glow in
+ * `--color-primary`; once primary went neutral (0092) a colourless glow flashing on click no
+ * longer read as a pop worth having, and separately read as "annoying" motion — replaced with a
+ * calmer opacity+scale settle, no glow, no overshoot.
+ *
+ * (The My reviews tab icons used this same class until 0093, which replaced it there with a
+ * persistent colour reveal instead — see "Tab icon colour reveal" below.)
  *
  * `data-bounce` only, set by React for a short, timed window after the actual action — never
- * derived straight from "is this the active tab right now", which would also be true the
- * instant the tab first mounts and pop on every page load. Cleared by a `setTimeout` matching
+ * derived straight from "is this active right now". Cleared by a `setTimeout` matching
  * `--icon-pop-dur`, the exact mechanism `.t-pop[data-popping]` above already uses safely. A
  * bounded `@keyframes` animation gated by attribute presence, never a `transition` tied to a
  * continuously-changing property — a colour transition keyed to rapid automatic-activation tab
@@ -360,7 +364,7 @@
  */
 :root {
   --icon-pop-dur: 260ms;
-  --icon-pop-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --icon-pop-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .t-icon-pop[data-bounce] {
@@ -369,16 +373,12 @@
 
 @keyframes t-icon-pop {
   0% {
-    scale: 1;
-    filter: drop-shadow(0 0 0 transparent);
-  }
-  45% {
-    scale: 1.35;
-    filter: drop-shadow(0 0 6px var(--color-primary));
+    opacity: 0.4;
+    scale: 0.92;
   }
   100% {
+    opacity: 1;
     scale: 1;
-    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
@@ -387,3 +387,32 @@
     animation: none !important;
   }
 }
+
+/* ---- Tab icon colour reveal ------------------------------------------------------------- */
+
+/*
+ * My reviews' status tabs (docs/DECISIONS.md, 0093): each tab's icon chip sits at a neutral
+ * `bg-surface-raised`/`text-text-secondary` at rest, and only shows its own status colour (the
+ * same `bg-mark-*`/`text-mark-glyph` pair the chip always used to show unconditionally) once
+ * that tab is actually selected — "same colour until you pick it, then it tells you what it
+ * is," replacing the old pop-on-select animation there outright (a neutral-primary glow no
+ * longer read as a pop worth having, see Icon pop above).
+ *
+ * Plain Tailwind utilities at the call site do the work (`group-aria-selected:bg-mark-pending`
+ * etc. in `MyReviews.tsx`, each written as a literal string so Tailwind's JIT scanner actually
+ * generates it — a template-built class name would not), so there is no CSS here to maintain.
+ * Two things worth recording about the mechanism itself:
+ *
+ * - Keyed on `aria-selected`, not `data-state`: `Tabs.tsx`'s own comment on `useSlidingIndicator`
+ *   already documents why for a pill trigger — a tooltip-wrapped trigger writes Radix Tooltip's
+ *   own `data-state` (open/closed) onto the same node, shadowing Tabs' `data-state`
+ *   (active/inactive). These tabs carry no tooltip today, but `aria-selected` is correct either
+ *   way and costs nothing extra.
+ * - A plain `transition-colors` (not a bounded `@keyframes`), unlike Icon pop just above, which
+ *   exists specifically because a *transition* tied to rapid keyboard tab-switching broke
+ *   keyboard tests once (docs/WORKLOG.md, 2026-09-24). That regression was a transform/layout-
+ *   affecting transition on the sliding-indicator's own position; `background-color`/`color` are
+ *   compositor-only properties with nothing to measure or reflow, so the same failure mode does
+ *   not apply — confirmed, not just assumed, with the mandatory keyboard stress test
+ *   (`--repeat-each=15`) before this shipped.
+ */
