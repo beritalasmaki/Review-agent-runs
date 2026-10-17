@@ -369,10 +369,6 @@
 
 @keyframes t-icon-fade {
   0% {
-    opacity: 0.2;
-    transform: scale(1);
-  }
-  45% {
     opacity: 0.5;
     transform: scale(0.8);
   }
