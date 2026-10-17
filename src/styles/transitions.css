@@ -271,7 +271,7 @@
  */
 :root {
   --shine-dur: 2300ms;
-  --shine-ease: cubic-bezier(0.22, 1, 0.28, 1);
+  --shine-ease: cubic-bezier(0.22, 1, 0.58, 1);
 }
 
 .btn-shine {
@@ -283,11 +283,11 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    90deg,
-    transparent 55%,
+    140deg,
+    transparent 65%,
     var(--color-button-shine) 48%,
     var(--color-button-shine) 52%,
-    transparent 65%
+    transparent 85%
   );
   transform: translateX(-120%);
   pointer-events: none;
