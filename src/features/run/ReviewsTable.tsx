@@ -141,7 +141,7 @@ export function DetailsButton({ run, onClick }: { run: Run; onClick: () => void 
       aria-haspopup="dialog"
       aria-label={`Decision details: ${run.initiative}`}
       title="Show decision details"
-      className="h-7 w-7 border-border-subtle text-text-secondary hover:bg-primary-tint"
+      className="h-7 w-7 text-text-secondary hover:bg-primary-tint btn-glass"
     >
       <FileText aria-hidden className="h-3.5 w-3.5" />
     </Button>
@@ -370,7 +370,7 @@ export function ReviewsTable({
               </TableCell>
               <TableCell className={cn(CELL, 'text-right')}>
                 {reviewStage(run) === 'review' ? (
-                  <Button asChild size="sm" className="no-underline">
+                  <Button asChild size="sm" className="btn-glass-fill no-underline">
                     <a href={runHref(run.id)} aria-label={`Review “${run.initiative}”`}>
                       Review
                       <ArrowRight aria-hidden className="h-3.5 w-3.5" />
@@ -384,6 +384,7 @@ export function ReviewsTable({
                       onClick={() => onNewRun(run.id)}
                       aria-label={`Request a new run: ${run.initiative}`}
                       title="Request a new run to fix a mistake"
+                      className="btn-glass"
                     >
                       <RotateCw aria-hidden className="h-3.5 w-3.5" />
                     </Button>
@@ -393,6 +394,7 @@ export function ReviewsTable({
                       onClick={() => onArchive(run.id)}
                       aria-label={`Archive “${run.initiative}”`}
                       title="Archive"
+                      className="btn-glass"
                     >
                       <Archive aria-hidden className="h-3.5 w-3.5" />
                     </Button>

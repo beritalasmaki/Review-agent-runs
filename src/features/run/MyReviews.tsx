@@ -373,7 +373,7 @@ function ReviewsBoard({
         <span className="text-body leading-none font-semibold whitespace-nowrap text-text-primary">
           {plural(selected.size, 'run')} selected
         </span>
-        <Button size="sm" onClick={() => setDialog({ type: 'report' })}>
+        <Button size="sm" className="btn-glass-fill" onClick={() => setDialog({ type: 'report' })}>
           <FileBarChart aria-hidden className="h-3.5 w-3.5" />
           Create report
         </Button>
@@ -381,6 +381,7 @@ function ReviewsBoard({
           <Button
             size="sm"
             variant="outline"
+            className="btn-glass"
             onClick={() => setDialog({ type: 'archive', ids: archivable })}
             disabled={archivable.length === 0}
           >
@@ -436,7 +437,7 @@ function ReviewsBoard({
               onClick={() => openView('archive')}
               aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
               data-tour="archive-button"
-              className="gap-[var(--space-2)]"
+              className="btn-glass gap-[var(--space-2)]"
             >
               <Archive aria-hidden className="h-4 w-4" />
               Archive
@@ -577,7 +578,7 @@ function ReviewsBoard({
                       size="sm"
                       variant="outline"
                       onClick={clearFilters}
-                      className="mt-[var(--space-1)] px-[var(--space-4)]"
+                      className="btn-glass mt-[var(--space-1)] px-[var(--space-4)]"
                     >
                       Clear filters
                     </Button>

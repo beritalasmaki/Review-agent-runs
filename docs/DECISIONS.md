@@ -6,6 +6,64 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0092 · Primary goes neutral (reversing 0073's magenta), and glass buttons on My reviews
+
+**Context.** Two follow-on requests. First: "replace that pink contrast colour with something
+more neutral — contrast should be in elements that need your attention more," confirmed via
+`AskUserQuestion` to mean brand colour only, not the status palette (already the thing doing
+real urgency duty, and already correct by the user's own framing). Second: "can we add glass
+style also in buttons," confirmed to mean every `<Button>` on My reviews, including the filled
+`default` variant, not an app-wide `Button` change.
+
+**Primary, choice.** `--color-primary`/`-hover`/`-strong` now point at the same neutral
+primitives `--color-text-primary` already uses per theme (`--neutral-12`/`-1`), not a hue of
+their own — an inventory turned up no place the magenta was actually signalling urgency; that
+was always the status palette's job (`src/styles/README.md`, "Status is a separate palette
+from brand"). `--color-primary-tint`/`-tint-border` move to a neutral wash (`--neutral-2`/`-4`
+light, `--neutral-11`/`-9` dark) for the same reason. `--color-primary-foreground` needed no
+change — already "white on a dark fill, near-black on a light fill" per theme, exactly what a
+neutral fill needs too. `--color-toast-link`, previously hard-wired straight to
+`--magenta-dark`/`-light` bypassing `--color-primary` entirely, now points at the same
+opposite-theme neutral. The `--magenta-*` primitives are deleted, not left orphaned, matching
+how 0073 itself fully retired 0068's indigo-blue rather than leaving it behind. Verified by eye
+in both themes, not just by contrast number: a neutral "active" state (the Filters button open,
+the active tab's count badge, the focus ring) is a real risk pink didn't have — every one still
+reads clearly against its own rest state.
+
+**Glass buttons, mechanism.** Two new `@utility` classes in `src/styles/index.css`, applied as
+a plain `className` on `Button` — `components/ui/button.tsx` stays untouched, so no button
+outside My reviews is affected. `btn-glass` (for `outline`-variant buttons: Filters, Archive,
+Clear filters, Details, Request-a-new-run, Archive-icon, New run) reuses the card-chrome glass
+tokens from 0089 as-is. `btn-glass-fill` (for the two on-page filled instances — "Create
+report," the row "Review" link-button) needed a new token pair, `--color-glass-fill`/
+`-fill-border`: `--color-glass`'s light wash would wash out the white text a filled button
+needs, so this mixes toward the same primitive `--color-primary` itself now uses per theme
+(dark glass in light theme, light glass in dark theme) — the solid button's own fill/text
+already flip this way per theme, so the glass version just follows. Real pixel-measured
+contrast (the grid-mode technique from 0091) came back 9.1–15.1:1 across every glassed button,
+both themes — comfortably clear, no opacity tuning needed beyond the first guess. Dialogs stay
+out of scope, same boundary 0089 drew.
+
+**A second instance of the `cn()`/tailwind-merge gap (0043).** `btn-glass`/`btn-glass-fill`
+each set `background-color`, `border-color`, `box-shadow` and `backdrop-filter` in one custom
+class; tailwind-merge doesn't recognise either name, so without a fix it would keep both the
+glass class and whatever `bg-*`/`border-*` class a call site passes alongside it (e.g. the
+Filters button's open-state override) — which one actually painted would then depend on
+generated CSS source order, not on which class a component author wrote last. Fixed in
+`lib/utils.ts` the same way 0043 fixed the type-scale case, but one step further: a
+`conflictingClassGroups` entry (not just a `classGroups` entry) makes the glass classes and the
+built-in colour groups mutually override each other regardless of which side appears later in
+the string — proven with a throwaway `tailwind-merge` script before relying on it, not assumed.
+
+**Consequence.** A future `btn-glass`-adjacent utility (any custom class bundling
+`background-color`/`border-color`/`shadow`/`backdrop-filter` in one name) needs the same
+`conflictingClassGroups` treatment in `lib/utils.ts`, or it has this exact bug silently.
+`components/ui/button.tsx`'s own `outline`+`icon` compound variant still hard-codes
+`hover:border-primary hover:bg-surface hover:text-primary`, now pointing at a neutral colour
+by construction — left as is, a no-op cleanup, not a required one.
+
+---
+
 ## 0091 · Glass tabs and badge on My reviews: a status-tinted glass token, and an amber primitive typo axe-core couldn't have caught
 
 **Context.** Continuing the frosted-glass pilot (0089), the user asked for the My reviews

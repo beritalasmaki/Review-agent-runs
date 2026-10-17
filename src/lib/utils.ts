@@ -20,8 +20,33 @@ const TYPE_SCALE = [
   'score',
 ]
 
-const twMerge = extendTailwindMerge({
-  extend: { classGroups: { 'font-size': [{ text: TYPE_SCALE }] } },
+/**
+ * `btn-glass`/`btn-glass-fill` (src/styles/index.css, docs/DECISIONS.md 0092) each set
+ * background-color, border-color, box-shadow and backdrop-filter in one custom class.
+ * tailwind-merge doesn't know either name, so without this it would keep both the glass class
+ * and whatever `bg-*`/`border-*` class a caller passes alongside it (the same class of bug as
+ * `TYPE_SCALE` above, 0043) — which one actually paints would then depend on generated CSS
+ * source order, not on which class appears later in the component. `conflictingClassGroups`
+ * makes the two sides interchangeable either order: a glass class after a colour class drops
+ * the colour class, and a colour class after a glass class drops the glass class — e.g. the
+ * Filters button's open-state override (ReviewsToolbar.tsx) still wins over its own `btn-glass`.
+ */
+const GLASS_BUTTON = ['btn-glass', 'btn-glass-fill']
+
+const twMerge = extendTailwindMerge<'glass-btn'>({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: TYPE_SCALE }],
+      'glass-btn': GLASS_BUTTON,
+    },
+    conflictingClassGroups: {
+      'glass-btn': ['bg-color', 'border-color', 'shadow', 'backdrop-blur'],
+      'bg-color': ['glass-btn'],
+      'border-color': ['glass-btn'],
+      shadow: ['glass-btn'],
+      'backdrop-blur': ['glass-btn'],
+    },
+  },
 })
 
 /**

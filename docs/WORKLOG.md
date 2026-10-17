@@ -39,6 +39,87 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-17 · Neutral primary colour, and glass buttons on My reviews
+
+**Goal**
+Replace the brand magenta on `--color-primary` with a neutral tone (reserving vivid colour for
+the status palette only), and extend the frosted-glass treatment from card chrome to every
+button on My reviews.
+
+**What changed**
+- `src/styles/tokens.css` — `--color-primary`/`-hover`/`-strong`/`-tint`/`-tint-border` and
+  `--color-toast-link` repointed from the magenta primitives to the neutral ramp, in the light
+  `@theme` block and both dark blocks. The `--magenta-*` primitives deleted (nothing references
+  them). New `--color-glass-fill`/`--color-glass-fill-border` token pair for a filled button's
+  own glass surface (dark glass in light theme, light glass in dark theme, mirroring how the
+  solid button's own fill/text already flip).
+- `src/styles/index.css` — two new `@utility` classes, `btn-glass` (outline buttons) and
+  `btn-glass-fill` (filled buttons), each setting background-color/border-color/box-shadow/
+  backdrop-filter from the glass tokens.
+- `src/lib/utils.ts` — `cn()`'s `tailwind-merge` config gets a `glass-btn` class group plus
+  `conflictingClassGroups` entries so `btn-glass`/`btn-glass-fill` correctly override (and are
+  overridden by) `bg-*`/`border-*`/`shadow`/`backdrop-blur` classes regardless of which side
+  appears later in a `className` string.
+- `src/features/run/{MyReviews,ReviewsToolbar,ArchiveTable,ReviewsTable}.tsx` — `btn-glass`/
+  `btn-glass-fill` applied to every on-page `<Button>` (Filters, Archive ×2, Clear filters,
+  New run, Details, Request-a-new-run, Archive-icon, Create report, Review). Dialog buttons
+  left untouched (0089's boundary).
+- `src/styles/README.md` — fixed a stale `--magenta-light` example reference to `--lime-light`.
+- `docs/DECISIONS.md` — new entry 0092.
+
+**Steps, in order**
+1. Repointed the primary tokens in `tokens.css`, deleted the magenta primitives, ran
+   `grep -rn magenta src/` to confirm nothing else referenced them.
+2. `node scripts/check-theme-bridge.mjs` clean, then a real-browser visual pass (Playwright
+   screenshots, both themes) checking specifically that a neutral "active" state (Filters open,
+   the active tab's count badge, the focus ring) still reads clearly against its rest state.
+3. Added `btn-glass`/`btn-glass-fill` to `index.css`, plus the two new glass-fill tokens.
+4. Wired `extendTailwindMerge`'s `conflictingClassGroups` in `lib/utils.ts` for the new
+   classes — proven first with a standalone `tailwind-merge` script (not assumed) before
+   relying on it in the app.
+5. Applied the new classes to every on-page button, `npm run build` to catch the
+   `extendTailwindMerge` type-parameter error it surfaced (needed `<'glass-btn'>`).
+6. Measured real pixel contrast (grid-mode technique) for every glassed button in both themes
+   via a throwaway Playwright script; all cleared 4.5:1 with no opacity tuning needed.
+7. `npm run check` (typecheck, lint, format, theme-bridge, format-locale, unit tests, e2e) and
+   `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` both green except one pre-
+   existing, unrelated failure (see Verification).
+8. Wrote `docs/DECISIONS.md` 0092 and this entry.
+
+**Why it was done this way**
+- An inventory of every `--color-primary` consumer found no place the magenta was actually
+  signalling urgency — that was always the status palette's job. So "retire the brand hue from
+  primary" is a token-value change only; no component needed editing for the colour to
+  propagate, the same shape 0073 itself was.
+- `btn-glass-fill` needed its own token pair rather than reusing `--color-glass`: a light glass
+  wash would wash out the white text a filled button needs. Mixing toward the same primitive
+  `--color-primary` already uses per theme means it automatically flips the same way the solid
+  button's own fill/text already do, instead of needing a separate per-theme judgment call.
+- The `tailwind-merge` gap is a second instance of a bug class this repo already has a name for
+  (0043): a custom class tailwind-merge doesn't recognise doesn't correctly override a core
+  utility of the same visual property. `conflictingClassGroups` (not just `classGroups`) was
+  needed because the override has to work in both directions — a glass class after a colour
+  class, and a colour class after a glass class (e.g. the Filters button's open-state override
+  still has to win over its own resting `btn-glass`).
+
+**How to do this by hand**
+Not meaningfully different from the steps above — this was all direct token/utility edits.
+
+**Verification**
+`node scripts/check-theme-bridge.mjs`: ok (14 bridge variables; 67 colours verified across 3
+themes). `npm run check`: typecheck, lint, format, theme-bridge, format-locale and all 293 unit
+tests green; e2e 43/44 green, the one failure (`My reviews, keyboard only`, `ArrowRight
+ArrowRight` → expect the Approved tab focused) pre-existing and unrelated — confirmed earlier
+this session via `git stash` against clean `main`, and reproduces identically (15/15) under
+`npx playwright test e2e/keyboard.spec.ts --repeat-each=15`, so not a regression from this
+round's changes either. Real pixel-measured contrast (grid-mode sampling) for every glassed
+button in both themes: 9.1–15.1:1, all comfortably clear of 4.5:1. `npm run build` green.
+
+**Open questions / next**
+- `components/ui/button.tsx`'s `outline`+`icon` compound variant still hard-codes
+  `hover:border-primary hover:bg-surface hover:text-primary`; now resolves to neutral by
+  construction, left as a no-op rather than cleaned up (out of scope for this round).
+
 ### 2026-10-17 · Glass tabs and badge on My reviews, and a real token-name bug
 
 **Goal**

@@ -175,3 +175,35 @@
   background-image: var(--page-gradient);
   background-attachment: fixed;
 }
+
+/*
+ * Glass buttons, My reviews only (docs/DECISIONS.md, 0092 — extends 0089's glass chrome from
+ * card frames to buttons). Applied as a plain `className` on `Button`, which merges on top of
+ * the variant's own classes via `cn()`/tailwind-merge — `components/ui/button.tsx` itself, and
+ * every button outside My reviews, is untouched.
+ *
+ * `btn-glass` is for the `outline` variant: swaps its `border-border`/`bg-surface` for the same
+ * `--color-glass`/`--color-glass-border` tokens the card chrome already uses, at the same
+ * `--shadow-glass`/`--blur-glass`. The button's own `hover:` classes are a different Tailwind
+ * "slot" than these, so they still apply untouched on top.
+ */
+@utility btn-glass {
+  background-color: var(--color-glass);
+  border-color: var(--color-glass-border);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+/*
+ * `btn-glass-fill` is for the `default` (filled) variant's two on-page instances ("Create
+ * report", the row "Review" link-button): `--color-glass`'s light wash would wash out the white
+ * text a filled button needs, so this uses `--color-glass-fill` instead — a dark glass in light
+ * theme, a light glass in dark theme, matching whichever way the solid button's own fill/text
+ * colours already flip per theme (tokens.css).
+ */
+@utility btn-glass-fill {
+  background-color: var(--color-glass-fill);
+  border-color: var(--color-glass-fill-border);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-glass));
+}
