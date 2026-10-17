@@ -479,8 +479,8 @@ function ReviewsBoard({
               <TabsList
                 variant="pill"
                 label="Run types"
-                className="scrollbar-none w-full max-w-full justify-start overflow-x-auto border-glass-border bg-glass backdrop-blur-[var(--blur-glass)]"
-                indicatorClassName="border-0 bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+                className="scrollbar-none w-full max-w-full justify-start overflow-x-auto"
+                indicatorClassName="border-0 bg-glass-chip shadow-glass backdrop-blur-[var(--blur-glass)]"
               >
                 {TABS.map(({ value, label, mark, icon: Icon }) => (
                   <TabsTrigger key={value} variant="pill" value={value} className="group">

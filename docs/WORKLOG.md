@@ -39,6 +39,90 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-17 · Indigo primary (merged past a direct main-branch edit), and fixing glass that read as solid
+
+**Goal**
+Bring back a blue primary colour (reversing 0092's neutral, by request) with real dark-mode
+contrast; merge past direct commits the user pushed to `main` while this branch was in
+progress; and fix buttons/pills that read as flat/solid instead of glass.
+
+**What changed**
+- Merged `origin/main` into this branch, resolving conflicts in `tokens.css` (dropped main's
+  recoloured-but-still-named `--magenta-*` primitives in favour of this branch's architecture)
+  and `transitions.css` (kept main's hand-tuned `t-icon-fade` keyframe/timing over this
+  branch's first-pass values; non-conflicting motion tuning elsewhere merged automatically).
+- `src/styles/tokens.css` — new `--indigo-*` primitives; `--color-primary`/`-hover`/`-strong`/
+  `-tint`/`-tint-border`/`--color-toast-link` repointed from neutral to indigo, both themes.
+  New `--color-glass-chip`/`--color-glass-fill-chip`/`-border` tier (lower opacity than
+  `--color-glass`/`-fill`) for buttons and the tab indicator. `--color-glass-warning` opacity
+  lowered (97%/95% → 80%/78%).
+- `src/styles/index.css` — `btn-glass`/`btn-glass-fill` switched to the new chip tokens, plus
+  `saturate(1.4)` on their `backdrop-filter`.
+- `src/features/run/MyReviews.tsx` — removed `TabsList`'s own redundant glass styling (it sat
+  directly inside the identically-shaped glass `<section>`); the sliding indicator now uses
+  `bg-glass-chip`.
+- `docs/DECISIONS.md` — new entries 0094 (indigo primary + the merge) and 0095 (the glass-chip
+  opacity tier).
+
+**Steps, in order**
+1. Investigated the user's "I changed primary pink to blue but it doesn't work in dark mode"
+   report: found via `git fetch origin main` that this was a real, direct commit to `main`
+   (not a description of this session's own work) recolouring `--magenta-*` to a near-black
+   navy — invisible against the dark surface, exactly the reported symptom.
+2. `AskUserQuestion` confirmed: a real blue primary was wanted, and the glow-button hover
+   request should be reimplemented with this app's own tokens, no new dependencies.
+3. Picked indigo primitives, verified contrast and hue-distance from `--status-blue-*` by
+   computation before committing to final hex values.
+4. `git stash` the in-progress indigo edit, `git merge origin/main`, resolved the two
+   conflicted files, `git merge --no-edit` to conclude, `git stash pop` to resume.
+5. Fixed a literal `*/` inside a CSS comment that silently truncated it and broke the Tailwind
+   build — caught by `check-theme-bridge.mjs`, not by `tsc`/`eslint`.
+6. Finished the indigo token wiring, verified via screenshots in both themes (focus ring,
+   Filters-open state, run page) and `npm run check` + `npx playwright test
+   e2e/keyboard.spec.ts --repeat-each=15`.
+7. User feedback: "the buttons doesn't really have that glass effect... also pills." Zoomed
+   screenshots confirmed buttons/pills were reading as solid, not glass.
+8. Diagnosed the cause (opacity stacking across nested glass layers, detailed in 0095),
+   introduced the `-chip` token tier, removed `TabsList`'s redundant glass styling.
+9. First attempt (`--color-glass-fill-chip` at 40%/35%) broke `btn-glass-fill` contrast to
+   2.3–3.2:1 — caught by the same real pixel-measurement script used throughout this project,
+   not assumed from the opacity number. Re-tuned to 68%/62%, re-measured clean (5.17–6.35:1).
+10. Full `npm run check` green.
+
+**Why it was done this way**
+- The merge conflict resolution favoured whichever side represented more deliberate, final
+  intent for that specific piece: this branch's primitive *architecture* (since main's edit
+  was a quick in-place recolour of a structure this branch had already replaced), but main's
+  *animation tuning* (five commits of real iteration beat this session's first pass).
+- Lowering opacity alone cannot make a translucent surface look glassy where there is nothing
+  colourful behind it — confirmed by screenshot, not assumed. The chip tokens help everywhere,
+  but the clearest wins are on elements that sit over the page's own gradient (the header
+  Archive button, the warning badge), not elements sitting over the card's flat interior (the
+  Filters button) — a limit of the technique, not a bug left unfixed.
+
+**How to do this by hand**
+Not meaningfully different from the steps above — this was all direct token/utility edits plus
+a standard `git merge` conflict resolution.
+
+**Verification**
+`node scripts/check-theme-bridge.mjs`: ok (71 colours verified across 3 themes). `npm run
+check`: typecheck, lint, format, theme-bridge, format-locale, all unit tests, and all 44 e2e
+tests green (including `My reviews, keyboard only`, previously flaky/pre-existing — passed
+clean this run). `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` green except that
+same pre-existing case. Real pixel-measured contrast for every glassed button and the warning
+badge, both themes, after each opacity change — not assumed from the percentage alone.
+`npm run build` green throughout.
+
+**Open questions / next**
+- The "liquid glass" aesthetic (real-time specular highlights, edge refraction) the user asked
+  about afterward is out of reach for plain CSS without WebGL/shader work, and the real Apple
+  implementation has known legibility criticism this project's own contrast discipline would
+  conflict with. Recommended a lighter "liquid-glass-inspired" treatment instead (stronger
+  pill shapes, a gradient-based specular highlight, a touch more saturation) if the user wants
+  to pursue it further — not started, awaiting their direction.
+
+---
+
 ## 2026-10-17 · Tab icon colour reveal, and a gentler icon-pop
 
 **Goal**
