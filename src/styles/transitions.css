@@ -359,8 +359,8 @@
  * that, for the same reason `.t-pop`'s own comment already gives.
  */
 :root {
-  --icon-fade-dur: 1800ms;
-  --icon-fade-ease: ease-in-out;
+  --icon-fade-dur: 1400ms;
+  --icon-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .t-icon-pop[data-bounce] {
@@ -368,19 +368,13 @@
 }
 
 @keyframes t-icon-fade {
-  0% {
-     transform: rotate(-20deg);
-  }
-   42% {
-    transform: rotate(10deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
+  0%   { transform: scale(1);    opacity: 1; }
+  20%  { transform: scale(1.18); opacity: 0.7; }
+  100% { transform: scale(1);    opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .t-icon-pop[data-bounce] {
-    animation: none !important;
+    animation: none;
   }
 }
