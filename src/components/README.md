@@ -33,8 +33,14 @@ come from the My reviews design (0060).
 page's theme for it.
 
 `LoadingState` is the loading indicator: the `thinking-orbs` "working" orb with a label under
-it, centred (docs/DECISIONS.md, 0050). It is the one component here built on a third-party
-visual. jsdom can't draw it, so the test setup stubs the canvas.
+it, centred (docs/DECISIONS.md, 0050). jsdom can't draw it, so the test setup stubs the canvas.
+
+`MorphIcon` is an icon that morphs its shape when its `icon` prop changes, instead of swapping
+instantly — built on `morphicons` (docs/DECISIONS.md, 0090), the other component here on a
+third-party visual. Icon data comes from the `lucide` package (icon nodes, not components) —
+`<MorphIcon icon={open ? ChevronUp : ChevronDown} />`. Use it only where an icon's own meaning
+changes on an existing boolean/enum (a disclosure, a sort direction); a plain click-feedback
+bounce that doesn't change meaning is `.t-icon-pop` in `transitions.css` instead.
 
 `spotlight(element)` plays the `.t-spotlight` animation on any element (docs/DECISIONS.md,
 0056). It is a function, not a component, and it lives here rather than in `lib/` because it

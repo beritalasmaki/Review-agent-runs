@@ -7,7 +7,9 @@ import {
 import { Input } from '../../components/ui/input'
 import { NativeSelect, NativeSelectOption } from '../../components/ui/native-select'
 import { Badge } from '../../components/ui/badge'
-import { ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from 'lucide-react'
+import { MorphIcon } from '../../components/MorphIcon'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide'
 import type { TimeRange } from '../../lib/reviews'
 import { cn } from '../../lib/utils'
 
@@ -102,11 +104,7 @@ export function ReviewsToolbar({
                 <span className="sr-only"> on</span>
               </Badge>
             )}
-            {open ? (
-              <ChevronUp aria-hidden className="h-3 w-3" />
-            ) : (
-              <ChevronDown aria-hidden className="h-3 w-3" />
-            )}
+            <MorphIcon icon={open ? ChevronUp : ChevronDown} className="h-3 w-3" />
           </Button>
         </CollapsibleTrigger>
         <div className="ml-auto flex items-center gap-[var(--space-4)]">

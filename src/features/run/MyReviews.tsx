@@ -3,16 +3,16 @@ import {
   Check,
   Clock,
   ArrowRight,
-  ChevronDown,
   ChevronLeft,
-  ChevronUp,
   FileBarChart,
   List,
   ListChecks,
   RefreshCw,
   X,
 } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide'
 import { Badge } from '../../components/ui/badge'
+import { MorphIcon } from '../../components/MorphIcon'
 import { useEffect, useRef, useState } from 'react'
 import type { ComponentType } from 'react'
 import { LoadingState } from '../../components/LoadingState'
@@ -214,6 +214,11 @@ function ReviewsBoard({
   const today = formatCalendarDate(now.toISOString())
   const [view, setView] = useState<'main' | 'archive'>('main')
   const [tab, setTab] = useState<ReviewTab>('pending')
+  // The selected tab's icon pops briefly (.t-icon-pop, transitions.css) — a timed window after
+  // the actual selection, not derived from "is this tab active", so it never plays on mount.
+  const [poppedTab, setPoppedTab] = useState<ReviewTab | null>(null)
+  const poppedTabTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(poppedTabTimer.current), [])
   const [filters, setFilters] = useState<FilterState>({
     query: '',
     time: 'all',
@@ -308,6 +313,10 @@ function ReviewsBoard({
   function chooseTab(next: ReviewTab) {
     setTab(next)
     setSelected(new Set())
+    window.clearTimeout(poppedTabTimer.current)
+    setPoppedTab(next)
+    // Matches --icon-pop-dur in transitions.css.
+    poppedTabTimer.current = window.setTimeout(() => setPoppedTab(null), 260)
   }
   function toggle(id: string) {
     setSelected((current) => {
@@ -476,15 +485,20 @@ function ReviewsBoard({
                     {mark ? (
                       <span
                         aria-hidden
+                        data-bounce={poppedTab === value || undefined}
                         className={cn(
-                          'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full text-mark-glyph',
+                          't-icon-pop inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full text-mark-glyph',
                           mark,
                         )}
                       >
                         <Icon className="h-3 w-3" />
                       </span>
                     ) : (
-                      <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
+                      <Icon
+                        aria-hidden
+                        data-bounce={poppedTab === value || undefined}
+                        className="t-icon-pop h-4 w-4 text-text-secondary"
+                      />
                     )}
                     {label}
                     <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">
@@ -726,11 +740,7 @@ function InProgress({
         </span>
         <span className="ml-auto inline-flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading whitespace-nowrap text-primary">
           {open ? 'Hide' : 'Show'}
-          {open ? (
-            <ChevronUp aria-hidden className="h-3 w-3" />
-          ) : (
-            <ChevronDown aria-hidden className="h-3 w-3" />
-          )}
+          <MorphIcon icon={open ? ChevronUp : ChevronDown} className="h-3 w-3" />
         </span>
       </CollapsibleTrigger>
       <CollapsibleContent asChild>

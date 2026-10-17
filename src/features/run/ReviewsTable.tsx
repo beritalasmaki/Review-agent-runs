@@ -10,17 +10,11 @@ import {
 } from '../../components/ui/table'
 import { Badge } from '../../components/ui/badge'
 import { Checkbox } from '../../components/ui/checkbox'
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUp,
-  ArrowUpDown,
-  Archive,
-  FileText,
-  RotateCw,
-} from 'lucide-react'
+import { ArrowRight, Archive, FileText, RotateCw } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide'
 import type { ReactNode, Ref } from 'react'
 import { InfoTip } from '../../components/InfoTip'
+import { MorphIcon } from '../../components/MorphIcon'
 import { formatCalendarDate, formatRelativeTime } from '../../lib/format'
 import type { ManualArchive, SortDirection, SortKey } from '../../lib/reviews'
 import {
@@ -88,7 +82,7 @@ export function ColumnHeader<K extends string>({
       : sort.first
     : undefined
   const nextText = sort ? (next === sort.first ? sort.firstText : sort.otherText) : ''
-  const SortIcon = dir === 'asc' ? ArrowUp : dir === 'desc' ? ArrowDown : ArrowUpDown
+  const sortIcon = dir === 'asc' ? ArrowUp : dir === 'desc' ? ArrowDown : ArrowUpDown
 
   return (
     <TableHead
@@ -125,7 +119,7 @@ export function ColumnHeader<K extends string>({
                 active ? 'bg-primary-tint text-primary' : 'text-text-secondary',
               )}
             >
-              <SortIcon aria-hidden className="h-3 w-3" strokeWidth={2.5} />
+              <MorphIcon icon={sortIcon} className="h-3 w-3" strokeWidth={2.5} />
             </Button>
           )}
         </span>
