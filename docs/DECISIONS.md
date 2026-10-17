@@ -6,6 +6,132 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0090 · Animated icons: a real morph library for meaning changes, the existing `.t-*` CSS convention for click feedback
+
+**Context.** The user wanted icons to animate on action — two Dribbble references (video
+files, which this session cannot play) and Material Design's animated-icons guide, plus a
+third inspiration image (a music-player UI with a glowing play/pause button). Clarified
+through Plan Mode and several rounds of questions: both morph (an icon's own meaning changes)
+and a plain click bounce (it doesn't), applied to every currently-interactive icon, and —
+specifically ruling out a cheaper CSS-only approach — literal SVG shape-morphing for the
+meaning-change half.
+
+**Options for the morph half.** (a) CSS rotation/scale only, no new dependency, consistent
+with every existing animation here. (b) A real path-morphing library. (c) Hand-rolled SVG path
+interpolation. The user explicitly chose (b) over (a) before any code (AskUserQuestion), and
+(c) was never seriously considered — tweening between two arbitrary Lucide icons' path data by
+hand, correctly, is its own hard problem a dedicated library already solves.
+
+**Choice.** `morphicons` (MIT, ~6–7 KB gzip, spring-physics path morphing, built specifically
+for icon-to-icon transitions) plus `lucide` (the separate package `morphicons` needs for raw
+icon-node *data* — `lucide-react`, already used everywhere else, only exports rendered
+components, which morphicons can't animate). A thin wrapper, `components/MorphIcon.tsx`,
+defaults `reducedMotion="user"` (morphicons' own default is `"never"`) so every call site gets
+an instant swap under reduced motion for free, matching every other `.t-*` animation's own
+guarantee, without each call site having to remember to pass it.
+
+Applied to every icon whose own meaning changes on an existing boolean/enum the component
+already tracks: the Filters and "runs still in progress" disclosure chevrons, `StepsTab.tsx`'s
+grouped-step chevron (also unified from a `ChevronRight` + `rotate-90` approximation onto the
+same `ChevronDown`/`ChevronUp` pair the other two use, for one consistent disclosure
+convention), and `ReviewsTable.tsx`'s sort-direction arrows. **`ThemeToggle`'s Sun/Moon was
+deliberately left alone** despite being a textbook morph target: it currently shows both icons
+simultaneously as fixed track-end decorations with the thumb sliding between them, a different,
+already-working visual metaphor a literal morph would have to restructure, not drop into — not
+something this task's own scope asked for, so left as is rather than redesigned on the side.
+
+For the bounce half (My reviews tab icons on selection; Request changes/Reject's icons on
+click) — no new dependency: the existing `transitions.css` `.t-*` convention already covers
+this exactly, a new `.t-icon-pop` pattern alongside `.t-pop`/`.t-success-check`, with its own
+motion tokens and its own `prefers-reduced-motion` guard, per `src/styles/README.md`'s own
+rule ("change a transition's feel through its variables, never by editing the keyframes").
+
+**The keyboard-regression risk, and how it was avoided.** This codebase has broken a keyboard
+e2e test from tab-related motion twice before (`docs/WORKLOG.md`, 2026-09-24; this session's
+own four-attempt tabs-sliding-indicator fix) — once from a *colour transition* tied to rapid
+automatic-activation state, once from a continuously-rescheduling `requestAnimationFrame` loop
+perturbing Chromium's synthetic-input handling. `.t-icon-pop` avoids both causes deliberately:
+it is a bounded `@keyframes` animation (not a `transition`) gated by a `data-bounce` attribute's
+*presence*, set once per genuine action and cleared by a `setTimeout`, mirroring `.t-pop[data-
+popping]`'s already-proven-safe mechanism exactly — not derived straight from "is this the
+active tab right now" (which would also play on the very first page load, since the default
+tab starts selected). `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` (both themes)
+confirmed no dropped keypresses before this shipped.
+
+**Consequence.** Two new runtime dependencies (`morphicons`, `lucide`) alongside the
+`lucide-react` the rest of the app still uses for every non-morphing icon — a real, if small,
+addition to the dependency surface and the production bundle (+~25 KB / +~10 KB gzip, measured
+via `npm run build`), for a capability (literal shape-morphing) this app genuinely cannot do
+with hand-written CSS alone. Request changes/Reject's confirmation dialog now opens ~260ms
+later than before the click, matching the delay `approve()`'s own pop already uses, so the pop
+is visible before the dialog covers it — a small, deliberate behaviour change, not a bug.
+
+---
+
+## 0089 · Frosted glass, piloted on My reviews only, chrome translucent and data solid
+
+**Context.** The user asked for a "frosted glass" theme in both light and dark mode, from two
+reference images (soft blue/purple and teal/blue/green blurred-glass textures), and specifically
+"literal glassmorphism," not just adopting the images' hues as a flat palette. This is a real
+reversal of 0073, which deliberately moved this product *away* from a tinted, softer look to a
+flat, true-neutral palette because the earlier look read as "a generic AI palette." Given that
+tension and the scale of the change (the most visually dominant shift this app has had), this
+went through Plan Mode and three explicit clarifying questions before any code: literal glass
+vs. a colour-only reading (answer: literal), whether contrast should stay solid even inside a
+glassy card (answer: yes, solid), and whether to roll out everywhere at once or pilot one screen
+first (answer: pilot — My reviews, both themes, for sign-off before the run page, dialogs,
+buttons and badges follow).
+
+**Options for what "glass" touches.** (a) Make every surface (page, cards, chrome, and the data
+table/header itself) translucent and blurred. (b) Make the page background and card chrome
+(tab bar, search/filter toolbar, card frame) translucent and blurred, but leave the actual data
+— `ReviewsTable`/`ArchiveTable` row and header backgrounds, which a reviewer scans closely —
+on today's already-contrast-verified solid `--color-surface`. (c) No visual glass on the data
+screens at all; keep the hues only.
+
+**Choice.** (b). The user's own answer ("contrast stays solid") pointed here directly, and it
+turned out to require no new code in `ReviewsTable`/`ArchiveTable`: those components already set
+their own opaque `bg-surface`/`bg-surface-raised` backgrounds, and `TabsList`'s line variant and
+`ReviewsToolbar` already have no background of their own — so wrapping the three card-shell
+`<section>` elements (`MyReviews.tsx`, the main "Runs" section, the inline "Also found in the
+archive" section, and the Archive page's own section) in the new glass tokens made the chrome
+glassy and left the data solid automatically, with no separate "give the tabs their own tint"
+work the plan had originally scoped in. New tokens in `tokens.css`: `--page-gradient-light`/
+`-dark` (soft radial colour blobs, not a single linear sweep, so it reads as the reference
+images' blurred texture rather than a flat band), applied only via a new `bg-page-glass`
+Tailwind utility (`index.css`) on `<main>`, swapped in only when `!runId` (`App.tsx`) — a run
+page keeps the flat `bg-bg` every other screen still uses, so the pilot's background does not
+leak past My reviews either. `--color-glass`/`--color-glass-border`/`--shadow-glass`/
+`--blur-glass`, the card-shell replacement for `--color-surface`/`--shadow-card`.
+`--color-bg` itself, and every other token text already reads, is untouched.
+
+**The real accessibility snag.** Axe-core cannot statically resolve contrast through a CSS
+gradient or `backdrop-filter` in the ancestor chain — every page state failed
+`e2e/accessibility.spec.ts` with `bgGradient`/`bgImage` "incomplete" results (not a wrong
+number; axe refuses to guess at all) the moment `<main>` carried the gradient. The honest fix
+was not to loosen the test (AGENTS.md's accessibility baseline, and the user's own "make sure
+the website is still accessible" mid-task) but to extend it the same way it already handles text
+behind an open dialog: `measuredBackgroundContrast` in `accessibility.spec.ts` screenshots the
+real composited pixels and samples a grid across each flagged element, taking the most common
+(quantised) colour as the background — not an edge probe, which kept landing on ascenders/
+descenders at this app's line-heights and under-reported badly; a grid mode is robust to that
+because text ink covers a minority of any of these boxes. Every one of these elements still has
+to clear the exact ratio axe itself reports it expects (4.5:1 or 3:1 for large text) — nothing is
+waived. A second wrinkle: states with an open dialog, the welcome modal, or the tour's scrim
+also failed, because the screenshot genuinely shows the scrim's dimmed colour over that text,
+which is real but irrelevant (the content is inert/obscured, same reasoning the file's existing
+`behindModal` carve-out already uses for axe's `elmPartiallyObscuring` case) — detected with
+`elementFromPoint` and skipped, not measured, for the same reason.
+
+**Consequence.** Real rendered contrast behind the glass chrome measured 5.7–14.3:1 in both
+themes (well above the 4.5:1/3:1 bars), and every one of the 34 accessibility states passes
+clean. The pilot is deliberately narrow: My reviews only, chrome only. Propagating further (the
+run page, dialogs, buttons, badges) is explicitly out of scope until the user signs off on the
+screenshots sent for this pilot — if the direction changes, only three call sites and one
+`index.css` background rule need to move, not a palette-wide change.
+
+---
+
 ## 0088 · The outline button drops the shine for a plain fade and a small grow
 
 **Context.** The user, after trying 0086's wider shine rollout: "the secondary button with

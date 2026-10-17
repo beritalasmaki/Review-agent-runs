@@ -190,6 +190,103 @@ function ownContrast(page: Page, selector: string) {
   }, selector)
 }
 
+/**
+ * The real, rendered contrast behind text whose background axe could not statically resolve —
+ * a CSS gradient or backdrop-filter in the ancestor chain (the frosted-glass pilot's cards,
+ * docs/DECISIONS.md 0089). Axe is right to refuse a guess here: the composited background
+ * genuinely varies pixel to pixel, which is the whole point of the effect. This measures the
+ * actual painted pixels instead — the same technique used to tune the glass tokens in the
+ * first place (not a waiver: every one of these still has to clear the ratio axe itself says
+ * it expects). It samples a grid across the element's own box and takes the most common
+ * (quantised) colour as the background — text glyphs cover a minority of the box's pixels for
+ * any of this app's normal-weight labels and headings, so the mode is reliably the background,
+ * unlike an edge-only probe (which this replaced after it kept landing on ascenders/descenders
+ * at tight line-heights and reporting a false low ratio).
+ *
+ * Returns `'obscured'`, not a ratio, for an element an open dialog, the welcome modal or the
+ * onboarding tour's scrim currently paints over (checked with `elementFromPoint`, the same
+ * technique the `behindModal` case above uses in spirit): a screenshot taken in that state
+ * would measure the *scrim's* dimmed colour, not the card's, under-reporting a page that reads
+ * fine once the overlay closes. The caller treats that the same as `behindModal` — no overlay
+ * means a real measurement always runs.
+ */
+async function measuredBackgroundContrast(page: Page, selector: string) {
+  const info = await page.evaluate((sel) => {
+    const el = document.querySelector(sel)
+    if (!el) return null
+    const rect = el.getBoundingClientRect()
+    const cx = rect.x + rect.width / 2
+    const cy = rect.y + rect.height / 2
+    const topMost = document.elementFromPoint(cx, cy)
+    const obscured = !!topMost && topMost !== el && !el.contains(topMost) && !topMost.contains(el)
+    return {
+      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      color: getComputedStyle(el).color,
+      obscured,
+    }
+  }, selector)
+  if (!info) return null
+  if (info.obscured) return 'obscured' as const
+  if (info.rect.width <= 0 || info.rect.height <= 0) return null
+
+  const shot = await page.screenshot()
+  const dataUrl = `data:image/png;base64,${shot.toString('base64')}`
+
+  return page.evaluate(
+    async ({ dataUrl, rect, color }) => {
+      const img = new Image()
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve()
+        img.onerror = () => reject(new Error('image load failed'))
+        img.src = dataUrl
+      })
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0)
+
+      const rgb = (s: string) => s.match(/[\d.]+/g)!.map(Number)
+      const luminance = ([r, g, b]: number[]) => {
+        const channel = (c: number) => {
+          const v = c / 255
+          return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+        }
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+      }
+      const contrast = (a: number[], b: number[]) => {
+        const [l1, l2] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+        return (l1 + 0.05) / (l2 + 0.05)
+      }
+
+      const textRgb = rgb(color)
+      const xStep = Math.max(1, Math.floor(rect.width / 20))
+      const yStep = Math.max(1, Math.floor(rect.height / 10))
+      const buckets = new Map<string, { count: number; rgb: [number, number, number] }>()
+      for (let x = rect.x; x < rect.x + rect.width; x += xStep) {
+        for (let y = rect.y; y < rect.y + rect.height; y += yStep) {
+          const xi = Math.round(x)
+          const yi = Math.round(y)
+          if (xi < 0 || yi < 0 || xi >= canvas.width || yi >= canvas.height) continue
+          const [r, g, b] = ctx.getImageData(xi, yi, 1, 1).data
+          // Quantise to absorb anti-aliasing noise at glyph edges; the most frequent bucket is
+          // the background, since text ink covers a minority of the box for ordinary labels.
+          const key = `${Math.round(r / 16)}_${Math.round(g / 16)}_${Math.round(b / 16)}`
+          const entry = buckets.get(key) ?? { count: 0, rgb: [r, g, b] }
+          entry.count += 1
+          buckets.set(key, entry)
+        }
+      }
+      let mode: { count: number; rgb: [number, number, number] } | null = null
+      for (const entry of buckets.values()) {
+        if (!mode || entry.count > mode.count) mode = entry
+      }
+      return mode ? contrast(textRgb, mode.rgb) : null
+    },
+    { dataUrl, rect: info.rect, color: info.color },
+  )
+}
+
 for (const scheme of ['light', 'dark'] as const) {
   test.describe(`${scheme} theme`, () => {
     for (const state of STATES) {
@@ -212,11 +309,15 @@ for (const scheme of ['light', 'dark'] as const) {
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
           .analyze()
         expect(results.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
-        // Contrast axe could not decide would slip past `violations`. One kind is measured here
-        // instead: text in a floating layer — an open modal dialog, or a fixed toast — that axe
-        // calls "partially obscured". Axe does not order such layers against the page, so a
-        // card behind one counts as overlapping its text, though nothing does (checked with elementsFromPoint; setting
-        // `inert` or moving the dialog to <body> does not change axe's answer — 0060). Any
+        // Contrast axe could not decide would slip past `violations`. Two kinds are measured
+        // here instead, neither a waiver: text in a floating layer — an open modal dialog, or a
+        // fixed toast — that axe calls "partially obscured". Axe does not order such layers
+        // against the page, so a card behind one counts as overlapping its text, though nothing
+        // does (checked with elementsFromPoint; setting `inert` or moving the dialog to <body>
+        // does not change axe's answer — 0060). And text on the frosted-glass pilot's cards
+        // (0089), where a CSS gradient or backdrop-filter in the ancestor chain means axe can't
+        // statically resolve the background at all — measured against the real rendered pixels
+        // instead (measuredBackgroundContrast), still against axe's own expected ratio. Any
         // other undecided result fails and should be looked at by eye.
         const undecided = results.incomplete
           .filter((r) => r.id === 'color-contrast')
@@ -230,7 +331,26 @@ for (const scheme of ['light', 'dark'] as const) {
           const ratio = await ownContrast(page, String(node.target[node.target.length - 1]))
           expect(ratio, `contrast of ${node.html.slice(0, 60)}`).toBeGreaterThanOrEqual(4.5)
         }
-        expect(undecided.filter((node) => !behindModal.includes(node))).toEqual([])
+        const glassObscured = undecided.filter((node) => {
+          const messageKey = (node.any[0]?.data as { messageKey?: string } | undefined)?.messageKey
+          return messageKey === 'bgGradient' || messageKey === 'bgImage'
+        })
+        for (const node of glassObscured) {
+          const data = node.any[0]?.data as { expectedContrastRatio?: string } | undefined
+          const expected = parseFloat(data?.expectedContrastRatio ?? '4.5')
+          const selector = String(node.target[node.target.length - 1])
+          const ratio = await measuredBackgroundContrast(page, selector)
+          // Same carve-out as `behindModal` above, reached by a different axe messageKey: a
+          // dialog, the welcome modal or the tour's scrim sits over this element right now, so
+          // there is nothing real to measure (see measuredBackgroundContrast's own comment).
+          if (ratio === 'obscured') continue
+          expect(ratio, `measured contrast of ${node.html.slice(0, 60)}`).not.toBeNull()
+          expect(ratio!, `measured contrast of ${node.html.slice(0, 60)}`).toBeGreaterThanOrEqual(
+            expected,
+          )
+        }
+        const resolved = [...behindModal, ...glassObscured]
+        expect(undecided.filter((node) => !resolved.includes(node))).toEqual([])
       })
     }
   })

@@ -7,8 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table'
-import { ChevronRight, List } from 'lucide-react'
+import { List } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide'
 import { Fragment, useEffect, useRef, useState } from 'react'
+import { MorphIcon } from '../../components/MorphIcon'
 import { isSystemActor } from '../../lib/actors'
 import { formatCalendarDate, formatClock, formatCount, formatUtcOffset } from '../../lib/format'
 import { foldSteps, formatStepNumber, stepActor, stepResult } from '../../lib/steps'
@@ -200,12 +202,9 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
                         onClick={toggle}
                         className="flex w-full cursor-pointer items-center gap-[var(--space-2)] text-left hover:underline"
                       >
-                        <ChevronRight
-                          aria-hidden
-                          className={cn(
-                            'h-4 w-4 shrink-0 text-primary transition-transform duration-[var(--motion-duration-fast)]',
-                            state !== 'closed' && 'rotate-90',
-                          )}
+                        <MorphIcon
+                          icon={state !== 'closed' ? ChevronUp : ChevronDown}
+                          className="h-4 w-4 shrink-0 text-primary"
                         />
                         <span>
                           <b className="font-semibold">
