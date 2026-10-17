@@ -9,14 +9,14 @@
 
 :root {
   /* Success check — "success-check" */
-  --check-opacity-dur: 500ms;
-  --check-rotate-dur: 500ms;
+  --check-opacity-dur: 800ms;
+  --check-rotate-dur: 800ms;
   --check-rotate-from: 80deg;
-  --check-bob-dur: 500ms;
-  --check-y-amount: 40px;
-  --check-blur-dur: 500ms;
-  --check-blur-from: 10px;
-  --check-path-dur: 500ms;
+  --check-bob-dur: 800ms;
+  --check-y-amount: 20px;
+  --check-blur-dur: 800ms;
+  --check-blur-from: 8px;
+  --check-path-dur: 800ms;
   --check-path-delay: 80ms;
   --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
@@ -25,7 +25,7 @@
   --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Tabs sliding — "tabs-sliding" */
-  --tabs-dur: 250ms;
+  --tabs-dur: 500ms;
   --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -180,7 +180,7 @@
  * once on "Approve and release"; the confirmation opens when it ends.
  */
 :root {
-  --pop-dur: 420ms;
+  --pop-dur: 620ms;
   --pop-ease: cubic-bezier(0.3, 0.7, 0.4, 1);
 }
 
@@ -270,8 +270,8 @@
  * correct against any fill in both themes with one rule instead of one per variant.
  */
 :root {
-  --shine-dur: 1400ms;
-  --shine-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --shine-dur: 2300ms;
+  --shine-ease: cubic-bezier(0.22, 1, 0.58, 1);
 }
 
 .btn-shine {
@@ -283,11 +283,11 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    115deg,
-    transparent 20%,
-    var(--color-button-shine) 42%,
-    var(--color-button-shine) 58%,
-    transparent 80%
+    140deg,
+    transparent 65%,
+    var(--color-button-shine) 48%,
+    var(--color-button-shine) 52%,
+    transparent 85%
   );
   transform: translateX(-120%);
   pointer-events: none;
@@ -340,51 +340,56 @@
   }
 }
 
-/* ---- Icon pop -------------------------------------------------------------------------- */
+/* ---- Icon fade -------------------------------------------------------------------------- */
 
 /*
- * Not from transitions.dev: a gentle fade-and-settle for an icon the user just acted on —
- * Request changes/Reject run clicked (docs/DECISIONS.md, 0090, revised 0093). Not a morph
+ * Not from transitions.dev: a gentle fade for an icon the user just acted on — Request changes/
+ * Reject run clicked (docs/DECISIONS.md, 0090, revised 0093 and 0094). Not a morph
  * (components/MorphIcon.tsx is for an icon whose own meaning changes) — this icon stays the
  * same, it is just "acknowledged." Originally a springy scale-and-glow pop with the glow in
- * `--color-primary`; once primary went neutral (0092) a colourless glow flashing on click no
- * longer read as a pop worth having, and separately read as "annoying" motion — replaced with a
- * calmer opacity+scale settle, no glow, no overshoot.
+ * `--color-primary`; once primary went neutral (0092, later indigo again, 0094) a pop built
+ * around the brand colour no longer made sense on its own terms, and separately read as
+ * "annoying" motion — replaced with a slower opacity dip-and-recover plus a small scale bump,
+ * no colour, hand-tuned afterwards (duration, easing, scale amount) directly in this file.
  *
  * (The My reviews tab icons used this same class until 0093, which replaced it there with a
  * persistent colour reveal instead — see "Tab icon colour reveal" below.)
  *
  * `data-bounce` only, set by React for a short, timed window after the actual action — never
  * derived straight from "is this active right now". Cleared by a `setTimeout` matching
- * `--icon-pop-dur`, the exact mechanism `.t-pop[data-popping]` above already uses safely. A
+ * `--icon-fade-dur`, the exact mechanism `.t-pop[data-popping]` above already uses safely. A
  * bounded `@keyframes` animation gated by attribute presence, never a `transition` tied to a
  * continuously-changing property — a colour transition keyed to rapid automatic-activation tab
  * state dropped keypresses here before (docs/WORKLOG.md, 2026-09-24); this cannot reproduce
  * that, for the same reason `.t-pop`'s own comment already gives.
  */
 :root {
-  --icon-pop-dur: 260ms;
-  --icon-pop-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --icon-fade-dur: 1400ms;
+  --icon-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .t-icon-pop[data-bounce] {
-  animation: t-icon-pop var(--icon-pop-dur) var(--icon-pop-ease);
+  animation: t-icon-fade var(--icon-fade-dur) var(--icon-fade-ease);
 }
 
-@keyframes t-icon-pop {
+@keyframes t-icon-fade {
   0% {
-    opacity: 0.4;
-    scale: 0.92;
+    transform: scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1.1);
+    opacity: 0.7;
   }
   100% {
+    transform: scale(1);
     opacity: 1;
-    scale: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .t-icon-pop[data-bounce] {
-    animation: none !important;
+    animation: none;
   }
 }
 
