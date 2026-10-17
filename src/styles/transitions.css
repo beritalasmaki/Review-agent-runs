@@ -9,14 +9,14 @@
 
 :root {
   /* Success check — "success-check" */
-  --check-opacity-dur: 500ms;
-  --check-rotate-dur: 500ms;
+  --check-opacity-dur: 800ms;
+  --check-rotate-dur: 800ms;
   --check-rotate-from: 80deg;
-  --check-bob-dur: 500ms;
+  --check-bob-dur: 800ms;
   --check-y-amount: 40px;
-  --check-blur-dur: 500ms;
+  --check-blur-dur: 800ms;
   --check-blur-from: 10px;
-  --check-path-dur: 500ms;
+  --check-path-dur: 800ms;
   --check-path-delay: 80ms;
   --check-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --check-ease-opacity: cubic-bezier(0.22, 1, 0.36, 1);
@@ -25,7 +25,7 @@
   --check-ease-path: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Tabs sliding — "tabs-sliding" */
-  --tabs-dur: 250ms;
+  --tabs-dur: 500ms;
   --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -180,7 +180,7 @@
  * once on "Approve and release"; the confirmation opens when it ends.
  */
 :root {
-  --pop-dur: 420ms;
+  --pop-dur: 620ms;
   --pop-ease: cubic-bezier(0.3, 0.7, 0.4, 1);
 }
 
@@ -270,7 +270,7 @@
  * correct against any fill in both themes with one rule instead of one per variant.
  */
 :root {
-  --shine-dur: 1400ms;
+  --shine-dur: 1800ms;
   --shine-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -359,7 +359,7 @@
  * that, for the same reason `.t-pop`'s own comment already gives.
  */
 :root {
-  --icon-pop-dur: 260ms;
+  --icon-pop-dur: 560ms;
   --icon-pop-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -373,7 +373,7 @@
     filter: drop-shadow(0 0 0 transparent);
   }
   45% {
-    scale: 1.35;
+    scale: 1.25;
     filter: drop-shadow(0 0 6px var(--color-primary));
   }
   100% {
