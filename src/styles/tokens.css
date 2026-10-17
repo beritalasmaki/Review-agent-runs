@@ -69,18 +69,6 @@
     radial-gradient(circle at 85% 10%, #163d38 0%, transparent 50%),
     radial-gradient(circle at 60% 90%, #2a1f45 0%, transparent 55%);
 
-  /* Brand — magenta-pink (primary), replacing 0068's indigo-blue (docs/DECISIONS.md, 0073).
-   * Hue shifted further from --status-red (0076): the original #c2185b sat only ~29° from
-   * red on the colour wheel, close enough to read as "error" under repeated small-dose use;
-   * this value sits ~50° away, same saturation/lightness otherwise. */
-  --magenta-light: #c21895;
-  --magenta-light-hover: #881168;
-  --magenta-dark: #ff70d9;
-  --magenta-dark-hover: #ff99e4;
-  /* Deeper, for fills and underlines only, not text: ~4.6:1 on the dark surfaces, matching
-   * 0069's precedent for this token's old (indigo) value. */
-  --magenta-dark-strong: #f547c7;
-
   /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
   --lime-light: #427000;
   --lime-light-hover: #3c6600;
@@ -131,12 +119,6 @@
   --status-blue-tint-fg-light: #1f5fbf; /* 5.02:1 on the tint above */
   --status-blue-tint-bg-dark: #152338; /* paired with --status-blue-dark */
 
-  /* A light wash of the brand magenta: selected rows, the active tab's count. */
-  --magenta-tint-light: #fce9f7;
-  --magenta-tint-border-light: #f2c0e4;
-  --magenta-tint-dark: #3b1631;
-  --magenta-tint-border-dark: #73265e;
-
   /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */
   --mark-amber: #f0a04b;
   --mark-blue: #6f9be0;
@@ -178,15 +160,21 @@
    * Brand. Primary and accent are never used on Approve / Request changes / Reject
    * — see src/styles/README.md, "Usage rules". *-foreground is the text/icon
    * colour for a filled primary or accent surface — it flips per theme (white in
-   * light, near-black in dark), because the dark-theme brand colours are
-   * lightened for their own contrast and need a dark foreground in turn.
+   * light, near-black in dark).
+   *
+   * Primary is neutral, not a brand hue (docs/DECISIONS.md, 0092 — reversing 0073's magenta):
+   * the same primitive `--color-text-primary` already uses per theme, so every consumer —
+   * focus rings, links, the Filters button's active state, an active tab's count badge — reads
+   * as "the app's own ink colour," not a separate accent. Vivid colour stays reserved for the
+   * status palette below, which already was the only thing actually signalling urgency.
    */
-  --color-primary: var(--magenta-light);
-  --color-primary-hover: var(--magenta-light-hover);
+  --color-primary: var(--neutral-12);
+  --color-primary-hover: var(--neutral-8);
   --color-primary-foreground: var(--neutral-0);
-  /* The brand as a fill or an underline — progress bars, the selected tab. The same as primary
-   * in light; deeper in dark, where text-safe primary has to stay light (0069). */
-  --color-primary-strong: var(--magenta-light);
+  /* The brand as a fill or an underline — progress bars, the selected tab. Same value as
+   * primary itself in both themes: unlike the magenta it replaces, a neutral fill doesn't need
+   * a separate, deeper shade to avoid looking too vivid (0092). */
+  --color-primary-strong: var(--neutral-12);
   --color-accent: var(--lime-light);
   --color-accent-hover: var(--lime-light-hover);
   --color-accent-foreground: var(--neutral-13);
@@ -222,8 +210,11 @@
   /* My reviews (docs/DECISIONS.md, 0060). */
   --color-status-info-tint-bg: var(--status-blue-tint-bg-light);
   --color-status-info-tint-fg: var(--status-blue-tint-fg-light);
-  --color-primary-tint: var(--magenta-tint-light);
-  --color-primary-tint-border: var(--magenta-tint-border-light);
+  /* A neutral "active/selected" wash — the Filters button open, the active sort icon, the
+   * selected tab's count badge — the same primitives --color-surface-raised/--color-border
+   * already use, not a separate hue (0092). */
+  --color-primary-tint: var(--neutral-2);
+  --color-primary-tint-border: var(--neutral-4);
   --color-mark-pending: var(--mark-amber);
   --color-mark-requested: var(--mark-blue);
   --color-mark-declined: var(--mark-red);
@@ -232,7 +223,10 @@
   /* A toast is the inverse of the page: dark on light, light on dark. */
   --color-toast-bg: var(--neutral-12);
   --color-toast-fg: var(--neutral-1);
-  --color-toast-link: var(--magenta-dark);
+  /* The opposite theme's primary-equivalent neutral, same reasoning as --color-toast-fg above:
+   * visible against the toast's own inverted background (0092 — previously the opposite
+   * theme's magenta, for the same reason). */
+  --color-toast-link: var(--neutral-1);
   --color-toast-icon: var(--status-green-dark);
 
   /*
@@ -283,6 +277,16 @@
    * than the neutral glass needs to be, rather than toward plain white/black. Tuned against a
    * real contrast measurement of the rendered pixels, the same way `--color-glass` was. */
   --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-light) 97%, transparent);
+  /* A glass surface for a *filled* button (0092 — "Create report", the row "Review" link-
+   * button): `--color-glass`'s light wash would wash out the white text a filled button needs,
+   * so this mixes toward the same primitive `--color-primary`/`--color-text-primary` already
+   * use per theme (dark in light theme, light in dark theme) instead — translucent but still
+   * dark enough for light text here, where the solid button is dark-filled with light text.
+   * The border is the same primitive at a touch more opacity, so the edge reads as a slightly
+   * firmer version of the same glass, not a separate colour. Tuned against a real contrast
+   * measurement of the rendered pixels, the same way --color-glass-warning was. */
+  --color-glass-fill: color-mix(in srgb, var(--neutral-12) 85%, transparent);
+  --color-glass-fill-border: color-mix(in srgb, var(--neutral-12) 95%, transparent);
 
   /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text
    * colour — at partial opacity. `currentColor` resolves per element at use time, not here, so
@@ -369,9 +373,9 @@
     --color-text-secondary: var(--neutral-5);
     --color-text-disabled: var(--neutral-7);
 
-    --color-primary: var(--magenta-dark);
-    --color-primary-hover: var(--magenta-dark-hover);
-    --color-primary-strong: var(--magenta-dark-strong);
+    --color-primary: var(--neutral-1);
+    --color-primary-hover: var(--neutral-5);
+    --color-primary-strong: var(--neutral-1);
     --color-primary-foreground: var(--neutral-13);
     --color-accent: var(--lime-dark);
     --color-accent-hover: var(--lime-dark-hover);
@@ -391,11 +395,11 @@
     --color-status-fail-tint-fg: var(--status-red-dark);
     --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
     --color-status-info-tint-fg: var(--status-blue-dark);
-    --color-primary-tint: var(--magenta-tint-dark);
-    --color-primary-tint-border: var(--magenta-tint-border-dark);
+    --color-primary-tint: var(--neutral-11);
+    --color-primary-tint-border: var(--neutral-9);
     --color-toast-bg: var(--neutral-2);
     --color-toast-fg: var(--neutral-12);
-    --color-toast-link: var(--magenta-light);
+    --color-toast-link: var(--neutral-12);
     --color-toast-icon: var(--status-green-light);
     --color-mark-pending: var(--mark-amber-dark);
     --color-mark-requested: var(--mark-blue-dark);
@@ -410,6 +414,11 @@
 
     --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
     --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 95%, transparent);
+    /* Dark theme's solid fill button flips to a light surface with dark text (same flip as
+     * --color-primary-foreground), so the glass version flips with it — see the light theme's
+     * own comment on this token pair. */
+    --color-glass-fill: color-mix(in srgb, var(--neutral-1) 85%, transparent);
+    --color-glass-fill-border: color-mix(in srgb, var(--neutral-1) 95%, transparent);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --page-gradient: var(--page-gradient-dark);
   }
@@ -427,9 +436,9 @@
   --color-text-secondary: var(--neutral-5);
   --color-text-disabled: var(--neutral-7);
 
-  --color-primary: var(--magenta-dark);
-  --color-primary-hover: var(--magenta-dark-hover);
-  --color-primary-strong: var(--magenta-dark-strong);
+  --color-primary: var(--neutral-1);
+  --color-primary-hover: var(--neutral-5);
+  --color-primary-strong: var(--neutral-1);
   --color-primary-foreground: var(--neutral-13);
   --color-accent: var(--lime-dark);
   --color-accent-hover: var(--lime-dark-hover);
@@ -449,11 +458,11 @@
   --color-status-fail-tint-fg: var(--status-red-dark);
   --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
   --color-status-info-tint-fg: var(--status-blue-dark);
-  --color-primary-tint: var(--magenta-tint-dark);
-  --color-primary-tint-border: var(--magenta-tint-border-dark);
+  --color-primary-tint: var(--neutral-11);
+  --color-primary-tint-border: var(--neutral-9);
   --color-toast-bg: var(--neutral-2);
   --color-toast-fg: var(--neutral-12);
-  --color-toast-link: var(--magenta-light);
+  --color-toast-link: var(--neutral-12);
   --color-toast-icon: var(--status-green-light);
   --color-mark-pending: var(--mark-amber-dark);
   --color-mark-requested: var(--mark-blue-dark);
@@ -464,6 +473,8 @@
 
   --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
   --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 95%, transparent);
+  --color-glass-fill: color-mix(in srgb, var(--neutral-1) 85%, transparent);
+  --color-glass-fill-border: color-mix(in srgb, var(--neutral-1) 95%, transparent);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --page-gradient: var(--page-gradient-dark);
 }
