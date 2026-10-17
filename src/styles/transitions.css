@@ -283,8 +283,8 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    115deg,
-    transparent 35%,
+    90deg,
+    transparent 55%,
     var(--color-button-shine) 48%,
     var(--color-button-shine) 52%,
     transparent 65%
