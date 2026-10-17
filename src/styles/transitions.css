@@ -270,8 +270,8 @@
  * correct against any fill in both themes with one rule instead of one per variant.
  */
 :root {
-  --shine-dur: 1800ms;
-  --shine-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --shine-dur: 2300ms;
+  --shine-ease: cubic-bezier(0.22, 1, 0.28, 1);
 }
 
 .btn-shine {
