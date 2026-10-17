@@ -39,6 +39,73 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-17 · Glass tabs and badge on My reviews, and a real token-name bug
+
+**Goal**
+Extend the frosted-glass pilot (0089) to the My reviews status tabs and the "N need your
+review" badge, from a reference image (a floating frosted pill nav bar, active item in its own
+capsule) — then fix a dark-theme double-border the user flagged, and a real contrast bug my
+own first pass introduced.
+
+**What changed**
+- `components/Tabs.tsx` — new `indicatorClassName` prop on `TabsList`/`PillTabsList`, so one
+  page's sliding-pill indicator can override its surface without touching every other `pill`
+  tab usage (the run page's Story/Evidence/All steps stay on the original `bg-surface
+  shadow-sm`).
+- `MyReviews.tsx` — status tabs switched from `line` to `pill` variant, with a glass track and
+  glass capsule indicator (no border on the capsule itself, to avoid the double-border); the
+  "N need your review" badge now uses `bg-glass-warning` instead of the solid amber tint.
+- `tokens.css` — new `--color-glass-warning` token (amber-tinted glass, theme-switched),
+  tuned against measured pixel contrast, not chosen by eye. DECISIONS 0091.
+
+**Steps, in order**
+1. Two `AskUserQuestion` rounds settled the design: the active tab gets a real glass capsule
+   (reusing the existing `pill` variant's sliding indicator, not a new animation), and the bar
+   stays docked in its current layout rather than floating separately off the card.
+2. Switched the tabs to `pill` variant, gave the sliding capsule `border-glass-border bg-glass
+   shadow-glass backdrop-blur-[...]`, gave the badge `bg-glass`. Real-browser contrast check:
+   the badge measured 3.55–4.15:1 — a real failure (needs 4.5:1).
+3. Added `--color-glass-warning`, mixing toward the amber tint instead of neutral white/black,
+   at 88% opacity. Re-measured: still failing (3.55:1 light, worse than before). Bumped to
+   97%/95%. Re-measured with a proper grid-mode sampler (my first single-point probe had
+   literally landed on a text glyph, reporting a false 1.00:1) — now 5.33–8.29:1, clear.
+4. `npm run check` surfaced a real failure in `scripts/check-theme-bridge.mjs`:
+   `.bg-glass-warning`/`.text-glass-warning` weren't painting their own colour in any theme.
+   Traced it to a genuine bug, not a tuning issue: the token referenced
+   `--status-waived-tint-bg-light/-dark`, which don't exist — the real primitive names are
+   `--status-amber-tint-bg-light/-dark`. The invalid `color-mix()` silently fell back to
+   `transparent`, which is why it still *looked* plausible in screenshots (the blurred page
+   gradient showing through coincidentally read as "amber-ish"). Fixed the variable names;
+   `check-theme-bridge.mjs` passed, and the real contrast numbers improved further (no longer
+   diluted by a see-through background).
+5. User reported a dark-theme double border around the active tab. Confirmed visually (zoomed
+   screenshot of the tab bar) — the capsule's own border sat very close to the outer track's
+   border. Removed the capsule's border entirely (`border-0`); a plain glass fill reads as the
+   highlight without needing its own outline.
+6. Full `npm run check` (including the keyboard stress test, since `Tabs.tsx` is shared) —
+   green except the same pre-existing "My reviews, keyboard only" failure confirmed unrelated
+   earlier this session.
+
+**Why it was done this way**
+See DECISIONS 0091 for the full reasoning, including why `check-theme-bridge.mjs` (built for a
+different bug class) was what actually caught the invalid-reference bug — the accessibility
+contrast tooling alone couldn't have, since a transparent background still measures *some*
+contrast against whatever is behind it.
+
+**How to do this by hand**
+Open My reviews in dark theme: the active tab sits in a single-bordered frosted capsule, no
+doubled outline. The "N need your review" badge reads as a warm amber frosted pill.
+
+**Verification**
+Real contrast measured 5.3–14.6:1 across tabs and badge, both themes (WCAG AA needs 4.5:1).
+`node scripts/check-theme-bridge.mjs` clean (65 colours verified across 3 theme states).
+`npm run check` green. `npm run build` explicit, green.
+
+**Open questions / next**
+None raised back to the user this round.
+
+---
+
 ### 2026-10-17 · Animated icons: morph where meaning changes, bounce where it doesn't
 
 **Goal**
