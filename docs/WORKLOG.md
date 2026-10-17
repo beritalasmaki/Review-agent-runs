@@ -39,6 +39,88 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+### 2026-10-17 · Frosted-glass theme, piloted on My reviews
+
+**Goal**
+The user asked for a literal "frosted glass" theme, both themes, from two reference images —
+and, before any code, to confirm it was reversible, contrast-safe, and scoped: Plan Mode (the
+change is a real reversal of 0073), three clarifying answers (literal glassmorphism, contrast
+stays solid, pilot one screen first), then mid-task, explicitly, "make sure the website is still
+accessible. The scan and readability is good and smooth for the user."
+
+**What changed**
+- `tokens.css` — new primitives `--page-gradient-light`/`-dark` (soft radial colour blobs, not
+  a linear band); new semantic tokens `--color-glass`, `--color-glass-border`, `--shadow-glass`,
+  `--blur-glass`, theme-switched in both the `@media`/`prefers-color-scheme` block and the
+  explicit `:root[data-theme='dark']` block. `--color-bg`/`--page-light`/`--page-dark` and every
+  other existing token are untouched.
+- `index.css` — new `bg-page-glass` utility (`background-color` fallback + `background-image`
+  gradient, fixed attachment).
+- `App.tsx` — `<main>` uses `bg-page-glass` only when `!runId` (My reviews), `bg-bg` on a run
+  page, so the pilot's background doesn't leak past the one screen.
+- `MyReviews.tsx` — the three card-shell `<section>` wrappers (main "Runs", inline "Also found
+  in the archive", the Archive page's own section) swap `bg-surface shadow-card` for
+  `bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]` and a `border-glass-border` border.
+  No other component changed: `ReviewsTable`/`ArchiveTable` already set their own opaque
+  `bg-surface`/`bg-surface-raised`, and the tabs/toolbar chrome already had no background of its
+  own, so wrapping just the section gave "glass chrome, solid data" for free.
+- `e2e/accessibility.spec.ts` — new `measuredBackgroundContrast` helper: axe cannot statically
+  resolve contrast through a CSS gradient/backdrop-filter ancestor, so every glass-chrome text
+  node it flags as "incomplete" is instead measured against the real rendered pixels (grid-
+  sampled, modal colour as background) and still has to clear axe's own expected ratio — not a
+  waiver. A second case (text behind an open dialog/modal/tour scrim at measurement time) is
+  detected with `elementFromPoint` and skipped, mirroring the file's existing `behindModal`
+  carve-out for the same underlying reason. DECISIONS 0089.
+
+**Steps, in order**
+1. Plan Mode: read `tokens.css`, `index.css`, `App.tsx`, `styles/README.md`; grepped
+   `MyReviews.tsx` for the card-shell pattern (exactly 3 matches). Three `AskUserQuestion`
+   answers, then wrote the plan, then one more round incorporating the mid-task accessibility
+   instruction into the plan's own verification section before `ExitPlanMode`.
+2. Added the tokens, the `index.css` utility, the `App.tsx` conditional, the three `className`
+   swaps in `MyReviews.tsx` (one `replace_all`, since all three were byte-identical).
+3. `npm run build` failed first: a `*/` inside a `tokens.css` comment (`--space-*/--motion-*`)
+   closed the comment early, leaving the rest as invalid CSS. Reworded it.
+4. Real-browser check (throwaway Playwright script, `/opt/pw-browsers/chromium`): sampled actual
+   rendered pixel colour behind the chrome text via a screenshot drawn into a canvas (not
+   `getComputedStyle`, which can't see through `backdrop-filter`) — 5.7–14.7:1 in both themes.
+   Screenshots of My reviews, the Archive page and a search-results state, both themes.
+5. `npx playwright test e2e/accessibility.spec.ts -g "My reviews"` — 20 failures, all
+   `color-contrast` "incomplete" with `messageKey: 'bgGradient'`: axe refuses to guess through a
+   gradient/backdrop-filter ancestor. Added `measuredBackgroundContrast`; first version sampled
+   the element's edges and badly under-reported (hit ascenders/descenders at this app's line-
+   heights) — switched to a grid-sampled modal colour, which fixed most but not all: states with
+   an open dialog/modal/tour still failed, because the screenshot genuinely shows the scrim's
+   dimmed colour. Added the `elementFromPoint`-based obscured check, mirroring `behindModal`.
+   All 34 accessibility states (not just My reviews) pass after that.
+6. `npm run check` green after one `prettier --write` pass. `npm run build` explicit, green.
+7. `npx playwright test e2e/keyboard.spec.ts -g "My reviews, keyboard only"` failed, 5/5 repeats
+   — confirmed pre-existing by `git stash` and re-running against unmodified `main`: same
+   failure. Not caused by this change; left alone, flagged to the user.
+8. Final screenshots sent to the user for sign-off before any further propagation.
+
+**Why it was done this way**
+See DECISIONS 0089 for the "chrome is glass, data is solid" split and why extending the
+accessibility test (not loosening it) was the only honest fix for axe's gradient blind spot.
+
+**How to do this by hand**
+Open My reviews in both themes: the page background is a soft, blurred colour wash; the card
+frame, tab bar and search toolbar are translucent over it; every table row, badge and piece of
+text reads exactly as crisp and opaque as before.
+
+**Verification**
+Real rendered contrast measured 5.7–14.7:1 both themes (well above 4.5:1/3:1). All 34
+`e2e/accessibility.spec.ts` states pass, both themes. `npm run check` green (293 unit tests, 45
+e2e tests, one pre-existing unrelated failure noted below). `npm run build` explicit, green.
+
+**Open questions / next**
+This is a pilot — My reviews only. Screenshots sent for sign-off; propagating to the run page,
+dialogs, buttons and badges waits on that. Separately: `e2e/keyboard.spec.ts`'s "My reviews,
+keyboard only" test fails on unmodified `main` too (confirmed via `git stash`) — pre-existing,
+not touched here, worth its own look.
+
+---
+
 ### 2026-10-16 · Outline button: shine out, a plain fade and a small grow in
 
 **Goal**
