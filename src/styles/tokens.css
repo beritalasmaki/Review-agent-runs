@@ -48,6 +48,27 @@
   --page-light: #f5f5f5;
   --page-dark: #121212;
 
+  /*
+   * The frosted-glass pilot (docs/DECISIONS.md, 0089 — My reviews only, see that entry for why
+   * this sits alongside the flat page colour above rather than replacing it). A soft page-wide
+   * wash of colour, hue-matched to the user's reference images (cool blue / teal / soft
+   * purple), applied as `background-image` on `body` (styles/index.css) *underneath* the flat
+   * `--page-light`/`--page-dark` colour above, which stays the `background-color` fallback and
+   * is what every `bg-bg` utility still resolves to everywhere else in the app (StepsTab,
+   * RunTopBar, ReviewDialogs, ...) — changing `--page-light`/`--page-dark` themselves would have
+   * broken every one of those, since a gradient is not a valid `background-color` value. Several
+   * soft, feathered blobs rather than one hard linear sweep, so it reads as the reference
+   * images' blurred texture rather than a flat colour band.
+   */
+  --page-gradient-light:
+    radial-gradient(circle at 15% 20%, #dbe9fb 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, #e3f5ef 0%, transparent 45%),
+    radial-gradient(circle at 55% 90%, #ece3f7 0%, transparent 50%);
+  --page-gradient-dark:
+    radial-gradient(circle at 15% 20%, #1b3a5c 0%, transparent 50%),
+    radial-gradient(circle at 85% 10%, #163d38 0%, transparent 50%),
+    radial-gradient(circle at 60% 90%, #2a1f45 0%, transparent 55%);
+
   /* Brand — magenta-pink (primary), replacing 0068's indigo-blue (docs/DECISIONS.md, 0073).
    * Hue shifted further from --status-red (0076): the original #c2185b sat only ~29° from
    * red on the colour wheel, close enough to read as "error" under repeated small-dose use;
@@ -243,6 +264,19 @@
    * neutral replaces 0068's page-tinted shadow along with the rest of that palette). */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
 
+  /*
+   * Glass surface (docs/DECISIONS.md, 0089 — My reviews pilot only). A translucent, blurred
+   * stand-in for `--color-surface`/`--shadow-card`, used only on card "chrome" (the frame
+   * around data, not the data itself) so the reviewer-facing text keeps reading off today's
+   * already-contrast-verified `--color-surface`/`--color-text-primary`, unchanged. The
+   * percentages below were tuned against a real contrast measurement, not chosen by eye (see
+   * the decision entry) — dark glass needed to be noticeably less translucent than light glass
+   * to keep reading comfortably over the busier dark gradient.
+   */
+  --color-glass: color-mix(in srgb, var(--neutral-0) 70%, transparent);
+  --color-glass-border: rgb(255 255 255 / 0.3);
+  --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.12);
+
   /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text
    * colour — at partial opacity. `currentColor` resolves per element at use time, not here, so
    * one token gives every variant a correct-looking stripe against its own fill: light over the
@@ -295,6 +329,19 @@
   --space-6: 32px;
   --space-7: 48px;
   --space-8: 64px;
+}
+
+/*
+ * Glass pilot support values that aren't semantic colours (docs/DECISIONS.md, 0089). Plain
+ * custom properties, not inside @theme, the same reasoning as --space- and --motion- above:
+ * `--page-gradient` is consumed directly in styles/index.css's `body` rule, never through a
+ * Tailwind utility, and `--blur-glass` through Tailwind's arbitrary-value syntax
+ * (`backdrop-blur-[var(--blur-glass)]`) rather than registering a `--blur-*` theme scale this
+ * app has no other use for.
+ */
+:root {
+  --page-gradient: var(--page-gradient-light);
+  --blur-glass: 20px;
 }
 
 /*
@@ -353,6 +400,10 @@
     --color-mark-approved: var(--mark-green-dark);
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     --color-modal-scrim: rgb(0 0 0 / 0.6);
+
+    --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
+    --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
+    --page-gradient: var(--page-gradient-dark);
   }
 }
 
@@ -402,6 +453,10 @@
   --color-mark-approved: var(--mark-green-dark);
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
   --color-modal-scrim: rgb(0 0 0 / 0.6);
+
+  --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
+  --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
+  --page-gradient: var(--page-gradient-dark);
 }
 
 /*

@@ -466,7 +466,7 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="rounded-lg border border-border-subtle bg-surface shadow-card"
+          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
@@ -607,7 +607,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="rounded-lg border border-border-subtle bg-surface shadow-card"
+          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
         >
           {archiveTable()}
         </section>
@@ -616,7 +616,7 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="rounded-lg border border-border-subtle bg-surface shadow-card"
+          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
         >
           <ReviewsToolbar
             searchLabel="Search the archive"

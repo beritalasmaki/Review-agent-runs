@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { cn } from '../lib/utils'
 import { OnboardingTour } from '../components/OnboardingTour'
 import { MyReviews } from '../features/run/MyReviews'
 import { RunReviewPage } from '../features/run/RunReviewPage'
@@ -66,7 +67,9 @@ export default function App() {
 
   return (
     <>
-      <main className="min-h-screen bg-bg">
+      {/* The frosted-glass page background (docs/DECISIONS.md, 0089) is piloted on My reviews
+          only — a run page keeps the flat bg-bg every other screen still uses. */}
+      <main className={cn('min-h-screen', runId ? 'bg-bg' : 'bg-page-glass')}>
         {runId ? (
           <RunReviewPage runId={runId} getRunOptions={delayMs ? { delayMs } : undefined} />
         ) : (
