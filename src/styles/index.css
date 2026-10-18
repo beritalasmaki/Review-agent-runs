@@ -164,17 +164,31 @@
 
 /*
  * The frosted-glass page background (docs/DECISIONS.md, 0089 — piloted on My reviews only;
- * 0097 made it app-wide, on every screen `App.tsx`'s `<main>` renders). `--color-bg` stays the
- * `background-color` fallback exactly as `bg-bg` already uses it everywhere else;
- * `--page-gradient` (tokens.css) layers on top as `background-image`, fading to transparent at
- * each blob's edge so the flat colour still shows through at the gaps. Fixed attachment so the
- * blobs stay put as the page scrolls, the same way a frosted window doesn't move when you
- * scroll past it.
+ * 0097 made it app-wide, on every screen `App.tsx`'s `<main>` renders; 0101 added the hero band
+ * below). `--color-bg` stays the `background-color` fallback exactly as `bg-bg` already uses it
+ * everywhere else; `--page-gradient` (tokens.css) layers on top as `background-image`, fading
+ * to transparent at each blob's edge so the flat colour still shows through at the gaps. Fixed
+ * attachment so the blobs stay put as the page scrolls, the same way a frosted window doesn't
+ * move when you scroll past it.
+ *
+ * A second, lower `background-image` layer underneath the gradient: `--color-hero-band` (itself
+ * `--color-glass` — the same translucent wash every other glass surface uses, light in light
+ * theme and dark in dark theme, not a new flat colour) fading smoothly from the page's own top
+ * down to transparent over `--hero-band-height` — a tinted zone behind the page's title and the
+ * top of its main card (0101), not a solid block: the vivid gradient underneath still shows
+ * through the wash's own translucency, and the fade itself has no hard edge to begin with.
+ * Unlike the gradient blobs, this layer scrolls with the page (its own `background-attachment:
+ * scroll`, the first value in the comma-separated pair below) — it's tied to specific content
+ * near the top of the page, not an ambient backdrop. Where the glass card's own translucency
+ * sits over the band, the band's own tint shows through the card too — one more place glass has
+ * real colour behind it to reveal, not a flat interior.
  */
 @utility bg-page-glass {
   background-color: var(--color-bg);
-  background-image: var(--page-gradient);
-  background-attachment: fixed;
+  background-image:
+    linear-gradient(to bottom, var(--color-hero-band) 0%, transparent var(--hero-band-height)),
+    var(--page-gradient);
+  background-attachment: scroll, fixed;
 }
 
 /*

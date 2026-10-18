@@ -6,6 +6,84 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0102 · Inactive tabs read as available, not disabled — full-strength brand colour, not faded
+
+**Context.** Two follow-up requests after the header-band work: "the main title and description
+below it looks just really boring. Also I would remove the Icon next to the main title," and,
+separately, "Make sure the tabs look like they are available (not disabled). Use some other
+color than grey in those ones that are inactive."
+
+**Choice.** `PageTitle` (`MyReviews.tsx`) dropped its `icon` prop entirely — every call site
+updated, the now-unused icon imports removed — and grew from `--text-page-title` (28px) to
+`2.5rem` with tighter tracking; its description grew from `--text-body` to `--text-lead`
+(16px). The `pill` tab variant's inactive state (`components/ui/tabs.tsx`) moved from
+`text-text-secondary` (the same grey a disabled control would use) to `text-primary` — the
+brand indigo, at full strength. The active tab keeps `text-text-primary` (the page's strongest
+contrast) and the sliding pill behind it; those two signals alone already carried "selected"
+before this change, so the inactive colour was free to mean something else: "available," not
+"quieter."
+
+**The first attempt (reduced-opacity `text-primary/75`) was wrong, caught by the same
+real-contrast discipline used throughout this round.** It read as faded rather than
+deliberate — "make sure the inactive tabs are fully with that color... otherwise it looks
+weird" — and `npx playwright test e2e/accessibility.spec.ts` turned that same instinct into a
+number: 30 of 34 states failed, because the `pill` variant is shared with the run review page's
+Story/Evidence/All-steps tabs, and the translucent indigo dropped below 4.5:1 against several of
+those states' own backgrounds. Full-strength `text-primary` fixed both problems in one change:
+34/34 clean afterwards, confirming the "looks weird" instinct and the contrast failure were the
+same underlying issue, not two separate ones. `hover:text-primary-hover` (an existing token,
+already used for hover states elsewhere) replaced the opacity-based hover treatment for the same
+reason.
+
+**Consequence.** Any future "quieter but still colourful" treatment on text should reach for a
+step on the existing colour ramp (`--color-primary-hover`, a neutral step, etc.) rather than an
+opacity modifier on a brand colour — opacity looks unintentional long before it clears contrast,
+and when it does clear contrast against one background it will not necessarily clear it against
+every background a shared component (like the `pill` tab variant) ends up composited over.
+
+---
+
+## 0101 · A translucent header zone, reusing `--color-glass` itself rather than a new flat colour
+
+**Context.** After the five-part refresh shipped, a follow-up sketch: a visibly distinct darker
+zone behind the page's title and the top of its main card, fading into the ordinary page
+gradient below — "the design is missing that dark grey part structurally. The white background
+is the area where we have that glass gradient background." Two corrections followed in the same
+exchange: "keep the glass design! Don't make it solid color," then "in light mode it should be
+light color, dark mode it can be dark color" — reversing an initial dark-regardless-of-theme
+assumption — and "the bottom should fade gradient-like... no sharp edge."
+
+**Choice.** `bg-page-glass` (`index.css`) gained a second, lower `background-image` layer: a
+`linear-gradient(to bottom, var(--color-hero-band) 0%, transparent var(--hero-band-height))` —
+one continuous fade, not a held colour stop followed by a hard cutoff, so there is no visible
+seam at any point. `--color-hero-band` is not a new colour at all: it's set to `var(--color-glass)`
+directly (tokens.css), which already has exactly the polarity asked for — a light wash in light
+theme, a dark wash in dark theme — because CSS custom properties resolve `var()` at computed-
+value time, so one line in the base `:root` block picks up whichever theme's `--color-glass` is
+active with no separate dark-theme override needed. This also means the existing
+`text-text-primary`/`text-text-secondary` title text needed no new foreground token: it's the
+same colour pairing every other glass card's text already sits on. The band layer scrolls with
+the page (`background-attachment: scroll`), unlike the gradient blobs underneath it
+(`fixed`) — it's tied to specific content near the top, not an ambient backdrop, so the two
+layers get different values in the same comma-separated `background-attachment` property.
+`--hero-band-height` (tokens.css, 195px) was tuned against a real screenshot to end just past
+the title/tabs row, before the search/filters row and table.
+
+**The first attempt was wrong twice, in instructive ways.** The initial version used a flat,
+fully opaque `--neutral-11`/`--neutral-10` pair with a hard two-stop cutoff — which (a) broke
+the title's own text contrast, since dark-on-dark text was never changed to match, and (b)
+directly contradicted "keep the glass design" by being a solid rectangle, not a translucent
+surface. The fix wasn't a new, carefully-tuned colour pair — reusing `--color-glass` solved both
+problems at once, since it already has the right per-theme polarity *and* already has verified-
+working text on top of it everywhere else in the app.
+
+**Consequence.** Any future "page-level" tint that should feel like part of the glass system,
+not a separate decorative layer, should reach for an existing glass token the same way, rather
+than inventing a new flat colour — the fastest way back to "looks solid, not glass" is a new
+opaque value that doesn't derive from one of the `--color-glass*` tokens.
+
+---
+
 ## 0100 · The welcome modal and the signature intro get genuine glass, scoped via `overlayClassName`
 
 **Context.** Part 5, the last of the visual refresh. Direct request, with a reference image: "I

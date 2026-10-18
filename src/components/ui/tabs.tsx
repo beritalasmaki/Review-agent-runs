@@ -20,7 +20,7 @@ const tabsListVariants = cva('', {
   variants: {
     variant: {
       segmented: 'flex divide-x divide-border-subtle border-y border-border-subtle',
-      pill: 'relative inline-flex gap-[var(--space-1)] border border-border-subtle bg-surface-raised p-[var(--space-1)]',
+      pill: 'relative inline-flex gap-[var(--space-1)] border border-border-subtle bg-surface-raised p-[var(--space-2)]',
       line: 'scrollbar-none flex gap-[var(--space-2)] overflow-x-auto border-b border-border-subtle px-[var(--space-5)] pt-[var(--space-3)]',
     },
   },
@@ -55,14 +55,23 @@ const tabsTriggerVariants = cva(
           'focus-visible:relative focus-visible:z-10 focus-visible:outline-offset-[-2px]',
         ],
         pill: [
-          't-tab inline-flex gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)]',
-          'text-meta font-semibold font-heading leading-none text-text-secondary',
+          't-tab inline-flex gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)]',
+          'text-meta font-semibold font-heading leading-none text-primary',
+          // An inactive tab reads as an available choice, not a disabled one — brand-tinted at
+          // full strength, not the plain grey `text-text-secondary` a disabled control would
+          // use, and not a reduced-opacity version of the brand colour either (tried first; it
+          // read as faded/inconsistent rather than a deliberate colour, and the translucency
+          // also dropped the measured contrast below 4.5:1 in several states — real pixel
+          // measurement caught it, not assumed). The active tab (`text-text-primary`, the
+          // strongest contrast on the page) and the sliding pill behind it still carry the
+          // "selected" signal on their own.
+          //
           // aria-selected, not data-[state=active]: a pill trigger with a tooltip is wrapped in
           // Radix's Tooltip via `asChild` (components/Tabs.tsx's PillTrigger), which ends up
           // writing its own data-state (tooltip open/closed) onto the same DOM node — it wins,
           // so a selector keyed on data-state never matches once Tooltip's state settles.
           // aria-selected is Radix Tabs' own attribute; nothing else touches it.
-          'hover:text-text-primary aria-selected:text-text-primary focus-visible:outline-offset-2',
+          'hover:text-primary-hover aria-selected:text-text-primary focus-visible:outline-offset-2',
         ],
         // No -mb-px onto the list's rule: the list scrolls sideways, which clips anything below
         // its edge, and that clipped the selected tab's underline to nothing. No colour

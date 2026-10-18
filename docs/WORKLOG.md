@@ -39,6 +39,100 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-18 · Bolder title, no icon; inactive tabs read as available, not disabled
+
+**Goal**
+Two more follow-ups on the same page: "the main title and description... looks just really
+boring. Also I would remove the Icon next to the main title," and "make sure the tabs look like
+they are available (not disabled). Use some other color than grey in those ones that are
+inactive."
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — `PageTitle` dropped its `icon` prop (all three call sites
+  updated, the now-unused `ListChecks` import removed); grew from `text-page-title` (28px) to
+  `text-[2.5rem]` with `tracking-tight`; its description paragraphs grew from `text-body` to
+  `text-lead`.
+- `src/components/ui/tabs.tsx` — the `pill` variant's inactive-tab colour: `text-text-secondary`
+  → `text-primary` (full strength, not the `text-primary/75` tried first); hover:
+  `hover:text-text-primary` → `hover:text-primary-hover`.
+- `docs/DECISIONS.md` — new entry 0102.
+
+**Steps, in order**
+1. Removed the icon, bumped the title/description sizes, verified with a screenshot.
+2. First tab-colour attempt: `text-primary/75` (a translucent indigo). Looked plausible in a
+   screenshot but the user caught it immediately as "not fully that color... looks weird."
+3. Ran `npx playwright test e2e/accessibility.spec.ts` anyway, since the `pill` variant is
+   shared with the run review page's own tabs: 30 of 34 states failed — the translucency
+   dropped contrast below 4.5:1 in states the one page I'd screenshotted didn't cover.
+4. Switched to full-strength `text-primary` (and `hover:text-primary-hover`, an existing token,
+   in place of the opacity-based hover). Re-ran: 34/34 clean, and it was also the look
+   originally asked for.
+
+**Why it was done this way**
+The "looks weird" feedback and the contrast failure turned out to be the same problem, caught
+two different ways — worth noting as a pattern: a colour that reads as visually inconsistent to
+the eye is a reasonable leading indicator that it won't clear contrast either, not just an
+aesthetic nitpick to weigh against the measurement separately.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure. `npx vitest run`: 293/293 clean
+(confirms no test depended on `PageTitle`'s removed icon). `npm run build` clean.
+
+**Open questions / next**
+The pre-existing keyboard bug (`e2e/keyboard.spec.ts`, "My reviews, keyboard only") is still
+open — this was the task in progress when these two follow-ups arrived.
+
+---
+
+## 2026-10-18 · Translucent header zone + taller tabs (follow-up after the refresh shipped)
+
+**Goal**
+A follow-up sketch after PR #27 merged: a distinct zone behind the title and the top of the
+main card, fading into the page's existing gradient below — plus taller tab pills, since "tabs
+are important" and the previous padding made them look like an afterthought.
+
+**What changed**
+- `src/styles/tokens.css` — new `--hero-band-height` (195px) and `--color-hero-band`, the
+  latter set to `var(--color-glass)` directly rather than a new colour (see docs/DECISIONS.md
+  0101 for why).
+- `src/styles/index.css` — `bg-page-glass` gained a second `background-image` layer: a
+  one-stop fade from `--color-hero-band` to transparent over `--hero-band-height`, with its own
+  `background-attachment: scroll` (the gradient blobs stay `fixed`).
+- `src/components/ui/tabs.tsx` — the `pill` variant's vertical padding: triggers
+  `py-[var(--space-2)]` → `py-[var(--space-3)]`, the track `p-[var(--space-1)]` →
+  `p-[var(--space-2)]`.
+
+**Steps, in order**
+1. First attempt: a flat, fully opaque dark neutral with a hard two-stop cutoff, matching the
+   sketch literally. Screenshot showed two problems at once: the title's dark text became
+   unreadable against the now-dark band, and the flat block read as "solid," not "glass."
+2. Corrected per direct feedback ("keep the glass design," then "light mode light colour, dark
+   mode dark colour") by pointing `--color-hero-band` at the existing `--color-glass` token
+   instead of inventing a new one — its per-theme polarity was already exactly what was asked
+   for, and its text-contrast pairing was already proven everywhere else.
+3. Corrected the hard edge ("no sharp edge in the bottom") by replacing the two-stop
+   hold-then-cutoff gradient with a single continuous fade from the band colour to transparent.
+4. Bumped the pill tab padding.
+5. Verified with screenshots in both themes, then the full accessibility suite and `npm run
+   check`.
+
+**Why it was done this way**
+Reusing `--color-glass` rather than tuning a new colour pair solved both of the first attempt's
+problems in one move: it already has the right light/dark polarity, and the existing title text
+colours already have verified contrast against it (it's the same token every other glass card's
+text sits on). See docs/DECISIONS.md 0101 for the fuller reasoning.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure (`e2e/keyboard.spec.ts`, unrelated —
+see the "Capsule buttons" and "Filters popover" entries below). `npm run build` clean.
+
+**Open questions / next**
+The pre-existing keyboard bug is still open.
+
+---
+
 ## 2026-10-18 · Welcome modal and signature intro get genuine glass (part 5, last of the refresh)
 
 **Goal**

@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   FileBarChart,
   List,
-  ListChecks,
   RefreshCw,
   X,
 } from 'lucide-react'
@@ -119,7 +118,7 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
   }
   return (
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] py-[var(--space-6)] md:px-[var(--space-6)]">
-      <PageTitle icon={ListChecks}>My reviews</PageTitle>
+      <PageTitle>My reviews</PageTitle>
       {state.status === 'loading' ? (
         <LoadingState label="Loading reviews…" className="min-h-[40vh]" />
       ) : (
@@ -143,11 +142,9 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
 }
 
 function PageTitle({
-  icon: Icon,
   children,
   headingRef,
 }: {
-  icon: ComponentType<{ className?: string }>
   children: string
   headingRef?: React.Ref<HTMLHeadingElement>
 }) {
@@ -155,9 +152,8 @@ function PageTitle({
     <h1
       ref={headingRef}
       tabIndex={-1}
-      className="flex items-center gap-[var(--space-3)] text-page-title leading-tight font-bold font-heading text-text-primary outline-none"
+      className="text-[2.5rem] leading-tight font-bold tracking-tight font-heading text-text-primary outline-none"
     >
-      <Icon aria-hidden className="h-6 w-6 text-text-primary" />
       {children}
     </h1>
   )
@@ -416,10 +412,8 @@ function ReviewsBoard({
       {!onArchivePage ? (
         <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)]">
           <div className="flex flex-col gap-[var(--space-2)]">
-            <PageTitle icon={ListChecks} headingRef={headingRef}>
-              My reviews
-            </PageTitle>
-            <p className="text-body text-text-secondary">
+            <PageTitle headingRef={headingRef}>My reviews</PageTitle>
+            <p className="text-lead leading-relaxed text-text-secondary">
               Agent runs assigned to you. Decide on pending runs, and find your past decisions.
             </p>
           </div>
@@ -462,10 +456,8 @@ function ReviewsBoard({
             </Button>
             <ThemeToggle />
           </div>
-          <PageTitle icon={Archive} headingRef={headingRef}>
-            Archive
-          </PageTitle>
-          <p className="max-w-[55rem] text-body text-text-secondary">
+          <PageTitle headingRef={headingRef}>Archive</PageTitle>
+          <p className="max-w-[55rem] text-lead leading-relaxed text-text-secondary">
             Approved and declined runs move here automatically {ARCHIVE_AFTER_MONTHS} months after
             the decision. You can also archive them yourself from My reviews. The record here never
             changes; request a new run to fix a mistake.

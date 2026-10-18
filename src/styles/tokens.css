@@ -427,6 +427,24 @@
 :root {
   --page-gradient: var(--page-gradient-light);
   --blur-glass: 20px;
+  /* The page's own header zone (docs/DECISIONS.md, 0101): a translucent wash behind the title
+   * and the top of the page's main card, tinting that zone without flattening it to a solid
+   * colour — the vivid gradient underneath still shows through, same as every other glass
+   * surface in the app. Reuses `--color-glass` itself, not a new value: whatever polarity that
+   * token already has per theme (a light wash in light theme, a dark wash in dark theme — CSS
+   * custom properties resolve `var()` at computed-value time, so this single line picks up
+   * `--color-glass`'s own per-theme override automatically, with no separate dark-theme
+   * definition needed here) is exactly right for this zone too, and the existing
+   * `text-text-primary`/`text-text-secondary` title text already reads correctly against it —
+   * it's the same token every other glass card's text already sits on. Not Tailwind-registered,
+   * since it's only ever consumed inside `bg-page-glass`'s own `background-image`, the same
+   * reasoning as `--page-gradient` above. */
+  --color-hero-band: var(--color-glass);
+  /* Ends just past the title/description row and the tabs row below it — before the
+   * search/filters row and the table, which both need their own ordinary (dark-on-light) text
+   * colours to stay readable. Tuned against a real screenshot, not guessed (docs/DECISIONS.md,
+   * 0101). */
+  --hero-band-height: 195px;
 }
 
 /*
