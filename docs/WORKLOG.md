@@ -39,6 +39,61 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-18 · Page gradient goes app-wide and more saturated (part 2 of the visual refresh)
+
+**Goal**
+Second step of the five-part visual refresh: make the page background richer and apply it to
+every screen (previously the run review page kept the flat, gradient-free background from
+0073), so there's real colour for `backdrop-blur` to reveal and the run page stops looking
+different from My reviews for no reason.
+
+**What changed**
+- `src/app/App.tsx` — `<main>` always renders `bg-page-glass` now (dropped the `runId ? 'bg-bg'
+  : 'bg-page-glass'` conditional); removed the now-unused `cn` import.
+- `src/styles/tokens.css` — `--page-gradient-light`/`-dark` far more saturated and spread
+  wider, each blob's colour wrapped in `color-mix()` toward the flat page colour so opacity is
+  one tunable percentage per theme; `--page-light`/`-dark` (the flat fallback) now match 0096's
+  cool-tinted neutral family.
+- `src/styles/index.css` — updated `bg-page-glass`'s own doc comment (no longer "My reviews
+  only").
+- `docs/DECISIONS.md` — new entry 0097.
+
+**Steps, in order**
+1. Removed the `runId` conditional in `App.tsx`; picked richer blob colours and wider spreads
+   for the gradient tokens.
+2. `npx playwright test e2e/accessibility.spec.ts` — 8 failures, all My reviews text/controls
+   sitting directly on the page background (not inside the opaque glass card). Real numbers,
+   not assumed from the colours looking "probably fine."
+3. Wrapped each blob colour in `color-mix()` toward `--page-light`/`-dark` at 55%, re-ran: down
+   to 4 failures, all light theme, one at 4.457 (just under the 4.5 line).
+4. Nudged the light-theme mix down to 42%, re-ran: 34/34 clean, both themes.
+5. Screenshot pass, both pages, both themes — the run review page visibly has colour now,
+   confirmed by eye, not just by the passing numbers.
+6. `npm run check` full pass (one `prettier --write` needed on the longer `color-mix()` lines).
+7. Wrote `docs/DECISIONS.md` 0097 and this entry.
+
+**Why it was done this way**
+`color-mix()` toward the flat page colour, rather than hand-picking three less-saturated hex
+values per theme, means the whole gradient's intensity is one number per theme — tunable in
+one place if it ever needs adjusting again, instead of three independent values that have to
+be kept in the same proportion by hand.
+
+**How to do this by hand**
+Not meaningfully different from the steps above.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 passed on the final values (both
+themes, My reviews and the run review page). `npm run check`: full pass except the same
+pre-existing, unrelated `My reviews, keyboard only` failure. `node scripts/check-theme-
+bridge.mjs`: ok. Visual screenshot pass, both pages, both themes.
+
+**Open questions / next**
+- Three parts of the agreed plan remain: button/pill visual redesign (now that the backdrop
+  has real colour to work with), a popover-style filters panel with a connecting notch, and a
+  glass welcome-modal/intro treatment.
+
+---
+
 ## 2026-10-18 · Cool-tinted neutral ramp, app-wide (part 1 of a larger visual refresh)
 
 **Goal**

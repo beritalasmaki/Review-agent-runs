@@ -45,34 +45,60 @@
   --neutral-13: #171b25;
 
   /*
-   * The page behind the cards (docs/DECISIONS.md, 0073): a flat, true-neutral grey in light, a
-   * near-black in dark — no colour tint, no decorative gradient (the lavender/mint blobs 0068
-   * added are gone with it). Separation from a white or near-black card comes from the small
-   * step in lightness alone, the flat-minimal look this replaces 0068's softer one with.
+   * The page behind the cards: the flat `background-color` fallback under the gradient below,
+   * and what every `bg-bg` utility resolves to for an element that doesn't want the gradient
+   * (StepsTab, RunTopBar, ReviewDialogs, ...) — a gradient is not a valid `background-color`
+   * value. Matches the cool-tinted neutral ramp's own family (docs/DECISIONS.md, 0096) rather
+   * than the flat true-grey 0073 originally gave this.
    */
-  --page-light: #f5f5f5;
-  --page-dark: #121212;
+  --page-light: #f3f5f7;
+  --page-dark: #0d0f14;
 
   /*
-   * The frosted-glass pilot (docs/DECISIONS.md, 0089 — My reviews only, see that entry for why
-   * this sits alongside the flat page colour above rather than replacing it). A soft page-wide
-   * wash of colour, hue-matched to the user's reference images (cool blue / teal / soft
-   * purple), applied as `background-image` on `body` (styles/index.css) *underneath* the flat
-   * `--page-light`/`--page-dark` colour above, which stays the `background-color` fallback and
-   * is what every `bg-bg` utility still resolves to everywhere else in the app (StepsTab,
-   * RunTopBar, ReviewDialogs, ...) — changing `--page-light`/`--page-dark` themselves would have
-   * broken every one of those, since a gradient is not a valid `background-color` value. Several
-   * soft, feathered blobs rather than one hard linear sweep, so it reads as the reference
-   * images' blurred texture rather than a flat colour band.
+   * The page-wide gradient wash (docs/DECISIONS.md, 0089 introduced it, My reviews only; 0097
+   * made it app-wide and considerably more saturated). Applied as `background-image` on `body`
+   * (styles/index.css) *underneath* the flat `--page-light`/`--page-dark` colour above. Several
+   * soft, feathered blobs rather than one hard linear sweep, so it reads as a blurred texture,
+   * not a flat colour band.
+   *
+   * Pushed noticeably more vivid than the original pastel version (0097): a glass surface's
+   * `backdrop-blur` can only reveal colour that is actually there to blur — the original wash
+   * was so close to the flat page colour that buttons and pills sitting on it read as plain
+   * solid surfaces, not glass (the same root cause 0095 fixed for stacked opacity, from the
+   * other direction). A richer backdrop fixes both at once.
    */
   --page-gradient-light:
-    radial-gradient(circle at 15% 20%, #dbe9fb 0%, transparent 45%),
-    radial-gradient(circle at 85% 15%, #e3f5ef 0%, transparent 45%),
-    radial-gradient(circle at 55% 90%, #ece3f7 0%, transparent 50%);
+    radial-gradient(
+      circle at 12% 18%,
+      color-mix(in srgb, #7fb8f0 42%, var(--page-light)) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      color-mix(in srgb, #6fd9bc 42%, var(--page-light)) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 50% 92%,
+      color-mix(in srgb, #c7a8f0 42%, var(--page-light)) 0%,
+      transparent 60%
+    );
   --page-gradient-dark:
-    radial-gradient(circle at 15% 20%, #1b3a5c 0%, transparent 50%),
-    radial-gradient(circle at 85% 10%, #163d38 0%, transparent 50%),
-    radial-gradient(circle at 60% 90%, #2a1f45 0%, transparent 55%);
+    radial-gradient(
+      circle at 12% 18%,
+      color-mix(in srgb, #2a5d94 55%, var(--page-dark)) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      color-mix(in srgb, #1a6b5c 55%, var(--page-dark)) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 50% 92%,
+      color-mix(in srgb, #4a3380 55%, var(--page-dark)) 0%,
+      transparent 65%
+    );
 
   /* Brand — indigo-blue (primary), replacing 0092's neutral black/white (docs/DECISIONS.md,
    * 0094). Shifted toward violet (~248°) and away from the existing status-blue's hue (~210-

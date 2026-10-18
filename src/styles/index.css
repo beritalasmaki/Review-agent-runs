@@ -163,12 +163,13 @@
 }
 
 /*
- * The frosted-glass pilot's page background (docs/DECISIONS.md, 0089 — My reviews only).
- * `--color-bg` stays the `background-color` fallback exactly as `bg-bg` already uses it
- * everywhere else; `--page-gradient` (tokens.css) layers on top as `background-image`, fading
- * to transparent at each blob's edge so the flat colour still shows through at the gaps. Fixed
- * attachment so the blobs stay put as the page scrolls, the same way a frosted window doesn't
- * move when you scroll past it.
+ * The frosted-glass page background (docs/DECISIONS.md, 0089 — piloted on My reviews only;
+ * 0097 made it app-wide, on every screen `App.tsx`'s `<main>` renders). `--color-bg` stays the
+ * `background-color` fallback exactly as `bg-bg` already uses it everywhere else;
+ * `--page-gradient` (tokens.css) layers on top as `background-image`, fading to transparent at
+ * each blob's edge so the flat colour still shows through at the gaps. Fixed attachment so the
+ * blobs stay put as the page scrolls, the same way a frosted window doesn't move when you
+ * scroll past it.
  */
 @utility bg-page-glass {
   background-color: var(--color-bg);

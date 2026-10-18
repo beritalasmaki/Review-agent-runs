@@ -6,6 +6,39 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0097 · The page gradient goes app-wide, and considerably more saturated
+
+**Context.** Part 2 of the agreed five-part visual refresh. Two complaints converge on one
+fix: "the buttons... look very basic and boring" (0095 already fixed the opacity-stacking bug
+that made them look solid, but the backdrop itself was still too close to flat for a
+`backdrop-blur` to reveal anything), and a direct request that the richer-backdrop idea (first
+raised for the welcome modal) apply app-wide, not just My reviews.
+
+**Choice.** `App.tsx`'s `<main>` now always renders `bg-page-glass` (previously `runId ?
+'bg-bg' : 'bg-page-glass'` — the run review page kept the flat background 0089 left it with).
+`--page-gradient-light`/`-dark` (tokens.css) are considerably more saturated and spread wider
+than the original pastel version, and `--page-light`/`-dark` (the flat `background-color`
+fallback under the gradient) now match the cool-tinted neutral family from 0096 instead of
+0073's flat true-grey.
+
+**Tuned against real measured contrast, twice.** The first version of the richer gradient
+broke real contrast: `npx playwright test e2e/accessibility.spec.ts` caught 8 failures, all on
+My reviews text/controls that sit directly on the page background outside the glass card (the
+page subtitle, a link-styled button) — not inside a card, where the opaque `bg-surface`
+protects everything regardless of what's behind it. Rather than hand-picking a less saturated
+hex per blob, each colour is now `color-mix()`ed toward the flat page colour (55% dark theme,
+42% light theme — light needed more softening to clear 4.5:1) so the whole gradient can be
+tuned by one percentage per theme instead of three independent hex values staying in sync.
+Re-ran the suite after each change; 34/34 clean on the second attempt.
+
+**Consequence.** The run review page gets real, visible colour for the first time since 0073
+flattened it — confirmed by screenshot, not assumed: previously a flat near-white/near-black
+rectangle, now the same blue/mint/purple wash My reviews already had. `0089`'s "piloted on My
+reviews only" framing is superseded by this entry for the page background specifically (the
+glass *card* chrome itself, and the "dialogs stay solid" boundary, are untouched).
+
+---
+
 ## 0096 · The neutral ramp goes cool-tinted, app-wide
 
 **Context.** Direct feedback: "the buttons... look very basic and boring," followed by a
