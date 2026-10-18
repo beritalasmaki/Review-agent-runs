@@ -317,6 +317,11 @@
   --color-glass: color-mix(in srgb, var(--neutral-0) 70%, transparent);
   --color-glass-border: rgb(255 255 255 / 0.3);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.12);
+  /* A deeper version of the same shadow, for the one band in a stacked layout (0099) that
+   * should read as sitting highest above the page — the table, the layout's main surface, not
+   * the tabs or search/filters bands around it. Same two-layer shape as --shadow-card (a tight
+   * near shadow plus a looser far one), scaled up. */
+  --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.1), 0 20px 56px rgb(0 0 0 / 0.18);
   /* A glass surface that needs to carry a status tint through it and keep its own text's
    * contrast (0091 — the "N need your review" badge): a neutral `--color-glass` dilutes
    * `--status-waived-tint-fg` below 4.5:1 once blended with the page's gradient underneath, so
@@ -493,6 +498,7 @@
     --color-glass-fill-chip: color-mix(in srgb, var(--neutral-1) 62%, transparent);
     --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-1) 78%, transparent);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
+    --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
   }
 }
@@ -553,6 +559,7 @@
   --color-glass-fill-chip: color-mix(in srgb, var(--neutral-1) 62%, transparent);
   --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-1) 78%, transparent);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
+  --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);
 }
 

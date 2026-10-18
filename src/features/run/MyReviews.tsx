@@ -476,7 +476,7 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
@@ -510,7 +510,7 @@ function ReviewsBoard({
               </TabsList>
             </div>
             <TabsContent value={tab}>
-              <div data-tour="search-filters">
+              <div data-tour="search-filters" className="border-b border-border-subtle">
                 <ReviewsToolbar
                   searchLabel="Search runs"
                   searchPlaceholder="Search runs, also in the archive"
@@ -622,7 +622,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           {archiveTable()}
         </section>
@@ -631,30 +631,32 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
-          <ReviewsToolbar
-            searchLabel="Search the archive"
-            searchPlaceholder="Search the archive"
-            filters={filters}
-            onFilters={patchFilters}
-            open={filtersOpen}
-            onToggleOpen={() => setFiltersOpen((open) => !open)}
-            timeLabel="Decided"
-            timeOptions={ARCHIVE_TIMES}
-            type={{
-              value: archiveType,
-              counts: true,
-              onChange: (value) => setArchiveType(value as typeof archiveType),
-              options: [
-                { value: 'all', label: 'All run types' },
-                { value: 'approved', label: 'Approved' },
-                { value: 'declined', label: 'Declined' },
-              ],
-            }}
-            people={people}
-            resultLabel={`Showing ${archivedRuns.length} of ${plural(archived.length, 'archived run')}`}
-          />
+          <div className="border-b border-border-subtle">
+            <ReviewsToolbar
+              searchLabel="Search the archive"
+              searchPlaceholder="Search the archive"
+              filters={filters}
+              onFilters={patchFilters}
+              open={filtersOpen}
+              onToggleOpen={() => setFiltersOpen((open) => !open)}
+              timeLabel="Decided"
+              timeOptions={ARCHIVE_TIMES}
+              type={{
+                value: archiveType,
+                counts: true,
+                onChange: (value) => setArchiveType(value as typeof archiveType),
+                options: [
+                  { value: 'all', label: 'All run types' },
+                  { value: 'approved', label: 'Approved' },
+                  { value: 'declined', label: 'Declined' },
+                ],
+              }}
+              people={people}
+              resultLabel={`Showing ${archivedRuns.length} of ${plural(archived.length, 'archived run')}`}
+            />
+          </div>
           {archiveTable()}
         </section>
       )}

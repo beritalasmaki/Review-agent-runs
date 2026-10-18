@@ -39,6 +39,76 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-18 · Filters popover with a notch; My reviews stays one card, straight edges (part 4)
+
+**Goal**
+Fourth step of the visual refresh: turn the filters panel into a popover with a notch pointing
+at its own trigger, and restructure My reviews per a layout sketch. Live feedback mid-session
+redirected the layout piece twice before landing: the page stays one unified glass card (tabs,
+search/filters, table all together, not split into separate elevation bands), and both the
+tab pills and the card itself lose their rounded corners.
+
+**What changed**
+- `src/components/ui/popover.tsx` — new `PopoverArrow` export (the notch).
+- `src/features/run/ReviewsToolbar.tsx` — filter fields moved from an inline `Collapsible` into
+  a `Popover` anchored to the Filters button, with the arrow; fields now stack vertically in a
+  narrow panel instead of a wide inline row.
+- `src/styles/tokens.css` — new `--shadow-glass-lg` (both themes), a deeper version of
+  `--shadow-glass` for the page's one main surface.
+- `src/features/run/MyReviews.tsx` — the My reviews and archive sections each carry
+  `--shadow-glass-lg` now instead of `--shadow-glass`; lost `rounded-lg` (straight edges); the
+  search/filters row is wrapped in its own `border-b` div inside the same card, replacing the
+  old always-rendered divider that used to sit above the (now-removed) inline filter panel.
+- `src/components/ui/tabs.tsx` — the `pill` `TabsList`/`TabsTrigger` variant dropped
+  `rounded-full` entirely (app-wide: also affects the run review page's Story/Evidence/All
+  steps tabs, which deliberately share this variant).
+- `src/components/Tabs.tsx` — `PillTabsList`'s sliding indicator dropped `rounded-full` to match.
+- `e2e/accessibility.spec.ts` — a third axe `messageKey` (`elmPartiallyObscured`) folded into
+  the existing `elmPartiallyObscuring`/`ownContrast` carve-out.
+- `docs/DECISIONS.md` — new entry 0099.
+
+**Steps, in order**
+1. Built the originally-planned stacked-bands layout (tabs/toolbar/table each a separate glass
+   `<section>` with a gap and a deeper shadow on the table) plus the popover filters panel.
+2. User feedback: "search + filter should be attached to the table" → merged the toolbar
+   section back into the table section.
+3. User feedback: "tabs should be attached to the table... part of the same experience" →
+   merged the tabs section back in too, landing on a single unified card (the pre-refresh
+   structure), now carrying `--shadow-glass-lg`.
+4. User feedback: "tabs should not... have round edges... borders and edges are straight" →
+   asked which (`AskUserQuestion`): confirmed both the tab pills and the card corners. Removed
+   `rounded-full` from the `pill` tab variant and its sliding indicator, and `rounded-lg` from
+   the card sections.
+5. Verified with `npx playwright test e2e/accessibility.spec.ts` after each round; the
+   `elmPartiallyObscured` carve-out was needed once the popover could open while a run was
+   selected (the "approved tab with filters open and a run selected" fixture).
+
+**Why it was done this way**
+The sketch's "stacked bands" idea turned out, once seen rendered, not to match what the user
+actually wanted — the live back-and-forth corrections are the real record of the final shape,
+not the original plan, which is why this entry (and 0099) describe the correction sequence
+rather than presenting the final state as if it were planned from the start. The straight-edge
+tab change was applied to the shared `pill` variant rather than a My-reviews-only override, to
+keep this page and the run review page's tabs looking like one house style, matching how every
+other token/variant change this session has defaulted to app-wide unless explicitly scoped.
+
+**How to do this by hand**
+Same as the steps above — no Figma/Storybook equivalent; this is component/CSS work plus the
+`AskUserQuestion` clarification already recorded in the steps.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure (see the 2026-10-18 "Capsule
+buttons" entry below). `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: same
+deterministic 15/15 failure on that one pre-existing test, 30/30 clean on the other two —
+confirms this round introduced no new keyboard regression.
+
+**Open questions / next**
+Part D (welcome modal + intro screen glass treatment) is next, then the pre-existing keyboard
+bug and a merge of PR #27.
+
+---
+
 ## 2026-10-18 · Capsule buttons with a specular highlight (part 3 of the visual refresh)
 
 **Goal**

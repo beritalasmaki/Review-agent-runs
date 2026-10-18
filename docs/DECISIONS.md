@@ -6,6 +6,62 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0099 · The filters panel becomes a popover with a notch; My reviews stays one unified card
+
+**Context.** Part 4 of the visual refresh. The starting idea, from a low-fidelity sketch
+(explicitly: "the purpose wasn't to use the colours... just an idea how we could do the
+layouts"), was stacked bands — title/description, tabs, filters, table each a separate glass
+surface with real elevation differences — plus the filters panel reading as a popover with a
+notch pointing back at its own trigger, like a speech bubble.
+
+**First implementation, then two rounds of direct correction.** The stacked-bands reading was
+built literally: tabs, the search/filters row, and the table each became their own `rounded-lg`
+glass `<section>`, with a gap between them and a deeper `--shadow-glass-lg` on the table band.
+Live feedback arrived in the same session, in order: "search + filter should be attached to the
+table. Not seperate" (merge the toolbar band back into the table band), then "the tabs should be
+attached to the table in a way. To make it look like its part of the same experience (as it
+is)" (merge the tabs band back in too), then "Tabs should not either have round edges... borders
+and edges are straight" — confirmed, via `AskUserQuestion`, to mean *both* the pill tab buttons
+themselves and the outer card's corners. The real shape of "stacked bands" the user wanted
+turned out to be: one unified card (title/description stays its own element above the card, as
+it already was), with the filters panel genuinely floating above it as a popover — not a second
+elevation tier for tabs, toolbar and table separately.
+
+**Choice.** My reviews (and the archive page) each render as a single glass `<section>` again —
+`Tabs` → `TabsList` → the search/filters row → the table — matching the pre-refresh structure,
+except: the whole card now carries `--shadow-glass-lg` (0098's token) instead of `--shadow-glass`,
+since it is unambiguously the page's one main surface; the `pill` `TabsList`/`TabsTrigger`
+variant (`components/ui/tabs.tsx`) and its sliding indicator (`components/Tabs.tsx`'s
+`PillTabsList`) lost `rounded-full` entirely — straight corners, not a smaller radius — and so
+did the card's own `rounded-lg`, app-wide (the `pill` variant is shared with the run review
+page's Story/Evidence/All steps tabs, so this reads as one deliberate house style, not two
+different tab looks). The filters fields themselves moved out of `ReviewsToolbar.tsx`'s inline
+`Collapsible` into a `Popover` (`components/ui/popover.tsx`, already used by the onboarding
+tour), anchored to the Filters button with `align="start"`, and a new `PopoverArrow` export
+gives it the requested notch — Radix positions and rotates it to the trigger automatically, no
+hand-written geometry.
+
+**Two new axe incomplete-result cases, not a real contrast regression.** Opening the filters
+popover while a run is selected surfaced a *third* `color-contrast` `messageKey`
+(`elmPartiallyObscured` — the passive counterpart of the `elmPartiallyObscuring` case 0060
+already carved out: the popover visually sits over the selection-bar banner below it, and axe
+can't order floating layers against the page in either direction). Folded into the *same*
+`behindModal`/`ownContrast` carve-out `elmPartiallyObscuring` already uses in
+`e2e/accessibility.spec.ts`, rather than a new mechanism — `ownContrast`'s `floating()` check
+already finds a `position: fixed` ancestor correctly for Radix Popover content, so no change to
+that helper was needed, only to which `messageKey`s route into it. 34/34 accessibility states
+clean after the fix.
+
+**Consequence.** `ReviewsToolbar.tsx` no longer imports `Collapsible`; `MorphIcon`/chevron still
+indicate open/closed state on the Filters button itself. The filter fields are now a narrow
+vertical stack (`w-72`) rather than a wide inline row, since they float rather than push page
+content down — a layout a caller should expect from `Popover`-based filters generally, not
+specific to this page. Any future tab list using the `pill` variant inherits the straight-edge
+look automatically; a caller wanting the old capsule shape back would need its own override, not
+a variant switch.
+
+---
+
 ## 0098 · Buttons and pills become full capsules, with a static specular highlight
 
 **Context.** Part 3 of the agreed five-part visual refresh, following direct feedback: "the

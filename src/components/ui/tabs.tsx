@@ -20,7 +20,7 @@ const tabsListVariants = cva('', {
   variants: {
     variant: {
       segmented: 'flex divide-x divide-border-subtle border-y border-border-subtle',
-      pill: 'relative inline-flex gap-[var(--space-1)] rounded-full border border-border-subtle bg-surface-raised p-[var(--space-1)]',
+      pill: 'relative inline-flex gap-[var(--space-1)] border border-border-subtle bg-surface-raised p-[var(--space-1)]',
       line: 'scrollbar-none flex gap-[var(--space-2)] overflow-x-auto border-b border-border-subtle px-[var(--space-5)] pt-[var(--space-3)]',
     },
   },
@@ -55,7 +55,7 @@ const tabsTriggerVariants = cva(
           'focus-visible:relative focus-visible:z-10 focus-visible:outline-offset-[-2px]',
         ],
         pill: [
-          't-tab inline-flex gap-[var(--space-2)] rounded-full px-[var(--space-4)] py-[var(--space-2)]',
+          't-tab inline-flex gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-2)]',
           'text-meta font-semibold font-heading leading-none text-text-secondary',
           // aria-selected, not data-[state=active]: a pill trigger with a tooltip is wrapped in
           // Radix's Tooltip via `asChild` (components/Tabs.tsx's PillTrigger), which ends up

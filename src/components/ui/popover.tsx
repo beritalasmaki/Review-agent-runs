@@ -22,6 +22,28 @@ function PopoverAnchor({ ...props }: React.ComponentProps<typeof PopoverPrimitiv
   return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />
 }
 
+/**
+ * The notch pointing back at whatever opened the popover — a speech-bubble tail, not a
+ * decoration (docs/DECISIONS.md, 0099). Radix positions and rotates it to the content's own
+ * `side` automatically; the fill matches `PopoverContent`'s own glass surface at each call
+ * site (there is no single right colour here, since different popovers sit on different
+ * glass tokens), so callers pass it via `className`.
+ */
+function PopoverArrow({
+  className,
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Arrow>) {
+  return (
+    <PopoverPrimitive.Arrow
+      data-slot="popover-arrow"
+      width={16}
+      height={8}
+      className={cn('fill-surface', className)}
+      {...props}
+    />
+  )
+}
+
 function PopoverContent({
   className,
   align = 'center',
@@ -47,4 +69,4 @@ function PopoverContent({
   )
 }
 
-export { Popover, PopoverTrigger, PopoverAnchor, PopoverContent }
+export { Popover, PopoverTrigger, PopoverAnchor, PopoverContent, PopoverArrow }
