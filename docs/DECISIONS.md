@@ -6,6 +6,42 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0096 · The neutral ramp goes cool-tinted, app-wide
+
+**Context.** Direct feedback: "the buttons... look very basic and boring," followed by a
+concrete request: "replace all white colors with #F9FAFB. It means also the other colors and
+black should match it in tones," confirmed as an app-wide change (not scoped to My reviews
+like the glass work). This is a real, if partial, reversal of 0073, which deliberately flattened
+a lavender-tinted ramp to true, untinted grey.
+
+**Choice.** `--neutral-0` is exactly `#F9FAFB` as asked. Every other step (`--neutral-1`
+through `--neutral-13`) keeps 0073's own lightness value for that position — so relative
+contrast between any two existing steps is unchanged — but is retinted to the same ~210°
+cool-blue hue `#F9FAFB` itself has. The saturation at each step isn't a flat percentage (flat
+saturation looks wrong at the extremes — very light or very dark grey with the same raw
+saturation as the midtones reads as an obvious, un-intentional blue): it follows the shape of
+a production cool-grey scale (Tailwind's `slate`, sampled at eleven stops and interpolated),
+scaled down by the same ratio `#F9FAFB`'s own saturation (20%) sits below `slate-50`'s (40%) —
+so the whole ramp reads as a *subtler* version of that family, matching the specific subtlety
+of the colour actually asked for, not copying Tailwind's bolder tint wholesale.
+
+**Verification, not assumption.** An app-wide change to the literal foundation every other
+colour in the app sits on is exactly the kind of change that could silently break contrast
+pairings verified under the old, untinted ramp — so this was checked, not assumed: the full
+`npx playwright test e2e/accessibility.spec.ts` suite (34 states, both themes, My reviews and
+the run review page alike) passed clean against the new ramp with no changes needed to any
+semantic token's own mapping.
+
+**Consequence.** `--page-light`/`--page-dark` (the flat page background, a separate token from
+the neutral ramp) were deliberately left untouched here — they are about to be replaced
+outright by a new, more saturated backdrop (the next item in this round), so retinting them
+now would be wasted work. `docs/DECISIONS.md` 0073's own "true, untinted grey" framing is now
+the stale description of the ramp; this entry supersedes it for the neutral primitives
+specifically (0073's other changes — the flat shadow, the removed gradients, the primary/
+accent hues since further revised in 0092/0094 — are untouched by this entry).
+
+---
+
 ## 0095 · Glass buttons and pills were stacking translucency into solid opacity; a lower-opacity "chip" tier fixes it
 
 **Context.** Direct feedback after 0092/0093 shipped: "the buttons doesn't really have that glass effect... also pills." True on inspection: `btn-glass`/`btn-glass-fill` reused `--color-glass`/`--color-glass-fill` (0092) — the same tokens the outer My reviews card itself uses — and every on-page button sits *inside* that already-glass card. Two ~70%-opaque white layers compose to ~91% opaque, which reads as a plain solid surface, not "more glass." The tab's sliding pill indicator was worse: card → `TabsList`'s own (redundant) `bg-glass` → the indicator's own `bg-glass`, three layers deep, ~97% effective opacity.

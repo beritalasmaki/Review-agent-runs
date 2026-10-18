@@ -39,6 +39,58 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-18 · Cool-tinted neutral ramp, app-wide (part 1 of a larger visual refresh)
+
+**Goal**
+First step of a five-part visual refresh agreed with the user (neutral ramp retune, a more
+saturated page backdrop, a button/pill visual redesign, a popover-style filters panel, and a
+glass welcome-modal/intro) — this entry covers the first part only.
+
+**What changed**
+- `src/styles/tokens.css` — `--neutral-0` through `--neutral-13` retinted from true/untinted
+  grey to a cool ~210° blue-grey, anchored to `--neutral-0` = `#F9FAFB` exactly as requested,
+  every other step keeping its original lightness (same relative contrast) with a saturation
+  curve modelled on Tailwind's `slate` scale, scaled to `#F9FAFB`'s own subtlety.
+- `docs/DECISIONS.md` — new entry 0096.
+
+**Steps, in order**
+1. Computed `#F9FAFB`'s own HSL (210°, 20%, 98%) to anchor the new hue/subtlety.
+2. Sampled Tailwind `slate`'s HSL at its eleven named stops as a reference for how saturation
+   should vary by lightness (it isn't flat — high near white and near black, lower at
+   midtones), rather than inventing a curve from scratch.
+3. For each of the 14 existing neutral steps, interpolated `slate`'s hue/saturation at that
+   step's own lightness, scaled saturation by 0.5 (the ratio between `#F9FAFB`'s 20% and
+   `slate-50`'s 40%), generated the new hex.
+4. `node scripts/check-theme-bridge.mjs` clean, then `npx playwright test
+   e2e/accessibility.spec.ts` — all 34 states, both themes, My reviews and the run review page.
+5. Screenshot pass, both pages, both themes. `npm run check` full pass.
+6. Wrote `docs/DECISIONS.md` 0096 and this entry.
+
+**Why it was done this way**
+A flat, single saturation percentage applied to every lightness step looks wrong at the
+extremes (very light or very dark grey reading as an obviously-blue colour rather than a
+subtle cool undertone) — mirroring a known-good production scale's own saturation curve,
+scaled to this specific request's subtlety, avoided that without needing to hand-tune 14
+values by eye.
+
+**How to do this by hand**
+Not meaningfully different from the steps above.
+
+**Verification**
+`node scripts/check-theme-bridge.mjs`: ok. `npx playwright test e2e/accessibility.spec.ts`:
+34/34 passed, both themes, no changes needed to any semantic token mapping. `npm run check`:
+full pass except the same pre-existing, unrelated `My reviews, keyboard only` failure. Visual
+screenshot pass, both pages, both themes.
+
+**Open questions / next**
+- `--page-light`/`--page-dark` deliberately left untouched — superseded by the next part of
+  this round (a more saturated page backdrop), not worth retinting first.
+- Four more parts of the agreed plan remain: page backdrop (app-wide), button/pill visual
+  redesign, a popover-style filters panel with a connecting notch, and a glass welcome-modal/
+  intro treatment.
+
+---
+
 ## 2026-10-17 · Indigo primary (merged past a direct main-branch edit), and fixing glass that read as solid
 
 **Goal**
