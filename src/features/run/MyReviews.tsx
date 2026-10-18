@@ -369,7 +369,11 @@ function ReviewsBoard({
         <span className="text-body leading-none font-semibold whitespace-nowrap text-text-primary">
           {plural(selected.size, 'run')} selected
         </span>
-        <Button size="sm" className="btn-glass-fill" onClick={() => setDialog({ type: 'report' })}>
+        <Button
+          size="sm"
+          className="btn-glass-fill glass-sheen"
+          onClick={() => setDialog({ type: 'report' })}
+        >
           <FileBarChart aria-hidden className="h-3.5 w-3.5" />
           Create report
         </Button>
@@ -377,7 +381,7 @@ function ReviewsBoard({
           <Button
             size="sm"
             variant="outline"
-            className="btn-glass"
+            className="btn-glass glass-sheen"
             onClick={() => setDialog({ type: 'archive', ids: archivable })}
             disabled={archivable.length === 0}
           >
@@ -423,7 +427,7 @@ function ReviewsBoard({
             <Badge
               variant="warning"
               data-tour="needs-review-badge"
-              className="border-glass-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body shadow-glass backdrop-blur-[var(--blur-glass)]"
+              className="glass-sheen border-glass-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body shadow-glass backdrop-blur-[var(--blur-glass)]"
             >
               <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
               {needsYou} need{needsYou === 1 ? 's' : ''} your review
@@ -433,7 +437,7 @@ function ReviewsBoard({
               onClick={() => openView('archive')}
               aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
               data-tour="archive-button"
-              className="btn-glass gap-[var(--space-2)]"
+              className="btn-glass glass-sheen gap-[var(--space-2)]"
             >
               <Archive aria-hidden className="h-4 w-4" />
               Archive
@@ -569,7 +573,7 @@ function ReviewsBoard({
                       size="sm"
                       variant="outline"
                       onClick={clearFilters}
-                      className="btn-glass mt-[var(--space-1)] px-[var(--space-4)]"
+                      className="btn-glass glass-sheen mt-[var(--space-1)] px-[var(--space-4)]"
                     >
                       Clear filters
                     </Button>

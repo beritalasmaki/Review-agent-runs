@@ -314,11 +314,13 @@ for (const scheme of ['light', 'dark'] as const) {
         // fixed toast — that axe calls "partially obscured". Axe does not order such layers
         // against the page, so a card behind one counts as overlapping its text, though nothing
         // does (checked with elementsFromPoint; setting `inert` or moving the dialog to <body>
-        // does not change axe's answer — 0060). And text on the frosted-glass pilot's cards
-        // (0089), where a CSS gradient or backdrop-filter in the ancestor chain means axe can't
-        // statically resolve the background at all — measured against the real rendered pixels
-        // instead (measuredBackgroundContrast), still against axe's own expected ratio. Any
-        // other undecided result fails and should be looked at by eye.
+        // does not change axe's answer — 0060). And text whose background axe can't statically
+        // resolve at all — a CSS gradient or backdrop-filter in the ancestor chain (the frosted-
+        // glass pilot's cards, 0089), or a pseudo-element painted directly over the text's own
+        // box (`glass-sheen`'s `::before`, 0098 — axe calls this one "pseudoContent", since it
+        // can't tell what's behind its own element rather than an ancestor) — measured against
+        // the real rendered pixels instead (measuredBackgroundContrast), still against axe's own
+        // expected ratio. Any other undecided result fails and should be looked at by eye.
         const undecided = results.incomplete
           .filter((r) => r.id === 'color-contrast')
           .flatMap((r) => r.nodes)
@@ -333,7 +335,11 @@ for (const scheme of ['light', 'dark'] as const) {
         }
         const glassObscured = undecided.filter((node) => {
           const messageKey = (node.any[0]?.data as { messageKey?: string } | undefined)?.messageKey
-          return messageKey === 'bgGradient' || messageKey === 'bgImage'
+          return (
+            messageKey === 'bgGradient' ||
+            messageKey === 'bgImage' ||
+            messageKey === 'pseudoContent'
+          )
         })
         for (const node of glassObscured) {
           const data = node.any[0]?.data as { expectedContrastRatio?: string } | undefined

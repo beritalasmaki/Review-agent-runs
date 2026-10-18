@@ -6,6 +6,79 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0098 · Buttons and pills become full capsules, with a static specular highlight
+
+**Context.** Part 3 of the agreed five-part visual refresh, following direct feedback: "the
+pill and the buttons look pretty much the same as before... looks very basic and boring."
+0095 had already fixed the opacity-stacking bug that made glass buttons read as solid, and
+0097 gave the page real colour behind them — the groundwork a glass highlight needs to be
+visible at all. This part is the highlight itself, plus a shape change to read as "glass
+object," not "rectangle with a translucent fill."
+
+**Choice.** `btn-glass`/`btn-glass-fill` (`index.css`) now set `border-radius: 9999px`,
+making every glass button a true capsule rather than the variant's own `rounded-md`
+rectangle — registered in `lib/utils.ts`'s `extendTailwindMerge` `conflictingClassGroups` the
+same way `bg-color`/`border-color`/`shadow`/`backdrop-blur` already are (0095's own pattern),
+since `rounded` is a Tailwind "slot" a custom utility is now also setting. A new shared token,
+`--glass-sheen` (one value, both themes — the same precedent as `--color-glass-border`): a
+static diagonal `linear-gradient(135deg, rgb(255 255 255 / 0.4) 0%, transparent 45%)`, applied
+via a new `glass-sheen` utility class and its `::before` pseudo-element, additive on top of
+whatever glass background/border classes already apply. Added to every `btn-glass`/
+`btn-glass-fill` call site and the "N need your review" badge.
+
+**Static, not pointer-tracked, on purpose.** Wiring live pointer position through a shared,
+reusable `Button` primitive was tried once already and deliberately dropped (`transitions.css`,
+the "Button shine" comment) — the risk is a keyboard regression from state tied to rapid
+re-renders, the same class of bug `.t-tabs-sliding` actually hit once before. A fixed highlight
+gets the "this is glass, catching light" read without that risk or the extra JS.
+
+**The tab indicator needed its own rule, not the shared class.** `glass-sheen` sets
+`position: relative`, which conflicts with `.t-tabs-pill`'s own required `position: absolute`
+(its slide animation depends on it) — two rules targeting the same property on the same
+element with no reliable winner. Found before shipping, not after a failure: `.t-tabs-pill`
+got its own parallel `::before` rule in `transitions.css`, referencing the same
+`--glass-sheen` token, instead of the `glass-sheen` utility class.
+
+**The highlight itself needed a new axe carve-out, not a code fix.** Adding a pseudo-element
+that visually paints over an element's own text box is a case axe-core cannot statically
+resolve any more than it already couldn't resolve a gradient or `backdrop-filter` ancestor
+(0089) — but it is a *different* incomplete-result reason (`messageKey: 'pseudoContent'`,
+"background color could not be determined due to a pseudo element"), not one of the two
+`e2e/accessibility.spec.ts` already measured around (`elmPartiallyObscuring`, `bgGradient`/
+`bgImage`). Caught by the full `npm run check` run surfacing 18 failures across fixture states
+never individually spot-checked by the narrower, targeted contrast scripts used during
+development. Fixed by adding `pseudoContent` to the same real-pixel-measurement carve-out
+`bgGradient`/`bgImage` already use (`measuredBackgroundContrast`) — axe is right to refuse a
+static guess here for the same reason it already was for a gradient ancestor; the fix widens
+an existing, already-justified exception rather than adding a new kind of waiver. Re-verified
+against real rendered pixels, not assumed: `.btn-glass-fill`'s white text stays comfortably
+above 4.5:1 with the sheen painted on top, in both themes.
+
+**Verification.** `npx playwright test e2e/accessibility.spec.ts` — 34/34 clean after the
+`pseudoContent` carve-out. Full `npm run check` (typecheck, lint, format, theme-bridge,
+format-locale, 293 unit tests, 44 e2e) green except one pre-existing failure (below).
+`npx playwright test e2e/keyboard.spec.ts --repeat-each=15` — confirmed deterministic, not
+flakiness this round introduced: reproduces identically (15/15) on the commit immediately
+before this round's changes too.
+
+**A pre-existing bug, found but out of scope here.** `e2e/keyboard.spec.ts`'s "My reviews,
+keyboard only" test fails deterministically on `main`/this branch's base, before any of this
+round's changes: after three `ArrowRight` presses from the Pending tab, `getByRole('tab',
+{ name: /Approved/, selected: true })` is not found. Confirmed via `git stash` against the
+immediately-preceding commit (`37eb17a`) — same failure, same assertion, same place. Left
+unfixed here since it predates and is unrelated to this round's glass/pill work; worth a
+dedicated look at `components/Tabs.tsx`'s arrow-key activation timing.
+
+**Consequence.** `lib/utils.ts`'s `glass-btn` conflict group now covers five Tailwind slots
+(`bg-color`, `border-color`, `shadow`, `backdrop-blur`, `rounded`) instead of four — any future
+`@utility` that sets a sixth CSS property matching a Tailwind slot needs the same two-way
+registration (0095's pattern, carried forward again). `e2e/accessibility.spec.ts`'s undecided-
+contrast carve-out is now three messageKeys wide, not two; the next CSS technique that makes
+axe unable to resolve a background should extend this same list rather than adding a parallel
+mechanism.
+
+---
+
 ## 0097 · The page gradient goes app-wide, and considerably more saturated
 
 **Context.** Part 2 of the agreed five-part visual refresh. Two complaints converge on one

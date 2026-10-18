@@ -39,6 +39,78 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-18 · Capsule buttons with a specular highlight (part 3 of the visual refresh)
+
+**Goal**
+Third step of the five-part visual refresh: make glass buttons and pills look like genuine
+glass objects, not flat-rectangle translucent fills — direct feedback was "the pill and the
+buttons look pretty much the same as before... looks very basic and boring."
+
+**What changed**
+- `src/lib/utils.ts` — `glass-btn` added to `rounded`'s `conflictingClassGroups` (both
+  directions), same pattern as the existing `bg-color`/`border-color`/`shadow`/
+  `backdrop-blur` entries.
+- `src/styles/tokens.css` — new shared token `--glass-sheen` (one value, both themes): a
+  static diagonal white highlight gradient.
+- `src/styles/index.css` — `btn-glass`/`btn-glass-fill` gained `border-radius: 9999px` (full
+  capsule); new `glass-sheen` utility class + `.glass-sheen::before` pseudo-element rule.
+- `src/styles/transitions.css` — `.t-tabs-pill` got `overflow: hidden` plus its own parallel
+  `::before` rule (can't use the `glass-sheen` class here — it conflicts with the pill's own
+  required `position: absolute`).
+- `src/features/run/MyReviews.tsx`, `ReviewsToolbar.tsx`, `ReviewsTable.tsx`,
+  `ArchiveTable.tsx` — `glass-sheen` added alongside every existing `btn-glass`/
+  `btn-glass-fill` class and the warning badge.
+- `e2e/accessibility.spec.ts` — added a third axe `messageKey` (`pseudoContent`) to the
+  existing real-pixel-measurement carve-out, alongside `bgGradient`/`bgImage`.
+- `docs/DECISIONS.md` — new entry 0098.
+
+**Steps, in order**
+1. Added `--glass-sheen` to `tokens.css`, the `glass-sheen` utility + pseudo-element to
+   `index.css`, `border-radius: 9999px` to `btn-glass`/`btn-glass-fill`, and `rounded` to
+   `lib/utils.ts`'s conflict groups.
+2. Applied `glass-sheen` to every glass button/badge call site (checked by grep for
+   `btn-glass` and `btn-glass-fill` across `src/features/run/`, confirmed none missed).
+3. Hit the position conflict on the tab indicator; wrote `.t-tabs-pill::before` directly in
+   `transitions.css` instead of applying the shared class there.
+4. Verified visually with zoomed screenshots (both themes) and two targeted real-pixel
+   contrast scripts (buttons, the warning badge).
+5. Ran the full `npm run check` — 18 accessibility failures appeared across fixture states the
+   targeted scripts hadn't covered. Diagnosed with a single `npx playwright test
+   e2e/accessibility.spec.ts -g "welcome modal"` run: axe's `color-contrast` incomplete result
+   had a new `messageKey` (`pseudoContent`) the test didn't yet carve out for.
+6. Added `pseudoContent` to the existing carve-out list; re-ran the full suite — 34/34 clean.
+7. Ran `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`; one test failed all 15
+   times. Confirmed via `git stash` + re-run against the immediately-preceding commit that
+   this is pre-existing, not introduced by this round.
+
+**Why it was done this way**
+A static (not pointer-tracked) highlight, because live pointer state through a shared,
+reusable `Button` was tried once already and dropped for keyboard-regression risk
+(`transitions.css`'s own "Button shine" comment). `pseudoContent` was added to the *existing*
+carve-out mechanism rather than a new one, because it's the same underlying problem
+(`measuredBackgroundContrast` already exists for "axe can't statically resolve this
+background") reached by a different code path (a self pseudo-element vs. an ancestor
+gradient), not a new kind of exception.
+
+**How to do this by hand**
+Same as the steps above — no Figma/Storybook equivalent; this is pure CSS/token work.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one pre-existing keyboard failure (see below) — typecheck, lint, format,
+theme-bridge, format-locale, 293 unit tests, 44 e2e. `npx playwright test e2e/keyboard.spec.ts
+--repeat-each=15`: deterministic 15/15 failure on "My reviews, keyboard only," confirmed via
+`git stash` to reproduce identically on the commit before this round's changes — pre-existing,
+not a regression from this work.
+
+**Open questions / next**
+`e2e/keyboard.spec.ts`'s "My reviews, keyboard only" test (arrow-key tab navigation landing on
+Approved) needs a dedicated fix — likely in `components/Tabs.tsx`'s arrow-key activation
+timing — but is out of scope for this round. Parts D (welcome modal/intro-screen glass) and E
+(layout restructuring) of the five-part plan are still ahead.
+
+---
+
 ## 2026-10-18 · Page gradient goes app-wide and more saturated (part 2 of the visual refresh)
 
 **Goal**

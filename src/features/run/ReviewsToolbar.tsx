@@ -91,7 +91,7 @@ export function ReviewsToolbar({
           <Button
             variant="outline"
             className={cn(
-              'btn-glass gap-[var(--space-2)]',
+              'btn-glass glass-sheen gap-[var(--space-2)]',
               open &&
                 'border-primary bg-primary-tint text-primary hover:border-primary hover:bg-primary-tint',
             )}

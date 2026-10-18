@@ -172,7 +172,7 @@ export function ArchiveTable({
                     size="sm"
                     onClick={() => onNewRun(run.id)}
                     aria-label={`Request a new run: ${run.initiative}`}
-                    className="btn-glass h-8 hover:border-primary hover:bg-surface hover:text-primary"
+                    className="btn-glass glass-sheen h-8 hover:border-primary hover:bg-surface hover:text-primary"
                   >
                     <RotateCw aria-hidden className="h-3.5 w-3.5" />
                     New run

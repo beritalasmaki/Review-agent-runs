@@ -179,9 +179,14 @@
 
 /*
  * Glass buttons, My reviews only (docs/DECISIONS.md, 0092 — extends 0089's glass chrome from
- * card frames to buttons). Applied as a plain `className` on `Button`, which merges on top of
- * the variant's own classes via `cn()`/tailwind-merge — `components/ui/button.tsx` itself, and
- * every button outside My reviews, is untouched.
+ * card frames to buttons; 0098 made them full capsules and added the specular highlight below).
+ * Applied as a plain `className` on `Button`, which merges on top of the variant's own classes
+ * via `cn()`/tailwind-merge — `components/ui/button.tsx` itself, and every button outside My
+ * reviews, is untouched. `border-radius` is set here too (overriding the variant's own
+ * `rounded-md`), so `lib/utils.ts`'s `glass-btn` conflict group includes Tailwind's `rounded`
+ * group for the same reason it already includes `bg-color`/`border-color`/etc (0095) — a
+ * property a custom utility sets that tailwind-merge doesn't otherwise know conflicts with a
+ * same-slot utility from the variant.
  *
  * `btn-glass` is for the `outline` variant. Every on-page button sits on top of the already-
  * glass My reviews card, so it uses `--color-glass-chip`/`-fill-chip` (0095) — a noticeably
@@ -193,6 +198,7 @@
 @utility btn-glass {
   background-color: var(--color-glass-chip);
   border-color: var(--color-glass-chip-border);
+  border-radius: 9999px;
   box-shadow: var(--shadow-glass);
   backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
 }
@@ -207,6 +213,32 @@
 @utility btn-glass-fill {
   background-color: var(--color-glass-fill-chip);
   border-color: var(--color-glass-fill-chip-border);
+  border-radius: 9999px;
   box-shadow: var(--shadow-glass);
   backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
+}
+
+/*
+ * A specular highlight for a glass surface (docs/DECISIONS.md, 0098): a soft diagonal sheen
+ * near the top-left corner, like light catching the top of a curved pane, on top of whatever
+ * glass background/border classes already apply (`btn-glass`, `btn-glass-fill`, the tab's
+ * sliding pill, the "N need your review" badge). Additive only — no colour, no blur, no border
+ * of its own — so it composes with any of those rather than needing its own copy of each.
+ *
+ * A static gradient, not a pointer-tracked one: wiring live pointer state through a shared,
+ * reusable surface was tried once for `Button` and deliberately dropped (see `transitions.css`,
+ * "Button shine" — the risk of a keyboard regression from state tied to rapid re-renders, same
+ * class of bug `.t-tabs-sliding` actually hit once). One white highlight, fixed in place, gets
+ * the same "this is glass, not a flat colour" read without that risk or the extra JS.
+ */
+@utility glass-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.glass-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-sheen);
+  pointer-events: none;
 }

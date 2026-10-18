@@ -130,12 +130,24 @@
   left: 0;
   height: 0;
   width: 0;
+  overflow: hidden;
   transform: translateX(0);
   transition:
     transform var(--tabs-dur) var(--tabs-ease),
     width var(--tabs-dur) var(--tabs-ease);
   will-change: transform, width;
   z-index: 0;
+  pointer-events: none;
+}
+/* The same specular highlight `.glass-sheen` gives buttons and the warning badge (0098,
+ * tokens.css's own comment on `--glass-sheen`), but as its own rule: the indicator already has
+ * `position: absolute` from the rule above, and `.glass-sheen` itself sets `position: relative`
+ * — applying both to the same element would make source order, not intent, decide which wins. */
+.t-tabs-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-sheen);
   pointer-events: none;
 }
 .t-tab {
