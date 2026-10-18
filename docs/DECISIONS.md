@@ -6,6 +6,390 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0100 · The welcome modal and the signature intro get genuine glass, scoped via `overlayClassName`
+
+**Context.** Part 5, the last of the visual refresh. Direct request, with a reference image: "I
+want to make the intro and the onboarding experience look like this. So the modal would somehow
+appear like glass. Then the background would be with that type of gradient glass. Not
+transparent black?" Confirmed app-wide and explicitly including the one-time signature intro
+screen (`WelcomeIntro.tsx`), not just the welcome modal.
+
+**Choice.** `components/ui/dialog.tsx`'s `DialogContent` gained an `overlayClassName` prop,
+forwarded to its own internal `DialogOverlay` — previously not possible to reach at all, since
+`DialogContent` rendered `<DialogOverlay />` with no way for a caller to override it.
+`components/Modal.tsx` forwards the same prop through. Every other `Modal`/`Dialog` in the app
+keeps the flat `bg-modal-scrim` default; only `WelcomeModal.tsx` opts in, with a new
+`bg-welcome-scrim` utility (`index.css`): the usual dark `--color-modal-scrim` dim, with
+`--page-gradient` layered on top as `background-image` and a `--blur-glass` backdrop blur — the
+page behind recedes into soft, vivid colour instead of a flat dark rectangle. The modal panel
+itself swapped `DialogContent`'s default opaque `bg-surface`/`shadow-card` for the same
+`bg-glass`/`border-glass-border`/`shadow-glass`/`backdrop-blur-[var(--blur-glass)]` combination
+My reviews' own cards use, so the vivid overlay actually shows through it — a real, if
+deliberate, exception to 0089's "card chrome only, dialogs stay solid" boundary: this is the
+app's one welcome moment, not a decision dialog, and the user asked for this one by name.
+
+The intro screen (`intro.css`'s `.intro-overlay`) gained `background-image:
+var(--page-gradient-light)` alongside its existing `--color-intro-scrim` colour and
+`backdrop-filter: blur(14px)` — fixed to the light gradient regardless of theme, matching how
+`--color-intro-scrim`/`--color-intro-ink` are themselves already theme-independent (a fixed
+"signature" moment, not themed chrome, 0048). No new token needed for either surface: both reuse
+`--page-gradient`/`--page-gradient-light`, the same gradient every other glass surface in the
+app already shows through.
+
+**A real bug the glass modal surfaced in the test harness, not a contrast regression.** Making
+the welcome modal's own background a `color-mix()` token (`--color-glass`) broke
+`e2e/accessibility.spec.ts`'s `ownContrast` helper: `getComputedStyle` returns a `color-mix()`
+result as CSS Color 4's `color(srgb r g b / a)` — 0–1 float channels — rather than legacy
+`rgb(r g b / a)`'s 0–255 integers, and the helper's regex-based parser assumed the legacy shape
+unconditionally, silently reading the float channels as if they were already on the 0–255 scale
+(dividing e.g. `0.98` by 255 instead of `249`). The result read as a contrast ratio of 1.37,
+failing a panel that real pixel inspection (and a direct `getComputedStyle` check) showed was
+fine. Every glass surface checked before this one went through `measuredBackgroundContrast`
+(real screenshot pixel sampling, not `getComputedStyle` parsing) instead, so this parsing path
+had never been exercised against a `color-mix()` background until now. Fixed by detecting the
+`color(` prefix and scaling only the three colour channels (never the trailing alpha, already
+0–1 in both syntaxes) — applied to both `ownContrast` and `measuredBackgroundContrast`'s own
+`rgb()` helper, defensively, even though only the former was actually broken.
+
+**Consequence.** `overlayClassName` is the established pattern for any future dialog that needs
+its own backdrop: pass it through `Modal`/`DialogContent` rather than hand-rolling a second
+overlay element. The `color()`-vs-`rgb()` parsing fix applies to any future glass dialog too —
+without it, a real `color-mix()`-backed `Modal` background would always read as a false
+contrast failure in this suite, not a true one.
+
+---
+
+## 0099 · The filters panel becomes a popover with a notch; My reviews stays one unified card
+
+**Context.** Part 4 of the visual refresh. The starting idea, from a low-fidelity sketch
+(explicitly: "the purpose wasn't to use the colours... just an idea how we could do the
+layouts"), was stacked bands — title/description, tabs, filters, table each a separate glass
+surface with real elevation differences — plus the filters panel reading as a popover with a
+notch pointing back at its own trigger, like a speech bubble.
+
+**First implementation, then two rounds of direct correction.** The stacked-bands reading was
+built literally: tabs, the search/filters row, and the table each became their own `rounded-lg`
+glass `<section>`, with a gap between them and a deeper `--shadow-glass-lg` on the table band.
+Live feedback arrived in the same session, in order: "search + filter should be attached to the
+table. Not seperate" (merge the toolbar band back into the table band), then "the tabs should be
+attached to the table in a way. To make it look like its part of the same experience (as it
+is)" (merge the tabs band back in too), then "Tabs should not either have round edges... borders
+and edges are straight" — confirmed, via `AskUserQuestion`, to mean *both* the pill tab buttons
+themselves and the outer card's corners. The real shape of "stacked bands" the user wanted
+turned out to be: one unified card (title/description stays its own element above the card, as
+it already was), with the filters panel genuinely floating above it as a popover — not a second
+elevation tier for tabs, toolbar and table separately.
+
+**Choice.** My reviews (and the archive page) each render as a single glass `<section>` again —
+`Tabs` → `TabsList` → the search/filters row → the table — matching the pre-refresh structure,
+except: the whole card now carries `--shadow-glass-lg` (0098's token) instead of `--shadow-glass`,
+since it is unambiguously the page's one main surface; the `pill` `TabsList`/`TabsTrigger`
+variant (`components/ui/tabs.tsx`) and its sliding indicator (`components/Tabs.tsx`'s
+`PillTabsList`) lost `rounded-full` entirely — straight corners, not a smaller radius — and so
+did the card's own `rounded-lg`, app-wide (the `pill` variant is shared with the run review
+page's Story/Evidence/All steps tabs, so this reads as one deliberate house style, not two
+different tab looks). The filters fields themselves moved out of `ReviewsToolbar.tsx`'s inline
+`Collapsible` into a `Popover` (`components/ui/popover.tsx`, already used by the onboarding
+tour), anchored to the Filters button with `align="start"`, and a new `PopoverArrow` export
+gives it the requested notch — Radix positions and rotates it to the trigger automatically, no
+hand-written geometry.
+
+**Two new axe incomplete-result cases, not a real contrast regression.** Opening the filters
+popover while a run is selected surfaced a *third* `color-contrast` `messageKey`
+(`elmPartiallyObscured` — the passive counterpart of the `elmPartiallyObscuring` case 0060
+already carved out: the popover visually sits over the selection-bar banner below it, and axe
+can't order floating layers against the page in either direction). Folded into the *same*
+`behindModal`/`ownContrast` carve-out `elmPartiallyObscuring` already uses in
+`e2e/accessibility.spec.ts`, rather than a new mechanism — `ownContrast`'s `floating()` check
+already finds a `position: fixed` ancestor correctly for Radix Popover content, so no change to
+that helper was needed, only to which `messageKey`s route into it. 34/34 accessibility states
+clean after the fix.
+
+**Consequence.** `ReviewsToolbar.tsx` no longer imports `Collapsible`; `MorphIcon`/chevron still
+indicate open/closed state on the Filters button itself. The filter fields are now a narrow
+vertical stack (`w-72`) rather than a wide inline row, since they float rather than push page
+content down — a layout a caller should expect from `Popover`-based filters generally, not
+specific to this page. Any future tab list using the `pill` variant inherits the straight-edge
+look automatically; a caller wanting the old capsule shape back would need its own override, not
+a variant switch.
+
+---
+
+## 0098 · Buttons and pills become full capsules, with a static specular highlight
+
+**Context.** Part 3 of the agreed five-part visual refresh, following direct feedback: "the
+pill and the buttons look pretty much the same as before... looks very basic and boring."
+0095 had already fixed the opacity-stacking bug that made glass buttons read as solid, and
+0097 gave the page real colour behind them — the groundwork a glass highlight needs to be
+visible at all. This part is the highlight itself, plus a shape change to read as "glass
+object," not "rectangle with a translucent fill."
+
+**Choice.** `btn-glass`/`btn-glass-fill` (`index.css`) now set `border-radius: 9999px`,
+making every glass button a true capsule rather than the variant's own `rounded-md`
+rectangle — registered in `lib/utils.ts`'s `extendTailwindMerge` `conflictingClassGroups` the
+same way `bg-color`/`border-color`/`shadow`/`backdrop-blur` already are (0095's own pattern),
+since `rounded` is a Tailwind "slot" a custom utility is now also setting. A new shared token,
+`--glass-sheen` (one value, both themes — the same precedent as `--color-glass-border`): a
+static diagonal `linear-gradient(135deg, rgb(255 255 255 / 0.4) 0%, transparent 45%)`, applied
+via a new `glass-sheen` utility class and its `::before` pseudo-element, additive on top of
+whatever glass background/border classes already apply. Added to every `btn-glass`/
+`btn-glass-fill` call site and the "N need your review" badge.
+
+**Static, not pointer-tracked, on purpose.** Wiring live pointer position through a shared,
+reusable `Button` primitive was tried once already and deliberately dropped (`transitions.css`,
+the "Button shine" comment) — the risk is a keyboard regression from state tied to rapid
+re-renders, the same class of bug `.t-tabs-sliding` actually hit once before. A fixed highlight
+gets the "this is glass, catching light" read without that risk or the extra JS.
+
+**The tab indicator needed its own rule, not the shared class.** `glass-sheen` sets
+`position: relative`, which conflicts with `.t-tabs-pill`'s own required `position: absolute`
+(its slide animation depends on it) — two rules targeting the same property on the same
+element with no reliable winner. Found before shipping, not after a failure: `.t-tabs-pill`
+got its own parallel `::before` rule in `transitions.css`, referencing the same
+`--glass-sheen` token, instead of the `glass-sheen` utility class.
+
+**The highlight itself needed a new axe carve-out, not a code fix.** Adding a pseudo-element
+that visually paints over an element's own text box is a case axe-core cannot statically
+resolve any more than it already couldn't resolve a gradient or `backdrop-filter` ancestor
+(0089) — but it is a *different* incomplete-result reason (`messageKey: 'pseudoContent'`,
+"background color could not be determined due to a pseudo element"), not one of the two
+`e2e/accessibility.spec.ts` already measured around (`elmPartiallyObscuring`, `bgGradient`/
+`bgImage`). Caught by the full `npm run check` run surfacing 18 failures across fixture states
+never individually spot-checked by the narrower, targeted contrast scripts used during
+development. Fixed by adding `pseudoContent` to the same real-pixel-measurement carve-out
+`bgGradient`/`bgImage` already use (`measuredBackgroundContrast`) — axe is right to refuse a
+static guess here for the same reason it already was for a gradient ancestor; the fix widens
+an existing, already-justified exception rather than adding a new kind of waiver. Re-verified
+against real rendered pixels, not assumed: `.btn-glass-fill`'s white text stays comfortably
+above 4.5:1 with the sheen painted on top, in both themes.
+
+**Verification.** `npx playwright test e2e/accessibility.spec.ts` — 34/34 clean after the
+`pseudoContent` carve-out. Full `npm run check` (typecheck, lint, format, theme-bridge,
+format-locale, 293 unit tests, 44 e2e) green except one pre-existing failure (below).
+`npx playwright test e2e/keyboard.spec.ts --repeat-each=15` — confirmed deterministic, not
+flakiness this round introduced: reproduces identically (15/15) on the commit immediately
+before this round's changes too.
+
+**A pre-existing bug, found but out of scope here.** `e2e/keyboard.spec.ts`'s "My reviews,
+keyboard only" test fails deterministically on `main`/this branch's base, before any of this
+round's changes: after three `ArrowRight` presses from the Pending tab, `getByRole('tab',
+{ name: /Approved/, selected: true })` is not found. Confirmed via `git stash` against the
+immediately-preceding commit (`37eb17a`) — same failure, same assertion, same place. Left
+unfixed here since it predates and is unrelated to this round's glass/pill work; worth a
+dedicated look at `components/Tabs.tsx`'s arrow-key activation timing.
+
+**Consequence.** `lib/utils.ts`'s `glass-btn` conflict group now covers five Tailwind slots
+(`bg-color`, `border-color`, `shadow`, `backdrop-blur`, `rounded`) instead of four — any future
+`@utility` that sets a sixth CSS property matching a Tailwind slot needs the same two-way
+registration (0095's pattern, carried forward again). `e2e/accessibility.spec.ts`'s undecided-
+contrast carve-out is now three messageKeys wide, not two; the next CSS technique that makes
+axe unable to resolve a background should extend this same list rather than adding a parallel
+mechanism.
+
+---
+
+## 0097 · The page gradient goes app-wide, and considerably more saturated
+
+**Context.** Part 2 of the agreed five-part visual refresh. Two complaints converge on one
+fix: "the buttons... look very basic and boring" (0095 already fixed the opacity-stacking bug
+that made them look solid, but the backdrop itself was still too close to flat for a
+`backdrop-blur` to reveal anything), and a direct request that the richer-backdrop idea (first
+raised for the welcome modal) apply app-wide, not just My reviews.
+
+**Choice.** `App.tsx`'s `<main>` now always renders `bg-page-glass` (previously `runId ?
+'bg-bg' : 'bg-page-glass'` — the run review page kept the flat background 0089 left it with).
+`--page-gradient-light`/`-dark` (tokens.css) are considerably more saturated and spread wider
+than the original pastel version, and `--page-light`/`-dark` (the flat `background-color`
+fallback under the gradient) now match the cool-tinted neutral family from 0096 instead of
+0073's flat true-grey.
+
+**Tuned against real measured contrast, twice.** The first version of the richer gradient
+broke real contrast: `npx playwright test e2e/accessibility.spec.ts` caught 8 failures, all on
+My reviews text/controls that sit directly on the page background outside the glass card (the
+page subtitle, a link-styled button) — not inside a card, where the opaque `bg-surface`
+protects everything regardless of what's behind it. Rather than hand-picking a less saturated
+hex per blob, each colour is now `color-mix()`ed toward the flat page colour (55% dark theme,
+42% light theme — light needed more softening to clear 4.5:1) so the whole gradient can be
+tuned by one percentage per theme instead of three independent hex values staying in sync.
+Re-ran the suite after each change; 34/34 clean on the second attempt.
+
+**Consequence.** The run review page gets real, visible colour for the first time since 0073
+flattened it — confirmed by screenshot, not assumed: previously a flat near-white/near-black
+rectangle, now the same blue/mint/purple wash My reviews already had. `0089`'s "piloted on My
+reviews only" framing is superseded by this entry for the page background specifically (the
+glass *card* chrome itself, and the "dialogs stay solid" boundary, are untouched).
+
+---
+
+## 0096 · The neutral ramp goes cool-tinted, app-wide
+
+**Context.** Direct feedback: "the buttons... look very basic and boring," followed by a
+concrete request: "replace all white colors with #F9FAFB. It means also the other colors and
+black should match it in tones," confirmed as an app-wide change (not scoped to My reviews
+like the glass work). This is a real, if partial, reversal of 0073, which deliberately flattened
+a lavender-tinted ramp to true, untinted grey.
+
+**Choice.** `--neutral-0` is exactly `#F9FAFB` as asked. Every other step (`--neutral-1`
+through `--neutral-13`) keeps 0073's own lightness value for that position — so relative
+contrast between any two existing steps is unchanged — but is retinted to the same ~210°
+cool-blue hue `#F9FAFB` itself has. The saturation at each step isn't a flat percentage (flat
+saturation looks wrong at the extremes — very light or very dark grey with the same raw
+saturation as the midtones reads as an obvious, un-intentional blue): it follows the shape of
+a production cool-grey scale (Tailwind's `slate`, sampled at eleven stops and interpolated),
+scaled down by the same ratio `#F9FAFB`'s own saturation (20%) sits below `slate-50`'s (40%) —
+so the whole ramp reads as a *subtler* version of that family, matching the specific subtlety
+of the colour actually asked for, not copying Tailwind's bolder tint wholesale.
+
+**Verification, not assumption.** An app-wide change to the literal foundation every other
+colour in the app sits on is exactly the kind of change that could silently break contrast
+pairings verified under the old, untinted ramp — so this was checked, not assumed: the full
+`npx playwright test e2e/accessibility.spec.ts` suite (34 states, both themes, My reviews and
+the run review page alike) passed clean against the new ramp with no changes needed to any
+semantic token's own mapping.
+
+**Consequence.** `--page-light`/`--page-dark` (the flat page background, a separate token from
+the neutral ramp) were deliberately left untouched here — they are about to be replaced
+outright by a new, more saturated backdrop (the next item in this round), so retinting them
+now would be wasted work. `docs/DECISIONS.md` 0073's own "true, untinted grey" framing is now
+the stale description of the ramp; this entry supersedes it for the neutral primitives
+specifically (0073's other changes — the flat shadow, the removed gradients, the primary/
+accent hues since further revised in 0092/0094 — are untouched by this entry).
+
+---
+
+## 0095 · Glass buttons and pills were stacking translucency into solid opacity; a lower-opacity "chip" tier fixes it
+
+**Context.** Direct feedback after 0092/0093 shipped: "the buttons doesn't really have that glass effect... also pills." True on inspection: `btn-glass`/`btn-glass-fill` reused `--color-glass`/`--color-glass-fill` (0092) — the same tokens the outer My reviews card itself uses — and every on-page button sits *inside* that already-glass card. Two ~70%-opaque white layers compose to ~91% opaque, which reads as a plain solid surface, not "more glass." The tab's sliding pill indicator was worse: card → `TabsList`'s own (redundant) `bg-glass` → the indicator's own `bg-glass`, three layers deep, ~97% effective opacity.
+
+**Choice.** A new, meaningfully more translucent token tier for small elements that sit on an already-glass surface: `--color-glass-chip` (buttons, the tab indicator) and `--color-glass-fill-chip`/`-border` (filled buttons), separate from `--color-glass`/`--color-glass-fill` so the card chrome itself (already shipped, already contrast-verified) is untouched. Also removed `TabsList`'s own redundant `bg-glass`/`border-glass-border`/`backdrop-blur` — it sat directly inside the identically-shaped outer `<section>`, adding a layer of stacking for zero visual purpose. `btn-glass`/`btn-glass-fill` also gained `saturate(1.4)` on their `backdrop-filter`, a small assist toward reading as "frosted" rather than merely "washed out." The warning badge's `--color-glass-warning` dropped from 97%/95% to 80%/78% — still clears real contrast (5.34:1 light / 7.85:1 dark) with room to spare.
+
+**A real, visually-confirmed limit, not just a number.** Lowering opacity alone did very little for buttons sitting over the *card's own flat interior* (no texture or colour behind them to reveal, however low the opacity) — confirmed by zoomed screenshots showing near-identical results at 35% and at 70%. The same change was dramatically visible on the header Archive button and the warning badge, both of which sit directly over the page's blob gradient. This is an inherent property of glassmorphism, not a bug to keep chasing with lower numbers: a translucent surface only reads as "glass" where there is something to see through. Settled on `--color-glass-chip` at 18%/15% (light/dark) as a value that helps everywhere without being so low it hurts legibility where there's nothing to blend with.
+
+**The filled variant needed re-tuning in the other direction.** An initial attempt dropped `--color-glass-fill-chip` to 40%/35%, which crashed the "Review"/"Create report" white-on-dark-glass contrast to 2.3–3.2:1 — real pixel measurement caught it immediately. Settled on 68%/62%, which measures 5.17–6.35:1 (comfortably clear) while still visibly reading as a translucent dark pane rather than a solid fill, confirmed by a zoomed screenshot comparison.
+
+**Consequence.** Any future "glass on glass" nesting (a chip, a badge, a second-level card) should reach for `--color-glass-chip`/`--color-glass-fill-chip`, never `--color-glass`/`--color-glass-fill` directly — and should be visually confirmed over a *representative* background (both a flat card interior and a gradient edge), not just contrast-checked, since the two surfaces behave very differently.
+
+---
+
+## 0094 · Primary goes back to a brand hue — indigo-blue, shifted away from the existing status-blue
+
+**Context.** Follow-up after 0092 shipped neutral primary: "I changed the primary color pink to blue color but it seems like it doesn't work well in dark mode." Investigation found the literal problem first: outside this session, a direct commit to `main` had recoloured the (still-present, not-yet-deleted-there) `--magenta-*` primitives to a dark navy (`#032243` for the dark-theme value) — on a dark surface, a near-black "blue" reads as almost invisible, which is exactly "doesn't work well in dark mode." Confirmed via `AskUserQuestion` that an actual blue primary (not neutral) was wanted, with the dark-mode contrast as the thing to fix.
+
+**Choice.** A proper indigo-blue, not the navy hack: `--indigo-light: #4338ca`, `--indigo-dark: #9ea3ff` (plus hover/strong/tint primitives), chosen for two things verified before picking final values — real contrast (8.08–8.45:1 light text-on-white, 6.41–7.87:1 dark text-on-surface, all comfortably clear 4.5:1) and hue distance from the existing `--status-blue-*`/`--mark-blue` (~210–215°, the "Requested for change"/"unknown" status colour) — shifted to ~248° (violet-leaning) so a brand-coloured focus ring or active-tab badge never reads as that status colour, the same reasoning 0073 used to shift magenta away from `--status-red`. Same primitive shape 0073/0092 already established (`-hover`, dark-theme `-strong` for fills/underlines only, tint pair, cross-theme `--color-toast-link`) — a hue swap, not a new architecture.
+
+**A merge conflict surfaced the same problem twice.** The direct `main` commits (recolouring `--magenta-*`, hand-tuning several motion durations/easings) conflicted with this branch's own `--magenta-*` removal (0092) and its `.t-icon-pop` keyframe redesign (0093) — both sides touched the same lines. Resolved by taking this branch's architecture (neutral/indigo primitives already fully replace `--magenta-*`, so main's recoloured values were dropped rather than merged) for the colour conflict, and `main`'s own hand-tuned `t-icon-fade` keyframe/timing (five separate commits of real iteration: "Adjust duration," "Modify scale effect," "Modify scale at 20%") for the animation conflict, since that was deliberate, repeated human tuning worth keeping over this session's first-pass values. `main`'s other, non-conflicting motion tuning (check/tabs-sliding/pop/shine durations and easings) merged automatically with no conflict at all, since this branch never touched those lines.
+
+**Consequence.** A literal `*/` inside a CSS comment (`--status-blue-*/--mark-blue`) silently truncated the comment early and broke the Tailwind build with a confusing "unterminated string" error pointing at unrelated text further down — `check-theme-bridge.mjs` caught it immediately on the next run. Worth remembering: never write a literal `*/` sequence inside a `/* */` comment, even as a glob-like shorthand for two token names.
+
+---
+
+## 0093 · Tab icon pop replaced: a persistent colour reveal on the active tab, a gentler settle everywhere else
+
+**Context.** Direct feedback once 0092 shipped: "that icon-pop animation is annoying to the
+eye and would rather prefer some gentle fade-in... or something similar," followed by a
+concrete idea for the My reviews status tabs specifically: "inactive tabs icon colors are the
+same colour but once the user clicks it, it shows its true colour (e.g. accepted/success is
+green)." Also, in hindsight, the old pop's glow was always `filter: drop-shadow(... var(--color-
+primary))` — a reference-image detail built around a vivid magenta; once 0092 made primary
+neutral, a colourless glow flashing on click had nothing left to justify "pop."
+
+**Choice, My reviews tabs.** Dropped the pop mechanism there entirely, replaced by the
+suggested interaction: every tab's icon chip sits at a neutral `bg-surface-raised`/
+`text-text-secondary` at rest, and only shows its own status colour (`bg-mark-*`/
+`text-mark-glyph` — the same pair it always rendered unconditionally before) once selected.
+Implemented as plain Tailwind utilities keyed on `aria-selected` (`group-aria-selected:bg-mark-
+pending` etc., each written as a literal string in `TABS` so Tailwind's JIT scanner actually
+generates the class — a template-built string would not), with a `transition-colors` for the
+reveal rather than the old `data-bounce`/`setTimeout` machinery, which is no longer needed at
+all. `aria-selected`, not `data-state`: `Tabs.tsx`'s own comment on `useSlidingIndicator`
+already documents a tooltip-wrapped pill trigger shadowing `data-state` with Radix Tooltip's
+own; these tabs carry no tooltip today, but `aria-selected` is correct either way.
+
+**A transition, not a bounded keyframe — on purpose, and checked.** `transitions.css`'s own
+"Icon pop" comment has warned since 0090 that a *transition* keyed to rapid keyboard tab-
+switching broke a keyboard test before (docs/WORKLOG.md, 2026-09-24) — that was specifically a
+transform/layout-affecting transition on the sliding indicator's own measured position.
+`background-color`/`color` are compositor-only properties with nothing to measure or reflow,
+so the same failure mode doesn't apply in principle — confirmed, not just assumed, with the
+mandatory `--repeat-each=15` keyboard stress test before shipping (clean: only the pre-existing,
+unrelated `My reviews, keyboard only` failure, present identically on clean `main`).
+
+**Choice, everywhere else (Request changes/Reject in `DecisionPanel`).** Still uses
+`.t-icon-pop`/`data-bounce` — a one-shot confirmation pulse still fits there, unlike the tabs,
+which needed a *persistent* state, not a transient click acknowledgement. The keyframe itself
+changed from a springy `scale: 1 → 1.35 → 1` with a coloured `drop-shadow` to a calmer
+`opacity: 0.4 → 1` + `scale: 0.92 → 1` settle, no glow, `cubic-bezier(0.16, 1, 0.3, 1)` (an
+ease-out, not the old back-easing overshoot) — directly answering "gentle fade-in," and
+sidestepping the now-colourless-glow problem outright by not having one.
+
+**Consequence.** `MyReviews.tsx` lost the `poppedTab`/`poppedTabTimer` state and its cleanup
+`useEffect` entirely — the Tailwind/CSS mechanism needs no React-side timing at all, a net
+simplification. A future tab list that wants the same "neutral until selected" treatment should
+follow the same `group` + `group-aria-selected:` pattern (`components/Tabs.tsx`'s own
+`TabsTrigger`/`PillTrigger` already forward `className`, so `className="group"` at the call
+site is enough) rather than reaching for `data-bounce` again, which this round carries forward
+with a changed keyframe but no changed design, for DecisionPanel only.
+
+---
+
+## 0092 · Primary goes neutral (reversing 0073's magenta), and glass buttons on My reviews
+
+**Context.** Two follow-on requests. First: "replace that pink contrast colour with something
+more neutral — contrast should be in elements that need your attention more," confirmed via
+`AskUserQuestion` to mean brand colour only, not the status palette (already the thing doing
+real urgency duty, and already correct by the user's own framing). Second: "can we add glass
+style also in buttons," confirmed to mean every `<Button>` on My reviews, including the filled
+`default` variant, not an app-wide `Button` change.
+
+**Primary, choice.** `--color-primary`/`-hover`/`-strong` now point at the same neutral
+primitives `--color-text-primary` already uses per theme (`--neutral-12`/`-1`), not a hue of
+their own — an inventory turned up no place the magenta was actually signalling urgency; that
+was always the status palette's job (`src/styles/README.md`, "Status is a separate palette
+from brand"). `--color-primary-tint`/`-tint-border` move to a neutral wash (`--neutral-2`/`-4`
+light, `--neutral-11`/`-9` dark) for the same reason. `--color-primary-foreground` needed no
+change — already "white on a dark fill, near-black on a light fill" per theme, exactly what a
+neutral fill needs too. `--color-toast-link`, previously hard-wired straight to
+`--magenta-dark`/`-light` bypassing `--color-primary` entirely, now points at the same
+opposite-theme neutral. The `--magenta-*` primitives are deleted, not left orphaned, matching
+how 0073 itself fully retired 0068's indigo-blue rather than leaving it behind. Verified by eye
+in both themes, not just by contrast number: a neutral "active" state (the Filters button open,
+the active tab's count badge, the focus ring) is a real risk pink didn't have — every one still
+reads clearly against its own rest state.
+
+**Glass buttons, mechanism.** Two new `@utility` classes in `src/styles/index.css`, applied as
+a plain `className` on `Button` — `components/ui/button.tsx` stays untouched, so no button
+outside My reviews is affected. `btn-glass` (for `outline`-variant buttons: Filters, Archive,
+Clear filters, Details, Request-a-new-run, Archive-icon, New run) reuses the card-chrome glass
+tokens from 0089 as-is. `btn-glass-fill` (for the two on-page filled instances — "Create
+report," the row "Review" link-button) needed a new token pair, `--color-glass-fill`/
+`-fill-border`: `--color-glass`'s light wash would wash out the white text a filled button
+needs, so this mixes toward the same primitive `--color-primary` itself now uses per theme
+(dark glass in light theme, light glass in dark theme) — the solid button's own fill/text
+already flip this way per theme, so the glass version just follows. Real pixel-measured
+contrast (the grid-mode technique from 0091) came back 9.1–15.1:1 across every glassed button,
+both themes — comfortably clear, no opacity tuning needed beyond the first guess. Dialogs stay
+out of scope, same boundary 0089 drew.
+
+**A second instance of the `cn()`/tailwind-merge gap (0043).** `btn-glass`/`btn-glass-fill`
+each set `background-color`, `border-color`, `box-shadow` and `backdrop-filter` in one custom
+class; tailwind-merge doesn't recognise either name, so without a fix it would keep both the
+glass class and whatever `bg-*`/`border-*` class a call site passes alongside it (e.g. the
+Filters button's open-state override) — which one actually painted would then depend on
+generated CSS source order, not on which class a component author wrote last. Fixed in
+`lib/utils.ts` the same way 0043 fixed the type-scale case, but one step further: a
+`conflictingClassGroups` entry (not just a `classGroups` entry) makes the glass classes and the
+built-in colour groups mutually override each other regardless of which side appears later in
+the string — proven with a throwaway `tailwind-merge` script before relying on it, not assumed.
+
+**Consequence.** A future `btn-glass`-adjacent utility (any custom class bundling
+`background-color`/`border-color`/`shadow`/`backdrop-filter` in one name) needs the same
+`conflictingClassGroups` treatment in `lib/utils.ts`, or it has this exact bug silently.
+`components/ui/button.tsx`'s own `outline`+`icon` compound variant still hard-codes
+`hover:border-primary hover:bg-surface hover:text-primary`, now pointing at a neutral colour
+by construction — left as is, a no-op cleanup, not a required one.
+
+---
+
 ## 0091 · Glass tabs and badge on My reviews: a status-tinted glass token, and an amber primitive typo axe-core couldn't have caught
 
 **Context.** Continuing the frosted-glass pilot (0089), the user asked for the My reviews

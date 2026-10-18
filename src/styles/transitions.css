@@ -130,12 +130,24 @@
   left: 0;
   height: 0;
   width: 0;
+  overflow: hidden;
   transform: translateX(0);
   transition:
     transform var(--tabs-dur) var(--tabs-ease),
     width var(--tabs-dur) var(--tabs-ease);
   will-change: transform, width;
   z-index: 0;
+  pointer-events: none;
+}
+/* The same specular highlight `.glass-sheen` gives buttons and the warning badge (0098,
+ * tokens.css's own comment on `--glass-sheen`), but as its own rule: the indicator already has
+ * `position: absolute` from the rule above, and `.glass-sheen` itself sets `position: relative`
+ * — applying both to the same element would make source order, not intent, decide which wins. */
+.t-tabs-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-sheen);
   pointer-events: none;
 }
 .t-tab {
@@ -343,16 +355,21 @@
 /* ---- Icon fade -------------------------------------------------------------------------- */
 
 /*
- * Not from transitions.dev: a small scale-and-glow pop for an icon the user just acted on — a
- * My reviews tab becoming selected, or Request changes/Reject run clicked (docs/DECISIONS.md,
- * 0090). Not a morph (components/MorphIcon.tsx is for an icon whose own meaning changes) — this
- * icon stays the same, it is just "acknowledged." The glow is a reference-image detail (a
- * frosted music player's play/pause button), not just the scale.
+ * Not from transitions.dev: a gentle fade for an icon the user just acted on — Request changes/
+ * Reject run clicked (docs/DECISIONS.md, 0090, revised 0093 and 0094). Not a morph
+ * (components/MorphIcon.tsx is for an icon whose own meaning changes) — this icon stays the
+ * same, it is just "acknowledged." Originally a springy scale-and-glow pop with the glow in
+ * `--color-primary`; once primary went neutral (0092, later indigo again, 0094) a pop built
+ * around the brand colour no longer made sense on its own terms, and separately read as
+ * "annoying" motion — replaced with a slower opacity dip-and-recover plus a small scale bump,
+ * no colour, hand-tuned afterwards (duration, easing, scale amount) directly in this file.
+ *
+ * (The My reviews tab icons used this same class until 0093, which replaced it there with a
+ * persistent colour reveal instead — see "Tab icon colour reveal" below.)
  *
  * `data-bounce` only, set by React for a short, timed window after the actual action — never
- * derived straight from "is this the active tab right now", which would also be true the
- * instant the tab first mounts and pop on every page load. Cleared by a `setTimeout` matching
- * `--icon-pop-dur`, the exact mechanism `.t-pop[data-popping]` above already uses safely. A
+ * derived straight from "is this active right now". Cleared by a `setTimeout` matching
+ * `--icon-fade-dur`, the exact mechanism `.t-pop[data-popping]` above already uses safely. A
  * bounded `@keyframes` animation gated by attribute presence, never a `transition` tied to a
  * continuously-changing property — a colour transition keyed to rapid automatic-activation tab
  * state dropped keypresses here before (docs/WORKLOG.md, 2026-09-24); this cannot reproduce
@@ -368,9 +385,18 @@
 }
 
 @keyframes t-icon-fade {
-  0%   { transform: scale(1);    opacity: 1; }
-  20%  { transform: scale(1.10); opacity: 0.7; }
-  100% { transform: scale(1);    opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -378,3 +404,32 @@
     animation: none;
   }
 }
+
+/* ---- Tab icon colour reveal ------------------------------------------------------------- */
+
+/*
+ * My reviews' status tabs (docs/DECISIONS.md, 0093): each tab's icon chip sits at a neutral
+ * `bg-surface-raised`/`text-text-secondary` at rest, and only shows its own status colour (the
+ * same `bg-mark-*`/`text-mark-glyph` pair the chip always used to show unconditionally) once
+ * that tab is actually selected — "same colour until you pick it, then it tells you what it
+ * is," replacing the old pop-on-select animation there outright (a neutral-primary glow no
+ * longer read as a pop worth having, see Icon pop above).
+ *
+ * Plain Tailwind utilities at the call site do the work (`group-aria-selected:bg-mark-pending`
+ * etc. in `MyReviews.tsx`, each written as a literal string so Tailwind's JIT scanner actually
+ * generates it — a template-built class name would not), so there is no CSS here to maintain.
+ * Two things worth recording about the mechanism itself:
+ *
+ * - Keyed on `aria-selected`, not `data-state`: `Tabs.tsx`'s own comment on `useSlidingIndicator`
+ *   already documents why for a pill trigger — a tooltip-wrapped trigger writes Radix Tooltip's
+ *   own `data-state` (open/closed) onto the same node, shadowing Tabs' `data-state`
+ *   (active/inactive). These tabs carry no tooltip today, but `aria-selected` is correct either
+ *   way and costs nothing extra.
+ * - A plain `transition-colors` (not a bounded `@keyframes`), unlike Icon pop just above, which
+ *   exists specifically because a *transition* tied to rapid keyboard tab-switching broke
+ *   keyboard tests once (docs/WORKLOG.md, 2026-09-24). That regression was a transform/layout-
+ *   affecting transition on the sliding-indicator's own position; `background-color`/`color` are
+ *   compositor-only properties with nothing to measure or reflow, so the same failure mode does
+ *   not apply — confirmed, not just assumed, with the mandatory keyboard stress test
+ *   (`--repeat-each=15`) before this shipped.
+ */

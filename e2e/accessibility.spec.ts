@@ -169,7 +169,16 @@ function ownContrast(page: Page, selector: string) {
     const floating = (el: Element | null): boolean =>
       !!el && (getComputedStyle(el).position === 'fixed' || floating(el.parentElement))
     if (!element || !(element.closest('dialog[open]') || floating(element))) return 0
-    const rgb = (value: string) => value.match(/[\d.]+/g)!.map(Number)
+    // getComputedStyle returns legacy `rgb(r g b / a)` (0-255 channels) for most colours, but
+    // `color-mix()` (every glass token) computes to CSS Color 4's `color(srgb r g b / a)`
+    // instead — same shape, but 0-1 float channels, not 0-255. Scale only the three colour
+    // channels, never the trailing alpha, which is 0-1 in both syntaxes.
+    const rgb = (value: string) => {
+      const nums = value.match(/[\d.]+/g)!.map(Number)
+      if (!value.trim().startsWith('color(')) return nums
+      const [r, g, b, ...rest] = nums
+      return [r * 255, g * 255, b * 255, ...rest]
+    }
     const luminance = ([r, g, b]: number[]) => {
       const channel = (c: number) => {
         const v = c / 255
@@ -246,7 +255,15 @@ async function measuredBackgroundContrast(page: Page, selector: string) {
       const ctx = canvas.getContext('2d')!
       ctx.drawImage(img, 0, 0)
 
-      const rgb = (s: string) => s.match(/[\d.]+/g)!.map(Number)
+      // Same `color()` vs legacy `rgb()` scaling as `ownContrast` above — defensive here too,
+      // since `color` is a `getComputedStyle().color` string that could in principle resolve
+      // to a `color-mix()` token one day, even though every text colour today is a flat hex.
+      const rgb = (s: string) => {
+        const nums = s.match(/[\d.]+/g)!.map(Number)
+        if (!s.trim().startsWith('color(')) return nums
+        const [r, g, b, ...rest] = nums
+        return [r * 255, g * 255, b * 255, ...rest]
+      }
       const luminance = ([r, g, b]: number[]) => {
         const channel = (c: number) => {
           const v = c / 255
@@ -310,30 +327,39 @@ for (const scheme of ['light', 'dark'] as const) {
           .analyze()
         expect(results.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
         // Contrast axe could not decide would slip past `violations`. Two kinds are measured
-        // here instead, neither a waiver: text in a floating layer — an open modal dialog, or a
-        // fixed toast — that axe calls "partially obscured". Axe does not order such layers
-        // against the page, so a card behind one counts as overlapping its text, though nothing
-        // does (checked with elementsFromPoint; setting `inert` or moving the dialog to <body>
-        // does not change axe's answer — 0060). And text on the frosted-glass pilot's cards
-        // (0089), where a CSS gradient or backdrop-filter in the ancestor chain means axe can't
-        // statically resolve the background at all — measured against the real rendered pixels
-        // instead (measuredBackgroundContrast), still against axe's own expected ratio. Any
-        // other undecided result fails and should be looked at by eye.
+        // here instead, neither a waiver: text in a floating layer — an open modal dialog, a
+        // fixed toast, or now a `Popover` (the filters panel, 0099) — that axe calls "partially
+        // obscured", in either direction: `elmPartiallyObscuring` is the floating layer's own
+        // text read against whatever's behind it, `elmPartiallyObscured` is page text the layer
+        // happens to sit over (the filters popover opening above the selection bar banner, for
+        // instance). Axe does not order such layers against the page, so either side of that
+        // pair counts as overlapping the other, though nothing really does (checked with
+        // elementsFromPoint; setting `inert` or moving the dialog to <body> does not change
+        // axe's answer — 0060). And text whose background axe can't statically resolve at all —
+        // a CSS gradient or backdrop-filter in the ancestor chain (the frosted-glass pilot's
+        // cards, 0089), or a pseudo-element painted directly over the text's own box
+        // (`glass-sheen`'s `::before`, 0098 — axe calls this one "pseudoContent", since it can't
+        // tell what's behind its own element rather than an ancestor) — measured against the
+        // real rendered pixels instead (measuredBackgroundContrast), still against axe's own
+        // expected ratio. Any other undecided result fails and should be looked at by eye.
         const undecided = results.incomplete
           .filter((r) => r.id === 'color-contrast')
           .flatMap((r) => r.nodes)
-        const behindModal = undecided.filter(
-          (node) =>
-            (node.any[0]?.data as { messageKey?: string } | undefined)?.messageKey ===
-            'elmPartiallyObscuring',
-        )
+        const behindModal = undecided.filter((node) => {
+          const messageKey = (node.any[0]?.data as { messageKey?: string } | undefined)?.messageKey
+          return messageKey === 'elmPartiallyObscuring' || messageKey === 'elmPartiallyObscured'
+        })
         for (const node of behindModal) {
           const ratio = await ownContrast(page, String(node.target[node.target.length - 1]))
           expect(ratio, `contrast of ${node.html.slice(0, 60)}`).toBeGreaterThanOrEqual(4.5)
         }
         const glassObscured = undecided.filter((node) => {
           const messageKey = (node.any[0]?.data as { messageKey?: string } | undefined)?.messageKey
-          return messageKey === 'bgGradient' || messageKey === 'bgImage'
+          return (
+            messageKey === 'bgGradient' ||
+            messageKey === 'bgImage' ||
+            messageKey === 'pseudoContent'
+          )
         })
         for (const node of glassObscured) {
           const data = node.any[0]?.data as { expectedContrastRatio?: string } | undefined

@@ -8,7 +8,7 @@ component having to.
 
 Two layers:
 
-1. **Primitives** — the raw values: `--magenta-light`, `--neutral-3`. Plain custom properties,
+1. **Primitives** — the raw values: `--lime-light`, `--neutral-3`. Plain custom properties,
    never Tailwind utilities.
 2. **Semantic tokens** — what the product uses: `--color-primary`, `--color-status-pass`,
    `--color-surface-raised`, `--color-border-subtle`. Components only ever use these.

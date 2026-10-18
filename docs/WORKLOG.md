@@ -39,6 +39,560 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-18 · Welcome modal and signature intro get genuine glass (part 5, last of the refresh)
+
+**Goal**
+Last step of the visual refresh: make the welcome modal and the one-time signature intro screen
+read as real glass over a vivid gradient, per a reference image ("the modal would somehow
+appear like glass... the background would be with that type of gradient glass. Not transparent
+black?"), app-wide, explicitly including the intro screen.
+
+**What changed**
+- `src/components/ui/dialog.tsx` — `DialogContent` gained an `overlayClassName` prop, forwarded
+  to its own `DialogOverlay`, previously unreachable from any caller.
+- `src/components/Modal.tsx` — forwards the same `overlayClassName` prop through.
+- `src/styles/index.css` — new `bg-welcome-scrim` utility: `--color-modal-scrim` plus
+  `--page-gradient` as a `background-image`, with the glass blur.
+- `src/app/WelcomeModal.tsx` — `overlayClassName="bg-welcome-scrim"`; the modal panel itself
+  swapped the default opaque `bg-surface` for `bg-glass`/`border-glass-border`/`shadow-glass`/
+  `backdrop-blur-[var(--blur-glass)]`.
+- `src/app/intro.css` — `.intro-overlay` gained `background-image: var(--page-gradient-light)`
+  (fixed to light, matching the intro's own already-theme-independent colours) alongside its
+  existing scrim colour and blur.
+- `e2e/accessibility.spec.ts` — fixed a real parsing bug in `ownContrast` and
+  `measuredBackgroundContrast`'s `rgb()` helpers: `color-mix()` computes to CSS Color 4's
+  `color(srgb r g b / a)` (0–1 float channels), not legacy `rgb(r g b / a)` (0–255 ints), and
+  the helpers assumed the legacy shape unconditionally.
+- `docs/DECISIONS.md` — new entry 0100.
+
+**Steps, in order**
+1. Added `overlayClassName` to `DialogContent`/`Modal`, scoped so every other dialog keeps its
+   flat default.
+2. Added `bg-welcome-scrim` and wired it + the glass panel classes into `WelcomeModal.tsx`.
+3. Added the gradient to `intro.css`.
+4. Verified visually with screenshots in both themes (intro mid-draw, welcome modal open) —
+   confirmed by eye before running any automated check, since the intro is `aria-hidden` and
+   invisible to axe either way.
+5. Ran `npx playwright test e2e/accessibility.spec.ts -g "welcome modal"`: one real-looking
+   failure (1.37:1 contrast) that a direct `getComputedStyle` check in the browser showed was
+   false — the modal's `background-color` read as `color(srgb 0.976 0.980 0.984 / 0.7)`, and
+   `ownContrast`'s parser was dividing those already-0–1 channel values by 255 again, reading
+   them as near-black. Fixed the parser, re-ran: clean.
+
+**Why it was done this way**
+`overlayClassName` rather than a one-off second `Dialog` variant, because the rest of `Modal`'s
+behaviour (focus trap, Escape, focus return) is exactly what the welcome modal still needs —
+only the backdrop's own look is special to this one caller. The contrast-parser fix was applied
+to both helpers defensively, not just the one that actually broke, since the same `color-mix()`
+→ `color()` computed-style shape will recur for any future glass `Modal`.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure. `npx playwright test
+e2e/keyboard.spec.ts e2e/onboarding-tour.spec.ts --repeat-each=15`: 105/105 clean except that
+same pre-existing failure's deterministic 15/15 — no new regression. `npm run build` clean.
+
+**Open questions / next**
+This closes all five parts of the visual refresh plan. The pre-existing `e2e/keyboard.spec.ts`
+"My reviews, keyboard only" arrow-key bug (`components/Tabs.tsx`, unrelated to this round)
+still needs its own fix. PR #27 is ready for a final look before merging.
+
+---
+
+## 2026-10-18 · Filters popover with a notch; My reviews stays one card, straight edges (part 4)
+
+**Goal**
+Fourth step of the visual refresh: turn the filters panel into a popover with a notch pointing
+at its own trigger, and restructure My reviews per a layout sketch. Live feedback mid-session
+redirected the layout piece twice before landing: the page stays one unified glass card (tabs,
+search/filters, table all together, not split into separate elevation bands), and both the
+tab pills and the card itself lose their rounded corners.
+
+**What changed**
+- `src/components/ui/popover.tsx` — new `PopoverArrow` export (the notch).
+- `src/features/run/ReviewsToolbar.tsx` — filter fields moved from an inline `Collapsible` into
+  a `Popover` anchored to the Filters button, with the arrow; fields now stack vertically in a
+  narrow panel instead of a wide inline row.
+- `src/styles/tokens.css` — new `--shadow-glass-lg` (both themes), a deeper version of
+  `--shadow-glass` for the page's one main surface.
+- `src/features/run/MyReviews.tsx` — the My reviews and archive sections each carry
+  `--shadow-glass-lg` now instead of `--shadow-glass`; lost `rounded-lg` (straight edges); the
+  search/filters row is wrapped in its own `border-b` div inside the same card, replacing the
+  old always-rendered divider that used to sit above the (now-removed) inline filter panel.
+- `src/components/ui/tabs.tsx` — the `pill` `TabsList`/`TabsTrigger` variant dropped
+  `rounded-full` entirely (app-wide: also affects the run review page's Story/Evidence/All
+  steps tabs, which deliberately share this variant).
+- `src/components/Tabs.tsx` — `PillTabsList`'s sliding indicator dropped `rounded-full` to match.
+- `e2e/accessibility.spec.ts` — a third axe `messageKey` (`elmPartiallyObscured`) folded into
+  the existing `elmPartiallyObscuring`/`ownContrast` carve-out.
+- `docs/DECISIONS.md` — new entry 0099.
+
+**Steps, in order**
+1. Built the originally-planned stacked-bands layout (tabs/toolbar/table each a separate glass
+   `<section>` with a gap and a deeper shadow on the table) plus the popover filters panel.
+2. User feedback: "search + filter should be attached to the table" → merged the toolbar
+   section back into the table section.
+3. User feedback: "tabs should be attached to the table... part of the same experience" →
+   merged the tabs section back in too, landing on a single unified card (the pre-refresh
+   structure), now carrying `--shadow-glass-lg`.
+4. User feedback: "tabs should not... have round edges... borders and edges are straight" →
+   asked which (`AskUserQuestion`): confirmed both the tab pills and the card corners. Removed
+   `rounded-full` from the `pill` tab variant and its sliding indicator, and `rounded-lg` from
+   the card sections.
+5. Verified with `npx playwright test e2e/accessibility.spec.ts` after each round; the
+   `elmPartiallyObscured` carve-out was needed once the popover could open while a run was
+   selected (the "approved tab with filters open and a run selected" fixture).
+
+**Why it was done this way**
+The sketch's "stacked bands" idea turned out, once seen rendered, not to match what the user
+actually wanted — the live back-and-forth corrections are the real record of the final shape,
+not the original plan, which is why this entry (and 0099) describe the correction sequence
+rather than presenting the final state as if it were planned from the start. The straight-edge
+tab change was applied to the shared `pill` variant rather than a My-reviews-only override, to
+keep this page and the run review page's tabs looking like one house style, matching how every
+other token/variant change this session has defaulted to app-wide unless explicitly scoped.
+
+**How to do this by hand**
+Same as the steps above — no Figma/Storybook equivalent; this is component/CSS work plus the
+`AskUserQuestion` clarification already recorded in the steps.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure (see the 2026-10-18 "Capsule
+buttons" entry below). `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: same
+deterministic 15/15 failure on that one pre-existing test, 30/30 clean on the other two —
+confirms this round introduced no new keyboard regression.
+
+**Open questions / next**
+Part D (welcome modal + intro screen glass treatment) is next, then the pre-existing keyboard
+bug and a merge of PR #27.
+
+---
+
+## 2026-10-18 · Capsule buttons with a specular highlight (part 3 of the visual refresh)
+
+**Goal**
+Third step of the five-part visual refresh: make glass buttons and pills look like genuine
+glass objects, not flat-rectangle translucent fills — direct feedback was "the pill and the
+buttons look pretty much the same as before... looks very basic and boring."
+
+**What changed**
+- `src/lib/utils.ts` — `glass-btn` added to `rounded`'s `conflictingClassGroups` (both
+  directions), same pattern as the existing `bg-color`/`border-color`/`shadow`/
+  `backdrop-blur` entries.
+- `src/styles/tokens.css` — new shared token `--glass-sheen` (one value, both themes): a
+  static diagonal white highlight gradient.
+- `src/styles/index.css` — `btn-glass`/`btn-glass-fill` gained `border-radius: 9999px` (full
+  capsule); new `glass-sheen` utility class + `.glass-sheen::before` pseudo-element rule.
+- `src/styles/transitions.css` — `.t-tabs-pill` got `overflow: hidden` plus its own parallel
+  `::before` rule (can't use the `glass-sheen` class here — it conflicts with the pill's own
+  required `position: absolute`).
+- `src/features/run/MyReviews.tsx`, `ReviewsToolbar.tsx`, `ReviewsTable.tsx`,
+  `ArchiveTable.tsx` — `glass-sheen` added alongside every existing `btn-glass`/
+  `btn-glass-fill` class and the warning badge.
+- `e2e/accessibility.spec.ts` — added a third axe `messageKey` (`pseudoContent`) to the
+  existing real-pixel-measurement carve-out, alongside `bgGradient`/`bgImage`.
+- `docs/DECISIONS.md` — new entry 0098.
+
+**Steps, in order**
+1. Added `--glass-sheen` to `tokens.css`, the `glass-sheen` utility + pseudo-element to
+   `index.css`, `border-radius: 9999px` to `btn-glass`/`btn-glass-fill`, and `rounded` to
+   `lib/utils.ts`'s conflict groups.
+2. Applied `glass-sheen` to every glass button/badge call site (checked by grep for
+   `btn-glass` and `btn-glass-fill` across `src/features/run/`, confirmed none missed).
+3. Hit the position conflict on the tab indicator; wrote `.t-tabs-pill::before` directly in
+   `transitions.css` instead of applying the shared class there.
+4. Verified visually with zoomed screenshots (both themes) and two targeted real-pixel
+   contrast scripts (buttons, the warning badge).
+5. Ran the full `npm run check` — 18 accessibility failures appeared across fixture states the
+   targeted scripts hadn't covered. Diagnosed with a single `npx playwright test
+   e2e/accessibility.spec.ts -g "welcome modal"` run: axe's `color-contrast` incomplete result
+   had a new `messageKey` (`pseudoContent`) the test didn't yet carve out for.
+6. Added `pseudoContent` to the existing carve-out list; re-ran the full suite — 34/34 clean.
+7. Ran `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`; one test failed all 15
+   times. Confirmed via `git stash` + re-run against the immediately-preceding commit that
+   this is pre-existing, not introduced by this round.
+
+**Why it was done this way**
+A static (not pointer-tracked) highlight, because live pointer state through a shared,
+reusable `Button` was tried once already and dropped for keyboard-regression risk
+(`transitions.css`'s own "Button shine" comment). `pseudoContent` was added to the *existing*
+carve-out mechanism rather than a new one, because it's the same underlying problem
+(`measuredBackgroundContrast` already exists for "axe can't statically resolve this
+background") reached by a different code path (a self pseudo-element vs. an ancestor
+gradient), not a new kind of exception.
+
+**How to do this by hand**
+Same as the steps above — no Figma/Storybook equivalent; this is pure CSS/token work.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one pre-existing keyboard failure (see below) — typecheck, lint, format,
+theme-bridge, format-locale, 293 unit tests, 44 e2e. `npx playwright test e2e/keyboard.spec.ts
+--repeat-each=15`: deterministic 15/15 failure on "My reviews, keyboard only," confirmed via
+`git stash` to reproduce identically on the commit before this round's changes — pre-existing,
+not a regression from this work.
+
+**Open questions / next**
+`e2e/keyboard.spec.ts`'s "My reviews, keyboard only" test (arrow-key tab navigation landing on
+Approved) needs a dedicated fix — likely in `components/Tabs.tsx`'s arrow-key activation
+timing — but is out of scope for this round. Parts D (welcome modal/intro-screen glass) and E
+(layout restructuring) of the five-part plan are still ahead.
+
+---
+
+## 2026-10-18 · Page gradient goes app-wide and more saturated (part 2 of the visual refresh)
+
+**Goal**
+Second step of the five-part visual refresh: make the page background richer and apply it to
+every screen (previously the run review page kept the flat, gradient-free background from
+0073), so there's real colour for `backdrop-blur` to reveal and the run page stops looking
+different from My reviews for no reason.
+
+**What changed**
+- `src/app/App.tsx` — `<main>` always renders `bg-page-glass` now (dropped the `runId ? 'bg-bg'
+  : 'bg-page-glass'` conditional); removed the now-unused `cn` import.
+- `src/styles/tokens.css` — `--page-gradient-light`/`-dark` far more saturated and spread
+  wider, each blob's colour wrapped in `color-mix()` toward the flat page colour so opacity is
+  one tunable percentage per theme; `--page-light`/`-dark` (the flat fallback) now match 0096's
+  cool-tinted neutral family.
+- `src/styles/index.css` — updated `bg-page-glass`'s own doc comment (no longer "My reviews
+  only").
+- `docs/DECISIONS.md` — new entry 0097.
+
+**Steps, in order**
+1. Removed the `runId` conditional in `App.tsx`; picked richer blob colours and wider spreads
+   for the gradient tokens.
+2. `npx playwright test e2e/accessibility.spec.ts` — 8 failures, all My reviews text/controls
+   sitting directly on the page background (not inside the opaque glass card). Real numbers,
+   not assumed from the colours looking "probably fine."
+3. Wrapped each blob colour in `color-mix()` toward `--page-light`/`-dark` at 55%, re-ran: down
+   to 4 failures, all light theme, one at 4.457 (just under the 4.5 line).
+4. Nudged the light-theme mix down to 42%, re-ran: 34/34 clean, both themes.
+5. Screenshot pass, both pages, both themes — the run review page visibly has colour now,
+   confirmed by eye, not just by the passing numbers.
+6. `npm run check` full pass (one `prettier --write` needed on the longer `color-mix()` lines).
+7. Wrote `docs/DECISIONS.md` 0097 and this entry.
+
+**Why it was done this way**
+`color-mix()` toward the flat page colour, rather than hand-picking three less-saturated hex
+values per theme, means the whole gradient's intensity is one number per theme — tunable in
+one place if it ever needs adjusting again, instead of three independent values that have to
+be kept in the same proportion by hand.
+
+**How to do this by hand**
+Not meaningfully different from the steps above.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 passed on the final values (both
+themes, My reviews and the run review page). `npm run check`: full pass except the same
+pre-existing, unrelated `My reviews, keyboard only` failure. `node scripts/check-theme-
+bridge.mjs`: ok. Visual screenshot pass, both pages, both themes.
+
+**Open questions / next**
+- Three parts of the agreed plan remain: button/pill visual redesign (now that the backdrop
+  has real colour to work with), a popover-style filters panel with a connecting notch, and a
+  glass welcome-modal/intro treatment.
+
+---
+
+## 2026-10-18 · Cool-tinted neutral ramp, app-wide (part 1 of a larger visual refresh)
+
+**Goal**
+First step of a five-part visual refresh agreed with the user (neutral ramp retune, a more
+saturated page backdrop, a button/pill visual redesign, a popover-style filters panel, and a
+glass welcome-modal/intro) — this entry covers the first part only.
+
+**What changed**
+- `src/styles/tokens.css` — `--neutral-0` through `--neutral-13` retinted from true/untinted
+  grey to a cool ~210° blue-grey, anchored to `--neutral-0` = `#F9FAFB` exactly as requested,
+  every other step keeping its original lightness (same relative contrast) with a saturation
+  curve modelled on Tailwind's `slate` scale, scaled to `#F9FAFB`'s own subtlety.
+- `docs/DECISIONS.md` — new entry 0096.
+
+**Steps, in order**
+1. Computed `#F9FAFB`'s own HSL (210°, 20%, 98%) to anchor the new hue/subtlety.
+2. Sampled Tailwind `slate`'s HSL at its eleven named stops as a reference for how saturation
+   should vary by lightness (it isn't flat — high near white and near black, lower at
+   midtones), rather than inventing a curve from scratch.
+3. For each of the 14 existing neutral steps, interpolated `slate`'s hue/saturation at that
+   step's own lightness, scaled saturation by 0.5 (the ratio between `#F9FAFB`'s 20% and
+   `slate-50`'s 40%), generated the new hex.
+4. `node scripts/check-theme-bridge.mjs` clean, then `npx playwright test
+   e2e/accessibility.spec.ts` — all 34 states, both themes, My reviews and the run review page.
+5. Screenshot pass, both pages, both themes. `npm run check` full pass.
+6. Wrote `docs/DECISIONS.md` 0096 and this entry.
+
+**Why it was done this way**
+A flat, single saturation percentage applied to every lightness step looks wrong at the
+extremes (very light or very dark grey reading as an obviously-blue colour rather than a
+subtle cool undertone) — mirroring a known-good production scale's own saturation curve,
+scaled to this specific request's subtlety, avoided that without needing to hand-tune 14
+values by eye.
+
+**How to do this by hand**
+Not meaningfully different from the steps above.
+
+**Verification**
+`node scripts/check-theme-bridge.mjs`: ok. `npx playwright test e2e/accessibility.spec.ts`:
+34/34 passed, both themes, no changes needed to any semantic token mapping. `npm run check`:
+full pass except the same pre-existing, unrelated `My reviews, keyboard only` failure. Visual
+screenshot pass, both pages, both themes.
+
+**Open questions / next**
+- `--page-light`/`--page-dark` deliberately left untouched — superseded by the next part of
+  this round (a more saturated page backdrop), not worth retinting first.
+- Four more parts of the agreed plan remain: page backdrop (app-wide), button/pill visual
+  redesign, a popover-style filters panel with a connecting notch, and a glass welcome-modal/
+  intro treatment.
+
+---
+
+## 2026-10-17 · Indigo primary (merged past a direct main-branch edit), and fixing glass that read as solid
+
+**Goal**
+Bring back a blue primary colour (reversing 0092's neutral, by request) with real dark-mode
+contrast; merge past direct commits the user pushed to `main` while this branch was in
+progress; and fix buttons/pills that read as flat/solid instead of glass.
+
+**What changed**
+- Merged `origin/main` into this branch, resolving conflicts in `tokens.css` (dropped main's
+  recoloured-but-still-named `--magenta-*` primitives in favour of this branch's architecture)
+  and `transitions.css` (kept main's hand-tuned `t-icon-fade` keyframe/timing over this
+  branch's first-pass values; non-conflicting motion tuning elsewhere merged automatically).
+- `src/styles/tokens.css` — new `--indigo-*` primitives; `--color-primary`/`-hover`/`-strong`/
+  `-tint`/`-tint-border`/`--color-toast-link` repointed from neutral to indigo, both themes.
+  New `--color-glass-chip`/`--color-glass-fill-chip`/`-border` tier (lower opacity than
+  `--color-glass`/`-fill`) for buttons and the tab indicator. `--color-glass-warning` opacity
+  lowered (97%/95% → 80%/78%).
+- `src/styles/index.css` — `btn-glass`/`btn-glass-fill` switched to the new chip tokens, plus
+  `saturate(1.4)` on their `backdrop-filter`.
+- `src/features/run/MyReviews.tsx` — removed `TabsList`'s own redundant glass styling (it sat
+  directly inside the identically-shaped glass `<section>`); the sliding indicator now uses
+  `bg-glass-chip`.
+- `docs/DECISIONS.md` — new entries 0094 (indigo primary + the merge) and 0095 (the glass-chip
+  opacity tier).
+
+**Steps, in order**
+1. Investigated the user's "I changed primary pink to blue but it doesn't work in dark mode"
+   report: found via `git fetch origin main` that this was a real, direct commit to `main`
+   (not a description of this session's own work) recolouring `--magenta-*` to a near-black
+   navy — invisible against the dark surface, exactly the reported symptom.
+2. `AskUserQuestion` confirmed: a real blue primary was wanted, and the glow-button hover
+   request should be reimplemented with this app's own tokens, no new dependencies.
+3. Picked indigo primitives, verified contrast and hue-distance from `--status-blue-*` by
+   computation before committing to final hex values.
+4. `git stash` the in-progress indigo edit, `git merge origin/main`, resolved the two
+   conflicted files, `git merge --no-edit` to conclude, `git stash pop` to resume.
+5. Fixed a literal `*/` inside a CSS comment that silently truncated it and broke the Tailwind
+   build — caught by `check-theme-bridge.mjs`, not by `tsc`/`eslint`.
+6. Finished the indigo token wiring, verified via screenshots in both themes (focus ring,
+   Filters-open state, run page) and `npm run check` + `npx playwright test
+   e2e/keyboard.spec.ts --repeat-each=15`.
+7. User feedback: "the buttons doesn't really have that glass effect... also pills." Zoomed
+   screenshots confirmed buttons/pills were reading as solid, not glass.
+8. Diagnosed the cause (opacity stacking across nested glass layers, detailed in 0095),
+   introduced the `-chip` token tier, removed `TabsList`'s redundant glass styling.
+9. First attempt (`--color-glass-fill-chip` at 40%/35%) broke `btn-glass-fill` contrast to
+   2.3–3.2:1 — caught by the same real pixel-measurement script used throughout this project,
+   not assumed from the opacity number. Re-tuned to 68%/62%, re-measured clean (5.17–6.35:1).
+10. Full `npm run check` green.
+
+**Why it was done this way**
+- The merge conflict resolution favoured whichever side represented more deliberate, final
+  intent for that specific piece: this branch's primitive *architecture* (since main's edit
+  was a quick in-place recolour of a structure this branch had already replaced), but main's
+  *animation tuning* (five commits of real iteration beat this session's first pass).
+- Lowering opacity alone cannot make a translucent surface look glassy where there is nothing
+  colourful behind it — confirmed by screenshot, not assumed. The chip tokens help everywhere,
+  but the clearest wins are on elements that sit over the page's own gradient (the header
+  Archive button, the warning badge), not elements sitting over the card's flat interior (the
+  Filters button) — a limit of the technique, not a bug left unfixed.
+
+**How to do this by hand**
+Not meaningfully different from the steps above — this was all direct token/utility edits plus
+a standard `git merge` conflict resolution.
+
+**Verification**
+`node scripts/check-theme-bridge.mjs`: ok (71 colours verified across 3 themes). `npm run
+check`: typecheck, lint, format, theme-bridge, format-locale, all unit tests, and all 44 e2e
+tests green (including `My reviews, keyboard only`, previously flaky/pre-existing — passed
+clean this run). `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` green except that
+same pre-existing case. Real pixel-measured contrast for every glassed button and the warning
+badge, both themes, after each opacity change — not assumed from the percentage alone.
+`npm run build` green throughout.
+
+**Open questions / next**
+- The "liquid glass" aesthetic (real-time specular highlights, edge refraction) the user asked
+  about afterward is out of reach for plain CSS without WebGL/shader work, and the real Apple
+  implementation has known legibility criticism this project's own contrast discipline would
+  conflict with. Recommended a lighter "liquid-glass-inspired" treatment instead (stronger
+  pill shapes, a gradient-based specular highlight, a touch more saturation) if the user wants
+  to pursue it further — not started, awaiting their direction.
+
+---
+
+## 2026-10-17 · Tab icon colour reveal, and a gentler icon-pop
+
+**Goal**
+Replace the "annoying" icon-pop bounce on My reviews' status tabs with the user's own idea — a
+neutral icon at rest, revealing its true status colour only once selected — and calm the
+remaining click-feedback pop (Request changes/Reject) from a springy scale+glow to a gentle
+fade-and-settle.
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — `TABS`' `mark` values are now full `group-aria-selected:
+  bg-mark-*` literals (not bare `bg-mark-*`); the tab icon chip is `bg-surface-raised`/
+  `text-text-secondary` at rest with `transition-colors`, revealing `group-aria-selected:
+  bg-mark-*`/`text-mark-glyph` once selected. `TabsTrigger` gets `className="group"`. Removed
+  the `poppedTab`/`poppedTabTimer` state, its cleanup `useEffect`, and the `data-bounce`/
+  `t-icon-pop` wiring on both tab icon branches — no longer needed.
+- `src/styles/transitions.css` — `@keyframes t-icon-pop` changed from `scale: 1 → 1.35 → 1`
+  with a `var(--color-primary)` drop-shadow to `opacity: 0.4 → 1` + `scale: 0.92 → 1`, no glow;
+  `--icon-pop-ease` changed from a back-easing overshoot to `cubic-bezier(0.16, 1, 0.3, 1)`.
+  Doc comments rewritten: "Icon pop" now describes `DecisionPanel`'s Request changes/Reject
+  pulse only; a new "Tab icon colour reveal" section explains the `aria-selected`-keyed
+  mechanism and why a plain `transition` is safe here despite the documented keyboard
+  regression risk for Tabs-territory motion.
+- `src/components/README.md` — updated the `.t-icon-pop` reference (no longer a "bounce";
+  notes the tab icons now use a different, persistent-state mechanism).
+- `docs/DECISIONS.md` — new entry 0093.
+
+**Steps, in order**
+1. Rewrote `TABS` in `MyReviews.tsx` with literal `group-aria-selected:bg-mark-*` strings
+   (a template-built class name would not be picked up by Tailwind's JIT scanner).
+2. Rewrote the tab icon `<span>`/`<Icon>` rendering to the neutral-at-rest/revealed-on-select
+   classes, added `className="group"` to `TabsTrigger`, removed the now-unused pop state/timer.
+3. Redesigned `@keyframes t-icon-pop` in `transitions.css` and its easing token; rewrote the
+   surrounding doc comments.
+4. `npm run build` (picked up the Tailwind class correctly — confirmed by grepping the built
+   CSS for `aria-selected\:bg-mark-pending`, since a silently-missing generated class is exactly
+   the kind of bug this project's `check-theme-bridge.mjs` was built to catch for colour tokens
+   but wouldn't catch here), then a real-browser screenshot pass clicking through every tab in
+   both themes to confirm the reveal reads correctly.
+5. `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` — the mandatory stress test for
+   any `Tabs.tsx`-territory motion change, given this project's history of two prior keyboard
+   regressions from tab/button motion.
+6. `npm run check` (typecheck, lint, format, theme-bridge, format-locale, unit tests, e2e) full
+   pass.
+7. Wrote `docs/DECISIONS.md` 0093 and this entry.
+
+**Why it was done this way**
+- The first screenshot pass (before step 4's rebuild) still showed every tab's true colour at
+  rest — a stale `vite preview` serving the previous `dist/` build, not a code bug. Worth
+  remembering: a `vite preview` server does not pick up source changes; it has to be rebuilt.
+- `aria-selected` over `data-state` for the same reason `Tabs.tsx`'s sliding-indicator code
+  already documents: a tooltip-wrapped pill trigger's own Radix Tooltip writes `data-state`
+  (open/closed) onto the same DOM node, shadowing Tabs' own active/inactive state. Not an issue
+  for these specific tabs (no tooltip), but `aria-selected` is correct regardless and costs
+  nothing extra, so there is no reason to use the less-robust one.
+- A plain CSS `transition` (not the bounded, timed `@keyframes`+`data-bounce` pattern 0090
+  established) is the one real risk in this round: the exact failure mode `transitions.css`'s
+  own "Icon pop" comment warns about was a transition tied to rapid keyboard-driven tab
+  switching. Reasoned through before shipping (colour-only, compositor properties, no layout to
+  measure, unlike the previous bug's transform-on-measured-position transition) and then
+  verified, not just assumed — the stress test is what actually settles it.
+
+**How to do this by hand**
+Not meaningfully different from the steps above — this was all direct component/CSS edits.
+
+**Verification**
+`npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: 32/45 passed, 13/45 failed — all
+13 the same pre-existing `My reviews, keyboard only` failure (`ArrowRight ArrowRight` → expect
+the Approved tab focused), none from the icon colour-reveal transition. `npm run check`: typecheck,
+lint, format, theme-bridge, format-locale and all unit tests green; e2e 43/44 green, the one
+failure being that same pre-existing case. `npm run build` green, and its output CSS grepped to
+confirm `group-aria-selected:bg-mark-pending` (etc.) actually generated. Real-browser screenshots
+in both themes, clicking through every tab, confirm the reveal: a muted chip for every inactive
+tab, the tab's own status colour only on the active one.
+
+**Open questions / next**
+- The same "neutral until selected" pattern could suit other icon-bearing tab/filter lists in
+  the app if one appears later — follow `group` + `group-aria-selected:`, not `data-bounce`.
+
+---
+
+## 2026-10-17 · Neutral primary colour, and glass buttons on My reviews
+
+**Goal**
+Replace the brand magenta on `--color-primary` with a neutral tone (reserving vivid colour for
+the status palette only), and extend the frosted-glass treatment from card chrome to every
+button on My reviews.
+
+**What changed**
+- `src/styles/tokens.css` — `--color-primary`/`-hover`/`-strong`/`-tint`/`-tint-border` and
+  `--color-toast-link` repointed from the magenta primitives to the neutral ramp, in the light
+  `@theme` block and both dark blocks. The `--magenta-*` primitives deleted (nothing references
+  them). New `--color-glass-fill`/`--color-glass-fill-border` token pair for a filled button's
+  own glass surface (dark glass in light theme, light glass in dark theme, mirroring how the
+  solid button's own fill/text already flip).
+- `src/styles/index.css` — two new `@utility` classes, `btn-glass` (outline buttons) and
+  `btn-glass-fill` (filled buttons), each setting background-color/border-color/box-shadow/
+  backdrop-filter from the glass tokens.
+- `src/lib/utils.ts` — `cn()`'s `tailwind-merge` config gets a `glass-btn` class group plus
+  `conflictingClassGroups` entries so `btn-glass`/`btn-glass-fill` correctly override (and are
+  overridden by) `bg-*`/`border-*`/`shadow`/`backdrop-blur` classes regardless of which side
+  appears later in a `className` string.
+- `src/features/run/{MyReviews,ReviewsToolbar,ArchiveTable,ReviewsTable}.tsx` — `btn-glass`/
+  `btn-glass-fill` applied to every on-page `<Button>` (Filters, Archive ×2, Clear filters,
+  New run, Details, Request-a-new-run, Archive-icon, Create report, Review). Dialog buttons
+  left untouched (0089's boundary).
+- `src/styles/README.md` — fixed a stale `--magenta-light` example reference to `--lime-light`.
+- `docs/DECISIONS.md` — new entry 0092.
+
+**Steps, in order**
+1. Repointed the primary tokens in `tokens.css`, deleted the magenta primitives, ran
+   `grep -rn magenta src/` to confirm nothing else referenced them.
+2. `node scripts/check-theme-bridge.mjs` clean, then a real-browser visual pass (Playwright
+   screenshots, both themes) checking specifically that a neutral "active" state (Filters open,
+   the active tab's count badge, the focus ring) still reads clearly against its rest state.
+3. Added `btn-glass`/`btn-glass-fill` to `index.css`, plus the two new glass-fill tokens.
+4. Wired `extendTailwindMerge`'s `conflictingClassGroups` in `lib/utils.ts` for the new
+   classes — proven first with a standalone `tailwind-merge` script (not assumed) before
+   relying on it in the app.
+5. Applied the new classes to every on-page button, `npm run build` to catch the
+   `extendTailwindMerge` type-parameter error it surfaced (needed `<'glass-btn'>`).
+6. Measured real pixel contrast (grid-mode technique) for every glassed button in both themes
+   via a throwaway Playwright script; all cleared 4.5:1 with no opacity tuning needed.
+7. `npm run check` (typecheck, lint, format, theme-bridge, format-locale, unit tests, e2e) and
+   `npx playwright test e2e/keyboard.spec.ts --repeat-each=15` both green except one pre-
+   existing, unrelated failure (see Verification).
+8. Wrote `docs/DECISIONS.md` 0092 and this entry.
+
+**Why it was done this way**
+- An inventory of every `--color-primary` consumer found no place the magenta was actually
+  signalling urgency — that was always the status palette's job. So "retire the brand hue from
+  primary" is a token-value change only; no component needed editing for the colour to
+  propagate, the same shape 0073 itself was.
+- `btn-glass-fill` needed its own token pair rather than reusing `--color-glass`: a light glass
+  wash would wash out the white text a filled button needs. Mixing toward the same primitive
+  `--color-primary` already uses per theme means it automatically flips the same way the solid
+  button's own fill/text already do, instead of needing a separate per-theme judgment call.
+- The `tailwind-merge` gap is a second instance of a bug class this repo already has a name for
+  (0043): a custom class tailwind-merge doesn't recognise doesn't correctly override a core
+  utility of the same visual property. `conflictingClassGroups` (not just `classGroups`) was
+  needed because the override has to work in both directions — a glass class after a colour
+  class, and a colour class after a glass class (e.g. the Filters button's open-state override
+  still has to win over its own resting `btn-glass`).
+
+**How to do this by hand**
+Not meaningfully different from the steps above — this was all direct token/utility edits.
+
+**Verification**
+`node scripts/check-theme-bridge.mjs`: ok (14 bridge variables; 67 colours verified across 3
+themes). `npm run check`: typecheck, lint, format, theme-bridge, format-locale and all 293 unit
+tests green; e2e 43/44 green, the one failure (`My reviews, keyboard only`, `ArrowRight
+ArrowRight` → expect the Approved tab focused) pre-existing and unrelated — confirmed earlier
+this session via `git stash` against clean `main`, and reproduces identically (15/15) under
+`npx playwright test e2e/keyboard.spec.ts --repeat-each=15`, so not a regression from this
+round's changes either. Real pixel-measured contrast (grid-mode sampling) for every glassed
+button in both themes: 9.1–15.1:1, all comfortably clear of 4.5:1. `npm run build` green.
+
+**Open questions / next**
+- `components/ui/button.tsx`'s `outline`+`icon` compound variant still hard-codes
+  `hover:border-primary hover:bg-surface hover:text-primary`; now resolves to neutral by
+  construction, left as a no-op rather than cleaned up (out of scope for this round).
+
 ### 2026-10-17 · Glass tabs and badge on My reviews, and a real token-name bug
 
 **Goal**

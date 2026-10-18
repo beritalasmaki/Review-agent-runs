@@ -17,69 +17,101 @@
 
 :root {
   /*
-   * Neutral ramp, lightest to darkest, true (untinted) grey (docs/DECISIONS.md, 0073 —
-   * replacing the lavender-tinted ramp 0068 introduced), numbered by position rather than an
-   * evenly spaced scale — these are exactly the values the product's neutral tokens need, not
-   * a generated palette. Several are shared between the two themes on purpose (--neutral-1 is
-   * both light bg and dark text-primary; --neutral-12 is both light text-primary and dark
-   * surface).
+   * Neutral ramp, lightest to darkest, a cool-tinted grey (docs/DECISIONS.md, 0096 — a partial
+   * reversal of 0073, which had gone true/untinted; by request, "replace white with #F9FAFB,
+   * and the other colours and black should match it in tones"). --neutral-0 is exactly
+   * #F9FAFB; every other step keeps 0073's own lightness value (so relative contrast between
+   * steps is preserved) but is retinted to the same ~210° cool-blue hue, at a saturation
+   * curve shaped like production cool-grey scales (Tailwind's `slate`, sampled and scaled down
+   * to match #F9FAFB's own subtlety at the lightest step — slate itself reads bolder). Numbered
+   * by position rather than an evenly spaced scale — these are exactly the values the
+   * product's neutral tokens need, not a generated palette. Several are shared between the two
+   * themes on purpose (--neutral-1 is both light bg and dark text-primary; --neutral-12 is
+   * both light text-primary and dark surface).
    */
-  --neutral-0: #ffffff;
-  --neutral-1: #fafafa;
-  --neutral-2: #f5f5f5;
-  --neutral-3: #e9e9e9;
-  --neutral-4: #d3d3d3;
-  --neutral-5: #b7b7b7;
-  --neutral-6: #a3a3a3;
-  --neutral-7: #797979;
-  --neutral-8: #646464;
-  --neutral-9: #4d4d4d;
-  --neutral-10: #3d3d3d;
-  --neutral-11: #323232;
-  --neutral-12: #282828;
-  --neutral-13: #1e1e1e;
+  --neutral-0: #f9fafb;
+  --neutral-1: #f6f8fa;
+  --neutral-2: #f3f5f7;
+  --neutral-3: #e6e8ec;
+  --neutral-4: #cdd2d9;
+  --neutral-5: #afb6bf;
+  --neutral-6: #9aa1ac;
+  --neutral-7: #6f7783;
+  --neutral-8: #5b626d;
+  --neutral-9: #444b56;
+  --neutral-10: #353b45;
+  --neutral-11: #2a303a;
+  --neutral-12: #21262f;
+  --neutral-13: #171b25;
 
   /*
-   * The page behind the cards (docs/DECISIONS.md, 0073): a flat, true-neutral grey in light, a
-   * near-black in dark — no colour tint, no decorative gradient (the lavender/mint blobs 0068
-   * added are gone with it). Separation from a white or near-black card comes from the small
-   * step in lightness alone, the flat-minimal look this replaces 0068's softer one with.
+   * The page behind the cards: the flat `background-color` fallback under the gradient below,
+   * and what every `bg-bg` utility resolves to for an element that doesn't want the gradient
+   * (StepsTab, RunTopBar, ReviewDialogs, ...) — a gradient is not a valid `background-color`
+   * value. Matches the cool-tinted neutral ramp's own family (docs/DECISIONS.md, 0096) rather
+   * than the flat true-grey 0073 originally gave this.
    */
-  --page-light: #f5f5f5;
-  --page-dark: #121212;
+  --page-light: #f3f5f7;
+  --page-dark: #0d0f14;
 
   /*
-   * The frosted-glass pilot (docs/DECISIONS.md, 0089 — My reviews only, see that entry for why
-   * this sits alongside the flat page colour above rather than replacing it). A soft page-wide
-   * wash of colour, hue-matched to the user's reference images (cool blue / teal / soft
-   * purple), applied as `background-image` on `body` (styles/index.css) *underneath* the flat
-   * `--page-light`/`--page-dark` colour above, which stays the `background-color` fallback and
-   * is what every `bg-bg` utility still resolves to everywhere else in the app (StepsTab,
-   * RunTopBar, ReviewDialogs, ...) — changing `--page-light`/`--page-dark` themselves would have
-   * broken every one of those, since a gradient is not a valid `background-color` value. Several
-   * soft, feathered blobs rather than one hard linear sweep, so it reads as the reference
-   * images' blurred texture rather than a flat colour band.
+   * The page-wide gradient wash (docs/DECISIONS.md, 0089 introduced it, My reviews only; 0097
+   * made it app-wide and considerably more saturated). Applied as `background-image` on `body`
+   * (styles/index.css) *underneath* the flat `--page-light`/`--page-dark` colour above. Several
+   * soft, feathered blobs rather than one hard linear sweep, so it reads as a blurred texture,
+   * not a flat colour band.
+   *
+   * Pushed noticeably more vivid than the original pastel version (0097): a glass surface's
+   * `backdrop-blur` can only reveal colour that is actually there to blur — the original wash
+   * was so close to the flat page colour that buttons and pills sitting on it read as plain
+   * solid surfaces, not glass (the same root cause 0095 fixed for stacked opacity, from the
+   * other direction). A richer backdrop fixes both at once.
    */
   --page-gradient-light:
-    radial-gradient(circle at 15% 20%, #dbe9fb 0%, transparent 45%),
-    radial-gradient(circle at 85% 15%, #e3f5ef 0%, transparent 45%),
-    radial-gradient(circle at 55% 90%, #ece3f7 0%, transparent 50%);
+    radial-gradient(
+      circle at 12% 18%,
+      color-mix(in srgb, #7fb8f0 42%, var(--page-light)) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      color-mix(in srgb, #6fd9bc 42%, var(--page-light)) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 50% 92%,
+      color-mix(in srgb, #c7a8f0 42%, var(--page-light)) 0%,
+      transparent 60%
+    );
   --page-gradient-dark:
-    radial-gradient(circle at 15% 20%, #1b3a5c 0%, transparent 50%),
-    radial-gradient(circle at 85% 10%, #163d38 0%, transparent 50%),
-    radial-gradient(circle at 60% 90%, #2a1f45 0%, transparent 55%);
+    radial-gradient(
+      circle at 12% 18%,
+      color-mix(in srgb, #2a5d94 55%, var(--page-dark)) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      color-mix(in srgb, #1a6b5c 55%, var(--page-dark)) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 50% 92%,
+      color-mix(in srgb, #4a3380 55%, var(--page-dark)) 0%,
+      transparent 65%
+    );
 
-  /* Brand — magenta-pink (primary), replacing 0068's indigo-blue (docs/DECISIONS.md, 0073).
-   * Hue shifted further from --status-red (0076): the original #c2185b sat only ~29° from
-   * red on the colour wheel, close enough to read as "error" under repeated small-dose use;
-   * this value sits ~50° away, same saturation/lightness otherwise. */
-  --magenta-light: #125a9c;
-  --magenta-light-hover: #08437a;
-  --magenta-dark: #032243;
-  --magenta-dark-hover: #02172e;
-  /* Deeper, for fills and underlines only, not text: ~4.6:1 on the dark surfaces, matching
-   * 0069's precedent for this token's old (indigo) value. */
-  --magenta-dark-strong: #0d4a85;
+  /* Brand — indigo-blue (primary), replacing 0092's neutral black/white (docs/DECISIONS.md,
+   * 0094). Shifted toward violet (~248°) and away from the existing status-blue's hue (~210-
+   * 215°, --status-blue-* and --mark-blue): a brand colour that reads as the same hue as the
+   * "Requested for change"/"unknown" status would break the README's "status is a separate
+   * palette, never reused for non-status UI" rule in spirit even if the literal values differ. */
+  --indigo-light: #4338ca;
+  --indigo-light-hover: #332d9e;
+  --indigo-dark: #9ea3ff;
+  --indigo-dark-hover: #aab0ff;
+  /* Deeper, for fills and underlines only, not text: 4.75:1 on the dark surfaces, matching
+   * 0073's precedent for this token's old (magenta) value. */
+  --indigo-dark-strong: #8086ff;
 
   /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
   --lime-light: #427000;
@@ -131,11 +163,11 @@
   --status-blue-tint-fg-light: #1f5fbf; /* 5.02:1 on the tint above */
   --status-blue-tint-bg-dark: #152338; /* paired with --status-blue-dark */
 
-  /* A light wash of the brand magenta: selected rows, the active tab's count. */
-  --magenta-tint-light: #fce9f7;
-  --magenta-tint-border-light: #f2c0e4;
-  --magenta-tint-dark: #3b1631;
-  --magenta-tint-border-dark: #73265e;
+  /* A light wash of the brand indigo: selected rows, the active tab's count (0094). */
+  --indigo-tint-light: #eae9fb;
+  --indigo-tint-border-light: #c9c5f0;
+  --indigo-tint-dark: #211f45;
+  --indigo-tint-border-dark: #423c7a;
 
   /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */
   --mark-amber: #f0a04b;
@@ -178,15 +210,20 @@
    * Brand. Primary and accent are never used on Approve / Request changes / Reject
    * — see src/styles/README.md, "Usage rules". *-foreground is the text/icon
    * colour for a filled primary or accent surface — it flips per theme (white in
-   * light, near-black in dark), because the dark-theme brand colours are
-   * lightened for their own contrast and need a dark foreground in turn.
+   * light, near-black in dark).
+   *
+   * Primary is an indigo-blue (docs/DECISIONS.md, 0094 — reversing 0092's neutral, by request):
+   * shifted toward violet and away from the existing status-blue's hue, so a brand-coloured
+   * focus ring, link or active-tab badge never reads as the "Requested for change"/"unknown"
+   * status colour. Vivid colour also stays on the status palette below for its own reason —
+   * that was already the only thing actually signalling urgency.
    */
-  --color-primary: var(--magenta-light);
-  --color-primary-hover: var(--magenta-light-hover);
+  --color-primary: var(--indigo-light);
+  --color-primary-hover: var(--indigo-light-hover);
   --color-primary-foreground: var(--neutral-0);
-  /* The brand as a fill or an underline — progress bars, the selected tab. The same as primary
-   * in light; deeper in dark, where text-safe primary has to stay light (0069). */
-  --color-primary-strong: var(--magenta-light);
+  /* The brand as a fill or an underline — progress bars, the selected tab. Same as primary in
+   * light; deeper in dark, where text-safe primary has to stay light (0073's precedent). */
+  --color-primary-strong: var(--indigo-light);
   --color-accent: var(--lime-light);
   --color-accent-hover: var(--lime-light-hover);
   --color-accent-foreground: var(--neutral-13);
@@ -222,8 +259,10 @@
   /* My reviews (docs/DECISIONS.md, 0060). */
   --color-status-info-tint-bg: var(--status-blue-tint-bg-light);
   --color-status-info-tint-fg: var(--status-blue-tint-fg-light);
-  --color-primary-tint: var(--magenta-tint-light);
-  --color-primary-tint-border: var(--magenta-tint-border-light);
+  /* A light wash of the brand indigo (0094) — the Filters button open, the active sort icon,
+   * the selected tab's count badge. */
+  --color-primary-tint: var(--indigo-tint-light);
+  --color-primary-tint-border: var(--indigo-tint-border-light);
   --color-mark-pending: var(--mark-amber);
   --color-mark-requested: var(--mark-blue);
   --color-mark-declined: var(--mark-red);
@@ -232,7 +271,9 @@
   /* A toast is the inverse of the page: dark on light, light on dark. */
   --color-toast-bg: var(--neutral-12);
   --color-toast-fg: var(--neutral-1);
-  --color-toast-link: var(--magenta-dark);
+  /* The opposite theme's primary-equivalent indigo, same reasoning as --color-toast-fg above:
+   * visible against the toast's own inverted background (0094). */
+  --color-toast-link: var(--indigo-dark);
   --color-toast-icon: var(--status-green-dark);
 
   /*
@@ -276,13 +317,50 @@
   --color-glass: color-mix(in srgb, var(--neutral-0) 70%, transparent);
   --color-glass-border: rgb(255 255 255 / 0.3);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.12);
+  /* A deeper version of the same shadow, for the one band in a stacked layout (0099) that
+   * should read as sitting highest above the page — the table, the layout's main surface, not
+   * the tabs or search/filters bands around it. Same two-layer shape as --shadow-card (a tight
+   * near shadow plus a looser far one), scaled up. */
+  --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.1), 0 20px 56px rgb(0 0 0 / 0.18);
   /* A glass surface that needs to carry a status tint through it and keep its own text's
    * contrast (0091 — the "N need your review" badge): a neutral `--color-glass` dilutes
    * `--status-waived-tint-fg` below 4.5:1 once blended with the page's gradient underneath, so
    * this mixes toward the same amber tint the text was already verified against, more opaque
    * than the neutral glass needs to be, rather than toward plain white/black. Tuned against a
    * real contrast measurement of the rendered pixels, the same way `--color-glass` was. */
-  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-light) 97%, transparent);
+  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-light) 80%, transparent);
+  /* A glass surface for a *filled* button (0092 — "Create report", the row "Review" link-
+   * button): `--color-glass`'s light wash would wash out the white text a filled button needs,
+   * so this mixes toward the same primitive `--color-primary`/`--color-text-primary` already
+   * use per theme (dark in light theme, light in dark theme) instead — translucent but still
+   * dark enough for light text here, where the solid button is dark-filled with light text.
+   * The border is the same primitive at a touch more opacity, so the edge reads as a slightly
+   * firmer version of the same glass, not a separate colour. Tuned against a real contrast
+   * measurement of the rendered pixels, the same way --color-glass-warning was. */
+  /* A *more* translucent glass for small elements that sit on top of an already-glass surface
+   * — a button inside the glass My reviews card, the tabs' own sliding pill (0095). Reusing
+   * `--color-glass`/`--color-glass-fill` there read as flat and opaque: two ~70%-opaque white
+   * layers compose to ~91% opaque, which looks like a plain solid surface, not "more glass."
+   * These mix to a much lower opacity so the card (and the page gradient behind it) still
+   * visibly shows through a second time. Buttons and the tab indicator use these, not
+   * `--color-glass`/`--color-glass-fill` (which stay as they were for the card chrome itself).
+   * Tuned against a real contrast measurement of the rendered pixels, the same way
+   * `--color-glass` itself was. */
+  --color-glass-fill: color-mix(in srgb, var(--neutral-12) 85%, transparent);
+  --color-glass-fill-border: color-mix(in srgb, var(--neutral-12) 95%, transparent);
+  --color-glass-chip: color-mix(in srgb, var(--neutral-0) 18%, transparent);
+  --color-glass-chip-border: rgb(255 255 255 / 0.55);
+  --color-glass-fill-chip: color-mix(in srgb, var(--neutral-12) 68%, transparent);
+  --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-12) 82%, transparent);
+  /* A specular highlight for a glass surface (0098) — a soft diagonal sheen near the top-left
+   * corner, like light catching a curved pane. One shared value, not per-theme: the existing
+   * `--color-glass-border` (white, both themes) already established that a glass highlight
+   * reads correctly against either theme's glass without needing its own dark-theme variant.
+   * Consumed by `.glass-sheen::before` (index.css, buttons and the warning badge) and
+   * `.t-tabs-pill::before` (transitions.css, the tab indicator — which can't use the
+   * `.glass-sheen` utility itself, since that sets `position: relative` and the indicator needs
+   * to keep its own `position: absolute` from `.t-tabs-pill`). */
+  --glass-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.4) 0%, transparent 45%);
 
   /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text
    * colour — at partial opacity. `currentColor` resolves per element at use time, not here, so
@@ -369,9 +447,9 @@
     --color-text-secondary: var(--neutral-5);
     --color-text-disabled: var(--neutral-7);
 
-    --color-primary: var(--magenta-dark);
-    --color-primary-hover: var(--magenta-dark-hover);
-    --color-primary-strong: var(--magenta-dark-strong);
+    --color-primary: var(--indigo-dark);
+    --color-primary-hover: var(--indigo-dark-hover);
+    --color-primary-strong: var(--indigo-dark-strong);
     --color-primary-foreground: var(--neutral-13);
     --color-accent: var(--lime-dark);
     --color-accent-hover: var(--lime-dark-hover);
@@ -391,11 +469,11 @@
     --color-status-fail-tint-fg: var(--status-red-dark);
     --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
     --color-status-info-tint-fg: var(--status-blue-dark);
-    --color-primary-tint: var(--magenta-tint-dark);
-    --color-primary-tint-border: var(--magenta-tint-border-dark);
+    --color-primary-tint: var(--indigo-tint-dark);
+    --color-primary-tint-border: var(--indigo-tint-border-dark);
     --color-toast-bg: var(--neutral-2);
     --color-toast-fg: var(--neutral-12);
-    --color-toast-link: var(--magenta-light);
+    --color-toast-link: var(--indigo-light);
     --color-toast-icon: var(--status-green-light);
     --color-mark-pending: var(--mark-amber-dark);
     --color-mark-requested: var(--mark-blue-dark);
@@ -409,8 +487,18 @@
     --color-modal-scrim: rgb(0 0 0 / 0.6);
 
     --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
-    --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 95%, transparent);
+    --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
+    /* Dark theme's solid fill button flips to a light surface with dark text (same flip as
+     * --color-primary-foreground), so the glass version flips with it — see the light theme's
+     * own comment on this token pair. */
+    --color-glass-fill: color-mix(in srgb, var(--neutral-1) 85%, transparent);
+    --color-glass-fill-border: color-mix(in srgb, var(--neutral-1) 95%, transparent);
+    --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
+    --color-glass-chip-border: rgb(255 255 255 / 0.18);
+    --color-glass-fill-chip: color-mix(in srgb, var(--neutral-1) 62%, transparent);
+    --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-1) 78%, transparent);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
+    --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
   }
 }
@@ -427,9 +515,9 @@
   --color-text-secondary: var(--neutral-5);
   --color-text-disabled: var(--neutral-7);
 
-  --color-primary: var(--magenta-dark);
-  --color-primary-hover: var(--magenta-dark-hover);
-  --color-primary-strong: var(--magenta-dark-strong);
+  --color-primary: var(--indigo-dark);
+  --color-primary-hover: var(--indigo-dark-hover);
+  --color-primary-strong: var(--indigo-dark-strong);
   --color-primary-foreground: var(--neutral-13);
   --color-accent: var(--lime-dark);
   --color-accent-hover: var(--lime-dark-hover);
@@ -449,11 +537,11 @@
   --color-status-fail-tint-fg: var(--status-red-dark);
   --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
   --color-status-info-tint-fg: var(--status-blue-dark);
-  --color-primary-tint: var(--magenta-tint-dark);
-  --color-primary-tint-border: var(--magenta-tint-border-dark);
+  --color-primary-tint: var(--indigo-tint-dark);
+  --color-primary-tint-border: var(--indigo-tint-border-dark);
   --color-toast-bg: var(--neutral-2);
   --color-toast-fg: var(--neutral-12);
-  --color-toast-link: var(--magenta-light);
+  --color-toast-link: var(--indigo-light);
   --color-toast-icon: var(--status-green-light);
   --color-mark-pending: var(--mark-amber-dark);
   --color-mark-requested: var(--mark-blue-dark);
@@ -463,8 +551,15 @@
   --color-modal-scrim: rgb(0 0 0 / 0.6);
 
   --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
-  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 95%, transparent);
+  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
+  --color-glass-fill: color-mix(in srgb, var(--neutral-1) 85%, transparent);
+  --color-glass-fill-border: color-mix(in srgb, var(--neutral-1) 95%, transparent);
+  --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
+  --color-glass-chip-border: rgb(255 255 255 / 0.18);
+  --color-glass-fill-chip: color-mix(in srgb, var(--neutral-1) 62%, transparent);
+  --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-1) 78%, transparent);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
+  --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);
 }
 

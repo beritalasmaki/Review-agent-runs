@@ -40,7 +40,8 @@ instantly — built on `morphicons` (docs/DECISIONS.md, 0090), the other compone
 third-party visual. Icon data comes from the `lucide` package (icon nodes, not components) —
 `<MorphIcon icon={open ? ChevronUp : ChevronDown} />`. Use it only where an icon's own meaning
 changes on an existing boolean/enum (a disclosure, a sort direction); a plain click-feedback
-bounce that doesn't change meaning is `.t-icon-pop` in `transitions.css` instead.
+settle that doesn't change meaning is `.t-icon-pop` in `transitions.css` instead (My reviews'
+tab icons use a different mechanism, a persistent colour reveal — see that file's own comment).
 
 `spotlight(element)` plays the `.t-spotlight` animation on any element (docs/DECISIONS.md,
 0056). It is a function, not a component, and it lives here rather than in `lib/` because it

@@ -163,15 +163,97 @@
 }
 
 /*
- * The frosted-glass pilot's page background (docs/DECISIONS.md, 0089 — My reviews only).
- * `--color-bg` stays the `background-color` fallback exactly as `bg-bg` already uses it
- * everywhere else; `--page-gradient` (tokens.css) layers on top as `background-image`, fading
- * to transparent at each blob's edge so the flat colour still shows through at the gaps. Fixed
- * attachment so the blobs stay put as the page scrolls, the same way a frosted window doesn't
- * move when you scroll past it.
+ * The frosted-glass page background (docs/DECISIONS.md, 0089 — piloted on My reviews only;
+ * 0097 made it app-wide, on every screen `App.tsx`'s `<main>` renders). `--color-bg` stays the
+ * `background-color` fallback exactly as `bg-bg` already uses it everywhere else;
+ * `--page-gradient` (tokens.css) layers on top as `background-image`, fading to transparent at
+ * each blob's edge so the flat colour still shows through at the gaps. Fixed attachment so the
+ * blobs stay put as the page scrolls, the same way a frosted window doesn't move when you
+ * scroll past it.
  */
 @utility bg-page-glass {
   background-color: var(--color-bg);
   background-image: var(--page-gradient);
   background-attachment: fixed;
+}
+
+/*
+ * The welcome modal's own overlay (docs/DECISIONS.md, 0100): a vivid version of the page's own
+ * gradient over the usual dark `--color-modal-scrim` dim, plus a blur strong enough to read as
+ * genuine depth — the page behind recedes into soft colour instead of a flat dark rectangle.
+ * Scoped to this one `Dialog` via `DialogContent`'s `overlayClassName` prop; every other
+ * dialog's overlay is untouched. Not reused as a general utility: nothing else in the app wants
+ * a full-bleed vivid backdrop behind a solid dim, so there's no "glass" naming collision with
+ * `bg-page-glass` above to guard against.
+ */
+@utility bg-welcome-scrim {
+  background-color: var(--color-modal-scrim);
+  background-image: var(--page-gradient);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+/*
+ * Glass buttons, My reviews only (docs/DECISIONS.md, 0092 — extends 0089's glass chrome from
+ * card frames to buttons; 0098 made them full capsules and added the specular highlight below).
+ * Applied as a plain `className` on `Button`, which merges on top of the variant's own classes
+ * via `cn()`/tailwind-merge — `components/ui/button.tsx` itself, and every button outside My
+ * reviews, is untouched. `border-radius` is set here too (overriding the variant's own
+ * `rounded-md`), so `lib/utils.ts`'s `glass-btn` conflict group includes Tailwind's `rounded`
+ * group for the same reason it already includes `bg-color`/`border-color`/etc (0095) — a
+ * property a custom utility sets that tailwind-merge doesn't otherwise know conflicts with a
+ * same-slot utility from the variant.
+ *
+ * `btn-glass` is for the `outline` variant. Every on-page button sits on top of the already-
+ * glass My reviews card, so it uses `--color-glass-chip`/`-fill-chip` (0095) — a noticeably
+ * lower opacity than `--color-glass`/`-fill` itself — rather than stacking the card's own
+ * translucency a second time, which read as flat and opaque (two ~70%-opaque layers compose to
+ * ~91%, indistinguishable from a plain solid surface). The button's own `hover:` classes are a
+ * different Tailwind "slot" than these, so they still apply untouched on top.
+ */
+@utility btn-glass {
+  background-color: var(--color-glass-chip);
+  border-color: var(--color-glass-chip-border);
+  border-radius: 9999px;
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
+}
+
+/*
+ * `btn-glass-fill` is for the `default` (filled) variant's two on-page instances ("Create
+ * report", the row "Review" link-button): `--color-glass-chip`'s light wash would wash out the
+ * white text a filled button needs, so this uses `--color-glass-fill-chip` instead — a dark
+ * glass in light theme, a light glass in dark theme, matching whichever way the solid button's
+ * own fill/text colours already flip per theme (tokens.css).
+ */
+@utility btn-glass-fill {
+  background-color: var(--color-glass-fill-chip);
+  border-color: var(--color-glass-fill-chip-border);
+  border-radius: 9999px;
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
+}
+
+/*
+ * A specular highlight for a glass surface (docs/DECISIONS.md, 0098): a soft diagonal sheen
+ * near the top-left corner, like light catching the top of a curved pane, on top of whatever
+ * glass background/border classes already apply (`btn-glass`, `btn-glass-fill`, the tab's
+ * sliding pill, the "N need your review" badge). Additive only — no colour, no blur, no border
+ * of its own — so it composes with any of those rather than needing its own copy of each.
+ *
+ * A static gradient, not a pointer-tracked one: wiring live pointer state through a shared,
+ * reusable surface was tried once for `Button` and deliberately dropped (see `transitions.css`,
+ * "Button shine" — the risk of a keyboard regression from state tied to rapid re-renders, same
+ * class of bug `.t-tabs-sliding` actually hit once). One white highlight, fixed in place, gets
+ * the same "this is glass, not a flat colour" read without that risk or the extra JS.
+ */
+@utility glass-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.glass-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-sheen);
+  pointer-events: none;
 }

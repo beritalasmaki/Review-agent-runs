@@ -169,15 +169,20 @@ const TABS: {
   mark?: string
   icon: ComponentType<{ className?: string }>
 }[] = [
-  { value: 'pending', label: 'Pending', mark: 'bg-mark-pending', icon: Clock },
+  { value: 'pending', label: 'Pending', mark: 'group-aria-selected:bg-mark-pending', icon: Clock },
   {
     value: 'requested',
     label: 'Requested for change',
-    mark: 'bg-mark-requested',
+    mark: 'group-aria-selected:bg-mark-requested',
     icon: ArrowRight,
   },
-  { value: 'declined', label: 'Declined', mark: 'bg-mark-declined', icon: X },
-  { value: 'approved', label: 'Approved', mark: 'bg-mark-approved', icon: Check },
+  { value: 'declined', label: 'Declined', mark: 'group-aria-selected:bg-mark-declined', icon: X },
+  {
+    value: 'approved',
+    label: 'Approved',
+    mark: 'group-aria-selected:bg-mark-approved',
+    icon: Check,
+  },
   { value: 'all', label: 'All runs', icon: List },
 ]
 
@@ -214,11 +219,6 @@ function ReviewsBoard({
   const today = formatCalendarDate(now.toISOString())
   const [view, setView] = useState<'main' | 'archive'>('main')
   const [tab, setTab] = useState<ReviewTab>('pending')
-  // The selected tab's icon pops briefly (.t-icon-pop, transitions.css) — a timed window after
-  // the actual selection, not derived from "is this tab active", so it never plays on mount.
-  const [poppedTab, setPoppedTab] = useState<ReviewTab | null>(null)
-  const poppedTabTimer = useRef<number | undefined>(undefined)
-  useEffect(() => () => window.clearTimeout(poppedTabTimer.current), [])
   const [filters, setFilters] = useState<FilterState>({
     query: '',
     time: 'all',
@@ -313,10 +313,6 @@ function ReviewsBoard({
   function chooseTab(next: ReviewTab) {
     setTab(next)
     setSelected(new Set())
-    window.clearTimeout(poppedTabTimer.current)
-    setPoppedTab(next)
-    // Matches --icon-pop-dur in transitions.css.
-    poppedTabTimer.current = window.setTimeout(() => setPoppedTab(null), 260)
   }
   function toggle(id: string) {
     setSelected((current) => {
@@ -373,7 +369,11 @@ function ReviewsBoard({
         <span className="text-body leading-none font-semibold whitespace-nowrap text-text-primary">
           {plural(selected.size, 'run')} selected
         </span>
-        <Button size="sm" onClick={() => setDialog({ type: 'report' })}>
+        <Button
+          size="sm"
+          className="btn-glass-fill glass-sheen"
+          onClick={() => setDialog({ type: 'report' })}
+        >
           <FileBarChart aria-hidden className="h-3.5 w-3.5" />
           Create report
         </Button>
@@ -381,6 +381,7 @@ function ReviewsBoard({
           <Button
             size="sm"
             variant="outline"
+            className="btn-glass glass-sheen"
             onClick={() => setDialog({ type: 'archive', ids: archivable })}
             disabled={archivable.length === 0}
           >
@@ -426,7 +427,7 @@ function ReviewsBoard({
             <Badge
               variant="warning"
               data-tour="needs-review-badge"
-              className="border-glass-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body shadow-glass backdrop-blur-[var(--blur-glass)]"
+              className="glass-sheen border-glass-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body shadow-glass backdrop-blur-[var(--blur-glass)]"
             >
               <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
               {needsYou} need{needsYou === 1 ? 's' : ''} your review
@@ -436,7 +437,7 @@ function ReviewsBoard({
               onClick={() => openView('archive')}
               aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
               data-tour="archive-button"
-              className="gap-[var(--space-2)]"
+              className="btn-glass glass-sheen gap-[var(--space-2)]"
             >
               <Archive aria-hidden className="h-4 w-4" />
               Archive
@@ -475,35 +476,30 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
               <TabsList
                 variant="pill"
                 label="Run types"
-                className="scrollbar-none w-full max-w-full justify-start overflow-x-auto border-glass-border bg-glass backdrop-blur-[var(--blur-glass)]"
-                indicatorClassName="border-0 bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+                className="scrollbar-none w-full max-w-full justify-start overflow-x-auto"
+                indicatorClassName="border-0 bg-glass-chip shadow-glass backdrop-blur-[var(--blur-glass)]"
               >
                 {TABS.map(({ value, label, mark, icon: Icon }) => (
-                  <TabsTrigger key={value} variant="pill" value={value}>
+                  <TabsTrigger key={value} variant="pill" value={value} className="group">
                     {mark ? (
                       <span
                         aria-hidden
-                        data-bounce={poppedTab === value || undefined}
                         className={cn(
-                          't-icon-pop inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full text-mark-glyph',
+                          'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-surface-raised text-text-secondary transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] group-aria-selected:text-mark-glyph',
                           mark,
                         )}
                       >
                         <Icon className="h-3 w-3" />
                       </span>
                     ) : (
-                      <Icon
-                        aria-hidden
-                        data-bounce={poppedTab === value || undefined}
-                        className="t-icon-pop h-4 w-4 text-text-secondary"
-                      />
+                      <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
                     )}
                     {label}
                     <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">
@@ -514,7 +510,7 @@ function ReviewsBoard({
               </TabsList>
             </div>
             <TabsContent value={tab}>
-              <div data-tour="search-filters">
+              <div data-tour="search-filters" className="border-b border-border-subtle">
                 <ReviewsToolbar
                   searchLabel="Search runs"
                   searchPlaceholder="Search runs, also in the archive"
@@ -577,7 +573,7 @@ function ReviewsBoard({
                       size="sm"
                       variant="outline"
                       onClick={clearFilters}
-                      className="mt-[var(--space-1)] px-[var(--space-4)]"
+                      className="btn-glass glass-sheen mt-[var(--space-1)] px-[var(--space-4)]"
                     >
                       Clear filters
                     </Button>
@@ -626,7 +622,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           {archiveTable()}
         </section>
@@ -635,30 +631,32 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="rounded-lg border border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
-          <ReviewsToolbar
-            searchLabel="Search the archive"
-            searchPlaceholder="Search the archive"
-            filters={filters}
-            onFilters={patchFilters}
-            open={filtersOpen}
-            onToggleOpen={() => setFiltersOpen((open) => !open)}
-            timeLabel="Decided"
-            timeOptions={ARCHIVE_TIMES}
-            type={{
-              value: archiveType,
-              counts: true,
-              onChange: (value) => setArchiveType(value as typeof archiveType),
-              options: [
-                { value: 'all', label: 'All run types' },
-                { value: 'approved', label: 'Approved' },
-                { value: 'declined', label: 'Declined' },
-              ],
-            }}
-            people={people}
-            resultLabel={`Showing ${archivedRuns.length} of ${plural(archived.length, 'archived run')}`}
-          />
+          <div className="border-b border-border-subtle">
+            <ReviewsToolbar
+              searchLabel="Search the archive"
+              searchPlaceholder="Search the archive"
+              filters={filters}
+              onFilters={patchFilters}
+              open={filtersOpen}
+              onToggleOpen={() => setFiltersOpen((open) => !open)}
+              timeLabel="Decided"
+              timeOptions={ARCHIVE_TIMES}
+              type={{
+                value: archiveType,
+                counts: true,
+                onChange: (value) => setArchiveType(value as typeof archiveType),
+                options: [
+                  { value: 'all', label: 'All run types' },
+                  { value: 'approved', label: 'Approved' },
+                  { value: 'declined', label: 'Declined' },
+                ],
+              }}
+              people={people}
+              resultLabel={`Showing ${archivedRuns.length} of ${plural(archived.length, 'archived run')}`}
+            />
+          </div>
           {archiveTable()}
         </section>
       )}

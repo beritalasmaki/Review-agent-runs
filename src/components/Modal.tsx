@@ -21,9 +21,19 @@ export interface ModalProps {
   onClose: () => void
   children: ReactNode
   className?: string
+  /** Overrides the scrim behind this one modal (docs/DECISIONS.md, 0100) — every other `Modal`
+   * keeps the flat default. */
+  overlayClassName?: string
 }
 
-export function Modal({ title, eyebrow, onClose, children, className }: ModalProps) {
+export function Modal({
+  title,
+  eyebrow,
+  onClose,
+  children,
+  className,
+  overlayClassName,
+}: ModalProps) {
   // What had focus when the dialog opened, read on the first render, before the dialog takes
   // it. Radix gives focus back to a `DialogTrigger`; a Modal is opened by mounting it, with no
   // trigger, so it gives focus back itself (docs/DECISIONS.md, 0059 and 0070).
@@ -52,6 +62,7 @@ export function Modal({ title, eyebrow, onClose, children, className }: ModalPro
           }
         }}
         className={className}
+        overlayClassName={overlayClassName}
       >
         <DialogHeader>
           {eyebrow && <p className="text-caption text-text-secondary">{eyebrow}</p>}
