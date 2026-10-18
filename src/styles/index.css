@@ -178,6 +178,21 @@
 }
 
 /*
+ * The welcome modal's own overlay (docs/DECISIONS.md, 0100): a vivid version of the page's own
+ * gradient over the usual dark `--color-modal-scrim` dim, plus a blur strong enough to read as
+ * genuine depth — the page behind recedes into soft colour instead of a flat dark rectangle.
+ * Scoped to this one `Dialog` via `DialogContent`'s `overlayClassName` prop; every other
+ * dialog's overlay is untouched. Not reused as a general utility: nothing else in the app wants
+ * a full-bleed vivid backdrop behind a solid dim, so there's no "glass" naming collision with
+ * `bg-page-glass` above to guard against.
+ */
+@utility bg-welcome-scrim {
+  background-color: var(--color-modal-scrim);
+  background-image: var(--page-gradient);
+  backdrop-filter: blur(var(--blur-glass));
+}
+
+/*
  * Glass buttons, My reviews only (docs/DECISIONS.md, 0092 — extends 0089's glass chrome from
  * card frames to buttons; 0098 made them full capsules and added the specular highlight below).
  * Applied as a plain `className` on `Button`, which merges on top of the variant's own classes

@@ -39,6 +39,66 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-18 · Welcome modal and signature intro get genuine glass (part 5, last of the refresh)
+
+**Goal**
+Last step of the visual refresh: make the welcome modal and the one-time signature intro screen
+read as real glass over a vivid gradient, per a reference image ("the modal would somehow
+appear like glass... the background would be with that type of gradient glass. Not transparent
+black?"), app-wide, explicitly including the intro screen.
+
+**What changed**
+- `src/components/ui/dialog.tsx` — `DialogContent` gained an `overlayClassName` prop, forwarded
+  to its own `DialogOverlay`, previously unreachable from any caller.
+- `src/components/Modal.tsx` — forwards the same `overlayClassName` prop through.
+- `src/styles/index.css` — new `bg-welcome-scrim` utility: `--color-modal-scrim` plus
+  `--page-gradient` as a `background-image`, with the glass blur.
+- `src/app/WelcomeModal.tsx` — `overlayClassName="bg-welcome-scrim"`; the modal panel itself
+  swapped the default opaque `bg-surface` for `bg-glass`/`border-glass-border`/`shadow-glass`/
+  `backdrop-blur-[var(--blur-glass)]`.
+- `src/app/intro.css` — `.intro-overlay` gained `background-image: var(--page-gradient-light)`
+  (fixed to light, matching the intro's own already-theme-independent colours) alongside its
+  existing scrim colour and blur.
+- `e2e/accessibility.spec.ts` — fixed a real parsing bug in `ownContrast` and
+  `measuredBackgroundContrast`'s `rgb()` helpers: `color-mix()` computes to CSS Color 4's
+  `color(srgb r g b / a)` (0–1 float channels), not legacy `rgb(r g b / a)` (0–255 ints), and
+  the helpers assumed the legacy shape unconditionally.
+- `docs/DECISIONS.md` — new entry 0100.
+
+**Steps, in order**
+1. Added `overlayClassName` to `DialogContent`/`Modal`, scoped so every other dialog keeps its
+   flat default.
+2. Added `bg-welcome-scrim` and wired it + the glass panel classes into `WelcomeModal.tsx`.
+3. Added the gradient to `intro.css`.
+4. Verified visually with screenshots in both themes (intro mid-draw, welcome modal open) —
+   confirmed by eye before running any automated check, since the intro is `aria-hidden` and
+   invisible to axe either way.
+5. Ran `npx playwright test e2e/accessibility.spec.ts -g "welcome modal"`: one real-looking
+   failure (1.37:1 contrast) that a direct `getComputedStyle` check in the browser showed was
+   false — the modal's `background-color` read as `color(srgb 0.976 0.980 0.984 / 0.7)`, and
+   `ownContrast`'s parser was dividing those already-0–1 channel values by 255 again, reading
+   them as near-black. Fixed the parser, re-ran: clean.
+
+**Why it was done this way**
+`overlayClassName` rather than a one-off second `Dialog` variant, because the rest of `Modal`'s
+behaviour (focus trap, Escape, focus return) is exactly what the welcome modal still needs —
+only the backdrop's own look is special to this one caller. The contrast-parser fix was applied
+to both helpers defensively, not just the one that actually broke, since the same `color-mix()`
+→ `color()` computed-style shape will recur for any future glass `Modal`.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure. `npx playwright test
+e2e/keyboard.spec.ts e2e/onboarding-tour.spec.ts --repeat-each=15`: 105/105 clean except that
+same pre-existing failure's deterministic 15/15 — no new regression. `npm run build` clean.
+
+**Open questions / next**
+This closes all five parts of the visual refresh plan. The pre-existing `e2e/keyboard.spec.ts`
+"My reviews, keyboard only" arrow-key bug (`components/Tabs.tsx`, unrelated to this round)
+still needs its own fix. PR #27 is ready for a final look before merging.
+
+---
+
 ## 2026-10-18 · Filters popover with a notch; My reviews stays one card, straight edges (part 4)
 
 **Goal**

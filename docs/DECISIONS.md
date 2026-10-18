@@ -6,6 +6,59 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0100 · The welcome modal and the signature intro get genuine glass, scoped via `overlayClassName`
+
+**Context.** Part 5, the last of the visual refresh. Direct request, with a reference image: "I
+want to make the intro and the onboarding experience look like this. So the modal would somehow
+appear like glass. Then the background would be with that type of gradient glass. Not
+transparent black?" Confirmed app-wide and explicitly including the one-time signature intro
+screen (`WelcomeIntro.tsx`), not just the welcome modal.
+
+**Choice.** `components/ui/dialog.tsx`'s `DialogContent` gained an `overlayClassName` prop,
+forwarded to its own internal `DialogOverlay` — previously not possible to reach at all, since
+`DialogContent` rendered `<DialogOverlay />` with no way for a caller to override it.
+`components/Modal.tsx` forwards the same prop through. Every other `Modal`/`Dialog` in the app
+keeps the flat `bg-modal-scrim` default; only `WelcomeModal.tsx` opts in, with a new
+`bg-welcome-scrim` utility (`index.css`): the usual dark `--color-modal-scrim` dim, with
+`--page-gradient` layered on top as `background-image` and a `--blur-glass` backdrop blur — the
+page behind recedes into soft, vivid colour instead of a flat dark rectangle. The modal panel
+itself swapped `DialogContent`'s default opaque `bg-surface`/`shadow-card` for the same
+`bg-glass`/`border-glass-border`/`shadow-glass`/`backdrop-blur-[var(--blur-glass)]` combination
+My reviews' own cards use, so the vivid overlay actually shows through it — a real, if
+deliberate, exception to 0089's "card chrome only, dialogs stay solid" boundary: this is the
+app's one welcome moment, not a decision dialog, and the user asked for this one by name.
+
+The intro screen (`intro.css`'s `.intro-overlay`) gained `background-image:
+var(--page-gradient-light)` alongside its existing `--color-intro-scrim` colour and
+`backdrop-filter: blur(14px)` — fixed to the light gradient regardless of theme, matching how
+`--color-intro-scrim`/`--color-intro-ink` are themselves already theme-independent (a fixed
+"signature" moment, not themed chrome, 0048). No new token needed for either surface: both reuse
+`--page-gradient`/`--page-gradient-light`, the same gradient every other glass surface in the
+app already shows through.
+
+**A real bug the glass modal surfaced in the test harness, not a contrast regression.** Making
+the welcome modal's own background a `color-mix()` token (`--color-glass`) broke
+`e2e/accessibility.spec.ts`'s `ownContrast` helper: `getComputedStyle` returns a `color-mix()`
+result as CSS Color 4's `color(srgb r g b / a)` — 0–1 float channels — rather than legacy
+`rgb(r g b / a)`'s 0–255 integers, and the helper's regex-based parser assumed the legacy shape
+unconditionally, silently reading the float channels as if they were already on the 0–255 scale
+(dividing e.g. `0.98` by 255 instead of `249`). The result read as a contrast ratio of 1.37,
+failing a panel that real pixel inspection (and a direct `getComputedStyle` check) showed was
+fine. Every glass surface checked before this one went through `measuredBackgroundContrast`
+(real screenshot pixel sampling, not `getComputedStyle` parsing) instead, so this parsing path
+had never been exercised against a `color-mix()` background until now. Fixed by detecting the
+`color(` prefix and scaling only the three colour channels (never the trailing alpha, already
+0–1 in both syntaxes) — applied to both `ownContrast` and `measuredBackgroundContrast`'s own
+`rgb()` helper, defensively, even though only the former was actually broken.
+
+**Consequence.** `overlayClassName` is the established pattern for any future dialog that needs
+its own backdrop: pass it through `Modal`/`DialogContent` rather than hand-rolling a second
+overlay element. The `color()`-vs-`rgb()` parsing fix applies to any future glass dialog too —
+without it, a real `color-mix()`-backed `Modal` background would always read as a false
+contrast failure in this suite, not a true one.
+
+---
+
 ## 0099 · The filters panel becomes a popover with a notch; My reviews stays one unified card
 
 **Context.** Part 4 of the visual refresh. The starting idea, from a low-fidelity sketch

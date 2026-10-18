@@ -6,6 +6,12 @@ import { Button } from '../components/ui/button'
  * (docs/DECISIONS.md, 0079). Says what the screen is and why it exists, then asks directly:
  * take the guided tour, or skip it and look around alone. Closing it any other way (Escape)
  * counts as skipping — there is nothing to come back to mid-way, so there is no third option.
+ *
+ * Genuinely glass, not the flat `bg-surface` every other `Modal` uses (docs/DECISIONS.md,
+ * 0100 — a direct request, not the general card-chrome-only rule 0089 set: this is the app's
+ * one welcome moment, not a decision dialog). `overlayClassName="bg-welcome-scrim"` gives the
+ * backdrop itself the same vivid gradient as the page, at a strength a glass panel can
+ * actually reveal.
  */
 export interface WelcomeModalProps {
   onStartTour: () => void
@@ -14,7 +20,12 @@ export interface WelcomeModalProps {
 
 export function WelcomeModal({ onStartTour, onSkip }: WelcomeModalProps) {
   return (
-    <Modal title="Welcome to Review agent runs" onClose={onSkip} className="max-w-[32rem]">
+    <Modal
+      title="Welcome to Review agent runs"
+      onClose={onSkip}
+      className="max-w-[32rem] border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+      overlayClassName="bg-welcome-scrim"
+    >
       <p className="text-body leading-relaxed text-text-primary">
         This is where a reviewer looks at what an AI agent did to a piece of software, and decides
         whether to approve it, send it back, or reject it.

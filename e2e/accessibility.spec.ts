@@ -169,7 +169,16 @@ function ownContrast(page: Page, selector: string) {
     const floating = (el: Element | null): boolean =>
       !!el && (getComputedStyle(el).position === 'fixed' || floating(el.parentElement))
     if (!element || !(element.closest('dialog[open]') || floating(element))) return 0
-    const rgb = (value: string) => value.match(/[\d.]+/g)!.map(Number)
+    // getComputedStyle returns legacy `rgb(r g b / a)` (0-255 channels) for most colours, but
+    // `color-mix()` (every glass token) computes to CSS Color 4's `color(srgb r g b / a)`
+    // instead — same shape, but 0-1 float channels, not 0-255. Scale only the three colour
+    // channels, never the trailing alpha, which is 0-1 in both syntaxes.
+    const rgb = (value: string) => {
+      const nums = value.match(/[\d.]+/g)!.map(Number)
+      if (!value.trim().startsWith('color(')) return nums
+      const [r, g, b, ...rest] = nums
+      return [r * 255, g * 255, b * 255, ...rest]
+    }
     const luminance = ([r, g, b]: number[]) => {
       const channel = (c: number) => {
         const v = c / 255
@@ -246,7 +255,15 @@ async function measuredBackgroundContrast(page: Page, selector: string) {
       const ctx = canvas.getContext('2d')!
       ctx.drawImage(img, 0, 0)
 
-      const rgb = (s: string) => s.match(/[\d.]+/g)!.map(Number)
+      // Same `color()` vs legacy `rgb()` scaling as `ownContrast` above — defensive here too,
+      // since `color` is a `getComputedStyle().color` string that could in principle resolve
+      // to a `color-mix()` token one day, even though every text colour today is a flat hex.
+      const rgb = (s: string) => {
+        const nums = s.match(/[\d.]+/g)!.map(Number)
+        if (!s.trim().startsWith('color(')) return nums
+        const [r, g, b, ...rest] = nums
+        return [r * 255, g * 255, b * 255, ...rest]
+      }
       const luminance = ([r, g, b]: number[]) => {
         const channel = (c: number) => {
           const v = c / 255

@@ -16,7 +16,12 @@
   z-index: 100;
   display: grid;
   place-items: center;
-  background: var(--color-intro-scrim);
+  /* The same vivid gradient the rest of the app uses behind glass (tokens.css,
+   * docs/DECISIONS.md, 0100), fixed to the light variant regardless of theme — the intro's own
+   * scrim/ink colours are already theme-independent by design (a fixed "signature" moment, not
+   * themed chrome), so the colour behind it should be too. */
+  background-color: var(--color-intro-scrim);
+  background-image: var(--page-gradient-light);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   color: var(--color-intro-ink);
