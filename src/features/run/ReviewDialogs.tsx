@@ -296,6 +296,7 @@ export function NewRunDialog({ run, onClose, onSend }: NewRunDialogProps) {
           onClick={() => onSend({ whatWentWrong: whatWentWrong.trim(), whatToDo: whatToDo.trim() })}
         >
           Send request
+          <ArrowRight aria-hidden className="h-4 w-4" />
         </Button>
       </Footer>
     </Modal>

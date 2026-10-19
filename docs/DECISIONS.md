@@ -6,6 +6,43 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0112 · Icons added where they dual-encode, not everywhere — an audited pass, not a sweep
+
+**Context.** A pasted UX reference: icons belong on a button only when they speed scanning, show
+direction/progression, or add reassurance in a risky/destructive moment — never decoration.
+"Especially onboarding needs some enhancement." Audited every `<Button>` in the app against this
+rather than adding icons on instinct; most already followed an established house style (leading
+icon names the subject, trailing `ArrowRight` signals forward progression, `ChevronLeft` for
+back-navigation links) — only four real gaps turned up.
+
+**Choice.**
+- `components/OnboardingTour.tsx` — the step bubble's Back/Next/Done controls had zero icons,
+  the clearest case of the "signal progression" criterion and the exact area named. Back gets a
+  leading `ChevronLeft`, Next a trailing `ChevronRight`, Done (the last step, not a forward move)
+  a leading `Check`. "Skip tour" stays bare — a dismissal, not a progression.
+- `app/WelcomeModal.tsx` — "Take the tour" gets a trailing `ArrowRight`, matching "Open the
+  archive"'s existing pattern for the same shape of action (starts a guided flow). "Skip, I'll
+  look around myself" stays bare, same reasoning as "Skip tour."
+- `features/run/DecisionDialog.tsx` — the confirm button one step after `DecisionPanel`'s own
+  Approve/Request-changes/Reject buttons (which already carry `Check`/`ArrowLeft`/`X`) had lost
+  the icon at the exact moment reassurance matters most: the reviewer is about to commit, most
+  consequentially for the destructive "Reject run." A new `ACTION_ICON` map carries the same
+  three icons through to this confirming step.
+- `features/run/ReviewDialogs.tsx` — `NewRunDialog`'s "Send request" gets a trailing
+  `ArrowRight` (progression — submitting moves the request forward), the weakest of the four
+  but consistent with the same pattern elsewhere.
+
+**Explicitly left alone.** Every other button already had an appropriate icon or appropriately
+had none (every dismiss/cancel action, `DecisionPanel`'s own three buttons, My reviews/
+ReviewsTable/ArchiveTable/ReviewsToolbar, UndoBox, ReportDialog, ArchiveConfirmDialog) — adding
+icons there would have been decoration, which the brief explicitly ruled out.
+
+**Consequence.** Any new button added to a risky confirmation step, a progression control, or a
+guided flow should default to carrying the same icon its originating action already uses, not
+start bare and wait for an audit to catch it.
+
+---
+
 ## 0111 · My reviews' main table card gets rounded corners back, reversing part of 0099
 
 **Context.** "Make sure the table corners are rounded also to be cohesive" — following 0110's

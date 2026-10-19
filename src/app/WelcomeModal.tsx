@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Button } from '../components/ui/button'
 
@@ -40,7 +41,10 @@ export function WelcomeModal({ onStartTour, onSkip }: WelcomeModalProps) {
         <Button variant="outline" onClick={onSkip}>
           Skip, I'll look around myself
         </Button>
-        <Button onClick={onStartTour}>Take the tour</Button>
+        <Button onClick={onStartTour}>
+          Take the tour
+          <ArrowRight aria-hidden className="h-4 w-4" />
+        </Button>
       </div>
     </Modal>
   )

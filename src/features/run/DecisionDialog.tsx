@@ -1,5 +1,6 @@
 import { Button } from '../../components/ui/button'
 import { Textarea } from '../../components/ui/textarea'
+import { ArrowLeft, Check, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Modal } from '../../components/Modal'
 import { DecisionConflictError, submitDecision } from '../../lib/api'
@@ -25,6 +26,15 @@ const TITLE: Record<DecisionAction, string> = {
   approved: 'Approve and release',
   changes_requested: 'Request changes',
   rejected: 'Reject run',
+}
+
+/** The same icon `DecisionPanel`'s own three action buttons use, one step earlier — carried
+ * through to this confirming step too, where the reassurance matters most (a reviewer is about
+ * to commit, most consequentially for the destructive "Reject run"). */
+const ACTION_ICON: Record<DecisionAction, typeof Check> = {
+  approved: Check,
+  changes_requested: ArrowLeft,
+  rejected: X,
 }
 
 const REASON_PROMPT: Partial<Record<DecisionAction, string>> = {
@@ -94,6 +104,7 @@ export function DecisionDialog({
     }
   }, [])
 
+  const ActionIcon = ACTION_ICON[action]
   const reasonPrompt = REASON_PROMPT[action]
   const trimmedReason = reason.trim()
   const canSubmit =
@@ -188,6 +199,7 @@ export function DecisionDialog({
           onClick={() => void handleSubmit()}
           disabled={!canSubmit}
         >
+          <ActionIcon aria-hidden className="h-4 w-4" />
           {TITLE[action]}
         </Button>
       </div>

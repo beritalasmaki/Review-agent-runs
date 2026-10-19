@@ -1,3 +1,4 @@
+import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { prefersReducedMotion } from '../lib/motion'
@@ -272,6 +273,7 @@ export function OnboardingTour({
             <div className="flex items-center gap-[var(--space-2)]">
               {!first && (
                 <Button variant="outline" size="sm" onClick={() => setIndex((i) => i - 1)}>
+                  <ChevronLeft aria-hidden className="h-4 w-4" />
                   Back
                 </Button>
               )}
@@ -280,7 +282,17 @@ export function OnboardingTour({
               </Button>
             </div>
             <Button size="sm" onClick={next}>
-              {last ? 'Done' : 'Next'}
+              {last ? (
+                <>
+                  <Check aria-hidden className="h-4 w-4" />
+                  Done
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight aria-hidden className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
         </PopoverContent>
