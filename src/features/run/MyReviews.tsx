@@ -365,11 +365,7 @@ function ReviewsBoard({
         <span className="text-body leading-none font-semibold whitespace-nowrap text-text-primary">
           {plural(selected.size, 'run')} selected
         </span>
-        <Button
-          size="sm"
-          className="btn-glass-fill glass-sheen"
-          onClick={() => setDialog({ type: 'report' })}
-        >
+        <Button size="sm" onClick={() => setDialog({ type: 'report' })}>
           <FileBarChart aria-hidden className="h-3.5 w-3.5" />
           Create report
         </Button>

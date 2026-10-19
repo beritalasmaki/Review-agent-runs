@@ -370,7 +370,7 @@ export function ReviewsTable({
               </TableCell>
               <TableCell className={cn(CELL, 'text-right')}>
                 {reviewStage(run) === 'review' ? (
-                  <Button asChild size="sm" className="btn-glass-fill glass-sheen no-underline">
+                  <Button asChild size="sm" className="no-underline">
                     <a href={runHref(run.id)} aria-label={`Review “${run.initiative}”`}>
                       Review
                       <ArrowRight aria-hidden className="h-3.5 w-3.5" />
