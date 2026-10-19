@@ -6,6 +6,32 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0115 · My reviews' status tabs get their track back — 0114 only applies to the run page
+
+**Context.** 0114 (same session, just before this) dropped the `pill` variant's track entirely
+for both of its callers: the run page's Story/Evidence/All-steps and My reviews' Pending/
+Requested-for-change/Declined/Approved/All-runs. "This style doesn't fit in these tabs. I would
+keep the style in single run page but not here" — a screenshot of the latter, floating, with a
+stray vertical line artifact between the active pill and the next tab that only ever appeared on
+this list, not the run page's three-tab one.
+
+**Choice.** `ui/tabs.tsx`'s shared `pill` variant stays floating by default (0114's choice is
+right for a short, fixed set of views). `MyReviews.tsx`'s own `TabsList` now restores the track
+through its own `className`: `rounded-lg border border-border-subtle bg-surface-raised
+p-[var(--space-2)]`, rounded this time (0114's own complaint was specifically about the run
+page's square-cornered box, not a box as such) to match the card it sits inside, which has had
+rounded corners since 0111. The run page's `RunViewTabs.tsx` passes no override, so it keeps
+0114's floating look unchanged.
+
+**Consequence.** The `pill` variant no longer means one fixed look everywhere it's used — the
+shared default is floating, and a caller with more items, counts, and a horizontal scroll
+affordance (My reviews' five tabs, each carrying a badge) can restore the contained-control look
+a short, simple set of views doesn't need. Any new `pill` list should start from the floating
+default and only add a track back if it visibly doesn't read as one control without it, the same
+test this round applied.
+
+---
+
 ## 0114 · Pill tabs float, with no track box around them
 
 **Context.** A screenshot of the run page's Story/Evidence/All-steps tabs: a visibly boxed
