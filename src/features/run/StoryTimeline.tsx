@@ -1,5 +1,4 @@
 import { Button } from '../../components/ui/button'
-import { Clock } from 'lucide-react'
 import { isSystemActor } from '../../lib/actors'
 import { formatClock, formatClockRange, formatCount, formatGateResultLabel } from '../../lib/format'
 import { resolveStory } from '../../lib/story'
@@ -204,7 +203,7 @@ export function StoryTimeline({ run, onShowSteps }: StoryTimelineProps) {
 
   return (
     <section aria-labelledby="story-heading" className="flex min-w-0 flex-col gap-[var(--space-5)]">
-      <SectionHeading id="story-heading" focusTarget icon={Clock}>
+      <SectionHeading id="story-heading" focusTarget>
         What happened, in order
       </SectionHeading>
 

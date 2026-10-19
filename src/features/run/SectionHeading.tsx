@@ -8,7 +8,9 @@ import { cn } from '../../lib/utils'
  */
 export interface SectionHeadingProps {
   id: string
-  icon: ComponentType<{ className?: string }>
+  /** Omit for a heading whose icon now lives on the tab that opens it instead (Story, Evidence,
+   * All steps — docs/DECISIONS.md, 0104), so it isn't shown twice. */
+  icon?: ComponentType<{ className?: string }>
   children: ReactNode
   iconClassName?: string
   className?: string
@@ -36,7 +38,9 @@ export function SectionHeading({
         className,
       )}
     >
-      <Icon aria-hidden className={cn('h-5 w-5 shrink-0 text-text-primary', iconClassName)} />
+      {Icon && (
+        <Icon aria-hidden className={cn('h-5 w-5 shrink-0 text-text-primary', iconClassName)} />
+      )}
       {children}
     </h2>
   )

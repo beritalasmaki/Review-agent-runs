@@ -7,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table'
-import { List } from 'lucide-react'
 import { ChevronDown, ChevronUp } from 'lucide'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { MorphIcon } from '../../components/MorphIcon'
@@ -117,8 +116,8 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
   return (
     <section aria-labelledby="steps-heading" className="flex min-w-0 flex-col gap-[var(--space-4)]">
       <div className="flex flex-wrap items-end justify-between gap-[var(--space-4)]">
-        <div className="flex flex-col gap-[var(--space-2)]">
-          <SectionHeading id="steps-heading" focusTarget icon={List}>
+        <div className="flex flex-col gap-[var(--space-5)]">
+          <SectionHeading id="steps-heading" focusTarget>
             All {formatCount(total, 'step')}
           </SectionHeading>
           <p className="text-body font-normal font-body text-text-secondary">

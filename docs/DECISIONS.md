@@ -6,6 +6,188 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0105 · Title-to-body spacing fixed to 24px; dialog title gap raised app-wide
+
+**Context.** "Spacing between titles and body text should be 24px at least. There needs to be
+enough whitespace between items. Stick strictly with 8px, 16px, 24px and 32px." Several title/
+heading-to-paragraph pairs across the app were set at 8px or 12px (`--space-2`/`--space-3`):
+the "My reviews" and "Archive" page titles, the run page's own title block (`RunOverview.tsx`),
+the Evidence and All-steps section headings, "Your decision", "What is not checked", "Not ready
+for review yet", and "Also found in the archive". Separately, every `Modal`/`Dialog` in the app
+shares one primitive (`components/ui/dialog.tsx`) whose title-to-body gap was 16px
+(`--space-4`).
+
+**Choice.** Scoped to item-to-item whitespace, confirmed with the user rather than assumed:
+fix every genuine heading→paragraph pairing to `--space-5` (24px), and leave tight internal
+component chrome (button/badge/chip/table-cell padding, icon-to-text gaps inside one control)
+on the existing 4px/12px steps of the scale — converting those too would visibly fatten
+buttons, badges and table rows that were already tuned, for a kind of spacing the user's own
+framing ("between titles and body", "between items") wasn't asking about. Each fix wraps the
+heading and its paragraph in their own `gap-[var(--space-5)]` flex container, distinct from
+whatever gap governs the rest of that card's layout, so raising the title gap didn't also
+inflate unrelated internal rhythm (list rows, nav links). `RunOverview.tsx`'s header also had
+redundant per-child `mt-[var(--space-1)]`/`mt-[var(--space-2)]` compensating for its old 12px
+gap; removed now that the parent gap itself is 24px, since stacking margin on top of the new
+gap would have landed off the 8/16/24/32 scale (28px, not a scale step). The one shared-
+primitive fix — `DialogContent`'s outer `gap-[var(--space-4)]` → `gap-[var(--space-5)]` — raises
+every dialog's title-to-body gap at once (`Modal.tsx`'s callers, including `WelcomeModal`),
+rather than overriding it per call site.
+
+**Consequence.** A future title+description pairing should default to its own
+`gap-[var(--space-5)]` wrapper, matching the rest of the app, rather than reusing whatever gap
+the surrounding card happens to use for its other children. Compact label+value pairs (a
+dialog's small-caps "Decision"/"Requested by" rows, a tour step's eyebrow, the signature
+intro's name+tagline) were deliberately left alone — they read as one unit, not two separate
+items, so loosening them would work against the same Gestalt proximity the 24px rule is meant
+to serve.
+
+---
+
+## 0104 · Run-view tab icons moved from the section heading onto the tab itself
+
+**Context.** "Move the title icons of the single run page tabs to the tabs. Remove the icon
+from the title and put it instead to the tab link." Story, Evidence and All-steps each showed
+the same icon twice at once: once on the tab that selects the view, once again on the heading
+the view opens with — the same glyph doing the same "what is this" job in two places a few
+rows apart.
+
+**Choice.** `SectionHeading`'s `icon` prop became optional (`features/run/SectionHeading.tsx`);
+`StoryTimeline.tsx`, `EvidenceTab.tsx` and `StepsTab.tsx` each stopped passing one (and dropped
+the now-unused `lucide-react` import). `RunViewTabs.tsx` passes the same three icons
+(`Clock`/`FileText`/`List`) to the matching `TabsTrigger`'s own `icon` prop instead — a prop the
+`pill` variant already supported, so no new component code was needed, only moving which call
+site uses it.
+
+**Consequence.** Any future view added to this tab group should follow the same split: the icon
+identifies the view from its tab, the heading's job is just to name the content once you're
+already there.
+
+---
+
+## 0103 · Rapid arrow-key tab switching dropped moves — a real Radix bug, worked around, not patched over
+
+**Context.** Pressing ArrowRight/ArrowLeft on a tab list faster than about one macrotask apart
+(a fast keyboard user, or any Playwright `keyboard.press` loop without an inter-press delay)
+netted far fewer tab moves than key presses — three rapid presses landed one tab over, not
+three. Traced into `@radix-ui/react-roving-focus` itself (confirmed present in the pinned
+1.6.7 and in the latest 1.8.1, by upgrading, grepping the bundled source for the same
+`setTimeout(() => focusFirst(candidateNodes))` pattern, and reverting): its keydown handler
+computes "next tab" from `event.currentTarget` — whichever element the browser *currently*
+reports as focused — but defers the actual `.focus()` call with a bare zero-delay `setTimeout`.
+A second keypress arriving before that timeout fires still sees the first tab as focused, so it
+computes "next" from the same stale starting point.
+
+**Choice.** `components/Tabs.tsx` intercepts arrow keys in the capture phase
+(`onKeyDownCapture` on `TabsList`), which runs before Radix's own listener on the focused
+trigger ever sees the event. It computes the next tab synchronously from a fresh DOM query,
+calls `preventDefault`/`stopPropagation`, and focuses it immediately — no timeout, so the DOM's
+focus state is always correct before a second keystroke can possibly arrive.
+
+**Two more bugs surfaced once this was fixed, both worked around rather than chased upstream.**
+Reaching "About Status" by keyboard for the first time (the arrow-key fix made it reachable in
+one test's actual sequence) exposed a stale-layer bug in
+`@radix-ui/react-dismissable-layer`: its `DismissableLayerContext` is a plain
+`React.createContext` default that nothing ever wraps in a `.Provider`, so the `layers` `Set`
+tracking which overlay is topmost (and therefore whose Escape handler fires) is global across
+every Tooltip/Popover/Dialog in the app, not scoped per instance — an earlier tooltip
+interaction could leave a stale entry that made Radix skip closing an unrelated dialog on
+Escape (reproduced directly, 15–45% failure rate). `components/Modal.tsx`'s `DialogContent` now
+sets `onEscapeKeyDown={(event) => event.preventDefault()}` to suppress Radix's own decision
+entirely and handles Escape itself in a plain `onKeyDown`, so there is exactly one path to
+close, not two racing to decide whose turn it is (an earlier version left Radix's handler live
+alongside the fallback, which worked in the browser but double-fired `onClose` in jsdom unit
+tests — `Modal.test.tsx` and `WelcomeModal.test.tsx` caught it). `e2e/keyboard.spec.ts`'s "My
+reviews, keyboard only" test was also updated: it predated the Filters popover (0099) and still
+assumed Tab would walk straight through an inline panel; a popover is a focus trap by design, so
+the test now presses Escape to close it before continuing, rather than expecting Tab to escape
+it on its own.
+
+**Consequence.** None of this is a fix to Radix itself — both are confirmed-upstream bugs,
+worked around at the boundary where this app's own code already has a say (the capture phase,
+the dialog's own event handler). A future Radix upgrade should re-check both: if either bug is
+fixed upstream, the workaround becomes redundant but not wrong, since both are written to be
+idempotent with correct Radix behaviour underneath them.
+
+---
+
+## 0102 · Inactive tabs read as available, not disabled — full-strength brand colour, not faded
+
+**Context.** Two follow-up requests after the header-band work: "the main title and description
+below it looks just really boring. Also I would remove the Icon next to the main title," and,
+separately, "Make sure the tabs look like they are available (not disabled). Use some other
+color than grey in those ones that are inactive."
+
+**Choice.** `PageTitle` (`MyReviews.tsx`) dropped its `icon` prop entirely — every call site
+updated, the now-unused icon imports removed — and grew from `--text-page-title` (28px) to
+`2.5rem` with tighter tracking; its description grew from `--text-body` to `--text-lead`
+(16px). The `pill` tab variant's inactive state (`components/ui/tabs.tsx`) moved from
+`text-text-secondary` (the same grey a disabled control would use) to `text-primary` — the
+brand indigo, at full strength. The active tab keeps `text-text-primary` (the page's strongest
+contrast) and the sliding pill behind it; those two signals alone already carried "selected"
+before this change, so the inactive colour was free to mean something else: "available," not
+"quieter."
+
+**The first attempt (reduced-opacity `text-primary/75`) was wrong, caught by the same
+real-contrast discipline used throughout this round.** It read as faded rather than
+deliberate — "make sure the inactive tabs are fully with that color... otherwise it looks
+weird" — and `npx playwright test e2e/accessibility.spec.ts` turned that same instinct into a
+number: 30 of 34 states failed, because the `pill` variant is shared with the run review page's
+Story/Evidence/All-steps tabs, and the translucent indigo dropped below 4.5:1 against several of
+those states' own backgrounds. Full-strength `text-primary` fixed both problems in one change:
+34/34 clean afterwards, confirming the "looks weird" instinct and the contrast failure were the
+same underlying issue, not two separate ones. `hover:text-primary-hover` (an existing token,
+already used for hover states elsewhere) replaced the opacity-based hover treatment for the same
+reason.
+
+**Consequence.** Any future "quieter but still colourful" treatment on text should reach for a
+step on the existing colour ramp (`--color-primary-hover`, a neutral step, etc.) rather than an
+opacity modifier on a brand colour — opacity looks unintentional long before it clears contrast,
+and when it does clear contrast against one background it will not necessarily clear it against
+every background a shared component (like the `pill` tab variant) ends up composited over.
+
+---
+
+## 0101 · A translucent header zone, reusing `--color-glass` itself rather than a new flat colour
+
+**Context.** After the five-part refresh shipped, a follow-up sketch: a visibly distinct darker
+zone behind the page's title and the top of its main card, fading into the ordinary page
+gradient below — "the design is missing that dark grey part structurally. The white background
+is the area where we have that glass gradient background." Two corrections followed in the same
+exchange: "keep the glass design! Don't make it solid color," then "in light mode it should be
+light color, dark mode it can be dark color" — reversing an initial dark-regardless-of-theme
+assumption — and "the bottom should fade gradient-like... no sharp edge."
+
+**Choice.** `bg-page-glass` (`index.css`) gained a second, lower `background-image` layer: a
+`linear-gradient(to bottom, var(--color-hero-band) 0%, transparent var(--hero-band-height))` —
+one continuous fade, not a held colour stop followed by a hard cutoff, so there is no visible
+seam at any point. `--color-hero-band` is not a new colour at all: it's set to `var(--color-glass)`
+directly (tokens.css), which already has exactly the polarity asked for — a light wash in light
+theme, a dark wash in dark theme — because CSS custom properties resolve `var()` at computed-
+value time, so one line in the base `:root` block picks up whichever theme's `--color-glass` is
+active with no separate dark-theme override needed. This also means the existing
+`text-text-primary`/`text-text-secondary` title text needed no new foreground token: it's the
+same colour pairing every other glass card's text already sits on. The band layer scrolls with
+the page (`background-attachment: scroll`), unlike the gradient blobs underneath it
+(`fixed`) — it's tied to specific content near the top, not an ambient backdrop, so the two
+layers get different values in the same comma-separated `background-attachment` property.
+`--hero-band-height` (tokens.css, 195px) was tuned against a real screenshot to end just past
+the title/tabs row, before the search/filters row and table.
+
+**The first attempt was wrong twice, in instructive ways.** The initial version used a flat,
+fully opaque `--neutral-11`/`--neutral-10` pair with a hard two-stop cutoff — which (a) broke
+the title's own text contrast, since dark-on-dark text was never changed to match, and (b)
+directly contradicted "keep the glass design" by being a solid rectangle, not a translucent
+surface. The fix wasn't a new, carefully-tuned colour pair — reusing `--color-glass` solved both
+problems at once, since it already has the right per-theme polarity *and* already has verified-
+working text on top of it everywhere else in the app.
+
+**Consequence.** Any future "page-level" tint that should feel like part of the glass system,
+not a separate decorative layer, should reach for an existing glass token the same way, rather
+than inventing a new flat colour — the fastest way back to "looks solid, not glass" is a new
+opaque value that doesn't derive from one of the `--color-glass*` tokens.
+
+---
+
 ## 0100 · The welcome modal and the signature intro get genuine glass, scoped via `overlayClassName`
 
 **Context.** Part 5, the last of the visual refresh. Direct request, with a reference image: "I

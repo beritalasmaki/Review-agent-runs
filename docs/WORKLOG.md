@@ -39,6 +39,258 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Title-to-body spacing fixed to 24px app-wide
+
+**Goal**
+"Spacing between titles and body text should be 24px at least... stick strictly with 8px,
+16px, 24px and 32px" — audit and fix every place a heading sits too close to its paragraph.
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — "My reviews" title block, "Archive" title block, and
+  "Also found in the archive" heading each now wrap their heading + paragraph in their own
+  `gap-[var(--space-5)]` container (was `--space-2`/`--space-3`).
+- `src/features/run/RunOverview.tsx` — the run title card's own gap raised to `--space-5`;
+  removed the `mt-[var(--space-1)]`/`mt-[var(--space-2)]` on the two blocks below the title,
+  which had been compensating for the old, tighter gap and would otherwise have landed off the
+  8/16/24/32 scale once the parent gap changed.
+- `src/features/run/EvidenceTab.tsx`, `StepsTab.tsx`, `UnverifiedList.tsx`,
+  `InProgressBox.tsx`, `DecisionPanel.tsx` — same fix: heading + its description paragraph each
+  get their own 24px wrapper, separate from the card's other internal spacing.
+- `src/components/ui/dialog.tsx` — `DialogContent`'s outer gap (title → body, shared by every
+  `Modal`/`Dialog` in the app) raised from `--space-4` (16px) to `--space-5` (24px).
+- `docs/DECISIONS.md` — new entry 0105.
+
+**Steps, in order**
+1. Confirmed the spacing scale in `tokens.css` (4/8/12/16/24/32/48/64px) and asked the user to
+   scope the "strictly 8/16/24/32" rule: all spacing everywhere (including tight internal
+   button/badge/table-cell chrome), or item-to-item whitespace only. Chose the latter.
+2. Grepped `src/` for every `SectionHeading`/`PageTitle`/`<h1>`/`<h2>` immediately followed by a
+   description paragraph, and read each one to check its actual gap.
+3. Fixed each heading→paragraph pair found under 24px to its own `gap-[var(--space-5)]`
+   wrapper, rather than just widening the whole card's gap (which would also have loosened
+   unrelated internal rhythm — list rows, nav links).
+4. Found the dialog primitive's own title→body gap was a single shared 16px value
+   (`components/ui/dialog.tsx`); fixed once there rather than overriding it per `Modal` caller.
+5. `npx prettier --write` on the two files it flagged after the edits.
+6. Ran the full verification gate (below).
+
+**Why it was done this way**
+Scoped to genuine heading+paragraph pairs and general item-to-item gaps, not every 4px/12px
+value in the codebase: tight internal component chrome (button padding, badge padding, table
+cell padding, icon-to-text gaps inside one control) is a different kind of spacing than "between
+items," and converting it too would have visibly fattened buttons, badges and table rows that
+were already tuned, for a complaint the user's own framing didn't raise. Compact label+value
+pairs (a dialog's small-caps "Decision"/"Requested by" rows, a tour step's eyebrow+body, the
+signature intro's name+tagline) were left alone for the same reason — they read as one visual
+unit, and loosening them would work against the Gestalt proximity the 24px rule exists to serve.
+
+**How to do this by hand**
+For each heading immediately above a description paragraph: wrap both in their own flex column
+with a 24px gap, independent of whatever gap governs the rest of that card or page's layout.
+
+**Verification**
+- `npm run typecheck`, `npm run lint`: clean.
+- `npx prettier --write` then `npm run format:check`: clean.
+- `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npm run
+  check` (typecheck, lint, format, theme-bridge, format-locale, 293 unit tests, 44 e2e tests
+  including the full accessibility suite in both themes and the keyboard spec): all green.
+- `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: 45/45 passed (re-run since
+  `Tabs.tsx` territory — already touched this session for the keyboard-bug fix below — was in
+  scope, out of caution, though this round's edits didn't touch it further).
+- `npm run build`: clean.
+- Screenshots in a real browser (light theme): My reviews, Archive, a run's Evidence tab, All
+  steps tab, and a Decision details dialog — confirmed each title now has visible, consistent
+  breathing room before its body text.
+
+**Open questions / next**
+Dialog-internal small-caps labels (e.g. "Decision", "Requested by" in `ReviewDialogs.tsx`) and
+the onboarding tour's step eyebrow+title+body were left on the tighter scale as label/value
+pairs rather than title+body — flag if the user wants those loosened too.
+
+---
+
+## 2026-10-19 · Fixed the pre-existing keyboard tab-switching bug; moved run-view tab icons off the headings
+
+**Goal**
+Track down and fix the keyboard-navigation bug on tab lists that earlier sessions had flagged
+as pre-existing and left unfixed, then move the Story/Evidence/All-steps tab icons off their
+section headings and onto the tabs themselves ("remove the icon from the title and put it
+instead to the tab link"), per the user's "go back to the keyboard bug" instruction.
+
+**What changed**
+- `src/components/Tabs.tsx` — new `handleRovingFocusKeyDown`, attached as `onKeyDownCapture` on
+  all three `TabsList` render sites (segmented, pill, line). Intercepts ArrowLeft/ArrowRight/
+  Home/End in the capture phase, before Radix's own (buggy) roving-focus handler runs, and
+  moves focus synchronously.
+- `src/components/Modal.tsx` — `onEscapeKeyDown={(event) => event.preventDefault()}` added
+  alongside the existing `onKeyDown` Escape fallback, so Radix's own Escape handling is fully
+  suppressed and the app's own handler is the only path (closes a double-`onClose`-call bug the
+  fallback alone introduced, caught by the unit tests below).
+- `e2e/keyboard.spec.ts` — "My reviews, keyboard only" updated for the Filters popover (0099):
+  presses Escape to close it before continuing, instead of assuming Tab walks past it.
+- `src/features/run/SectionHeading.tsx` — `icon` prop now optional.
+- `src/features/run/StoryTimeline.tsx`, `EvidenceTab.tsx`, `StepsTab.tsx` — stopped passing an
+  icon to `SectionHeading`; removed the now-unused `lucide-react` imports.
+- `src/features/run/RunViewTabs.tsx` — passes `Clock`/`FileText`/`List` to each `TabsTrigger`'s
+  own `icon` prop instead.
+- `docs/DECISIONS.md` — new entries 0103 (keyboard bug + the two bugs it exposed) and 0104
+  (icon relocation).
+
+**Steps, in order**
+1. Reproduced the dropped-arrow-key-presses bug with a throwaway Playwright script, confirmed
+   it against the real `@radix-ui/react-roving-focus` source (`setTimeout(() =>
+   focusFirst(candidateNodes))` deferring `.focus()` while computing "next" from
+   `event.currentTarget`). Upgraded to `radix-ui@1.8.1` (`npm install radix-ui@1.8.1
+   --save-exact=false`) to check if it was already fixed upstream — same pattern present —
+   then reverted (`npm install radix-ui@1.6.7 --save-exact=false`, confirmed clean via `git
+   status --short package.json package-lock.json`).
+2. Added the capture-phase workaround in `Tabs.tsx`. Verified the specific repro script now
+   nets the correct number of moves.
+3. Re-ran `e2e/keyboard.spec.ts`: a different, later assertion failed (`tabTo(page, /^About
+   Status$/)` timed out) — Tab now reaches further into the page than before because the
+   arrow-key fix let an earlier step in the sequence actually complete. Traced it to Tab
+   cycling within the open Filters popover's own fields, which is correct focus-trap behaviour,
+   not a bug — the test itself was stale from before the popover existed (0099). Updated the
+   test to close the popover with Escape first.
+4. New flake appeared under `--repeat-each=20`: an Escape on the Archive page's Decision
+   Details dialog occasionally left it open. Root-caused to Radix's `DismissableLayerContext`
+   having no `.Provider` anywhere in Radix's own primitives, making its "topmost layer" `Set`
+   global across the app rather than scoped per dialog. Added the `onKeyDown` Escape fallback
+   to `Modal.tsx`. Verified with two consecutive `--repeat-each=20` runs: 60/60 both times.
+5. Made `SectionHeading`'s `icon` optional, removed the icon prop from the three run-view tab
+   bodies, added it to `RunViewTabs.tsx`'s three `TabsTrigger`s instead. Confirmed with
+   screenshots in both themes that each tab now shows its icon once, and the heading below no
+   longer duplicates it.
+6. Ran the full verification gate (below). `npm run test` caught a real regression from step 4:
+   `Modal.test.tsx` and `WelcomeModal.test.tsx` both failed with `onClose` called twice — adding
+   the fallback left Radix's own Escape handler free to also fire in the normal case, not just
+   the stale-layer edge case. Fixed by suppressing Radix's handler outright
+   (`onEscapeKeyDown={(event) => event.preventDefault()}`), making the app's own handler the
+   sole path rather than a race between two. Re-ran: both files green.
+
+**Why it was done this way**
+Neither Radix bug is fixed by editing this app's own component tree in the usual way — both
+live inside Radix's own primitives, confirmed by reading the installed package source directly,
+not assumed from symptoms. The fixes intercept at the one point this app's own code already has
+standing to act: the capture phase for the roving-focus bug (runs before Radix's handler sees
+the event at all), and the dialog's own `onEscapeKeyDown`/`onKeyDown` props for the dismissable-
+layer bug (suppress Radix's decision, substitute a deterministic one). Suppressing Radix's
+Escape handler outright, rather than leaving both live, matters beyond passing the unit tests:
+two independent code paths racing to decide whether to call `onClose` is the same shape of bug
+this whole session was chasing, just one level up.
+
+**Verification**
+- `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: 45/45 passed.
+- `npx vitest run` (full suite): 293/293 passed.
+- `npx playwright test e2e/accessibility.spec.ts` (full suite, both themes): 1 failure on first
+  run (a badge-contrast assertion unrelated to any file touched this session), 6/6 passed on a
+  `--repeat-each=3` re-run of that one test — confirmed pre-existing flake, not a regression.
+- `npm run check` (typecheck, lint, format, theme-bridge, format-locale, unit, full e2e): green,
+  using `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (the
+  pinned `@playwright/test@1.63.0` wanted a headless-shell build newer than what's pre-installed
+  in this container; the regular Chromium build already there works as the documented fallback).
+- `npm run build`: clean.
+- Screenshots: `run-tabs-icons2-light.png` / `-dark.png`, both themes, confirm the icon
+  relocation.
+
+**Open questions / next**
+Re-check both Radix bugs on the next real dependency bump — if either is fixed upstream, the
+workaround is redundant but harmless, not wrong.
+
+## 2026-10-18 · Bolder title, no icon; inactive tabs read as available, not disabled
+
+**Goal**
+Two more follow-ups on the same page: "the main title and description... looks just really
+boring. Also I would remove the Icon next to the main title," and "make sure the tabs look like
+they are available (not disabled). Use some other color than grey in those ones that are
+inactive."
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — `PageTitle` dropped its `icon` prop (all three call sites
+  updated, the now-unused `ListChecks` import removed); grew from `text-page-title` (28px) to
+  `text-[2.5rem]` with `tracking-tight`; its description paragraphs grew from `text-body` to
+  `text-lead`.
+- `src/components/ui/tabs.tsx` — the `pill` variant's inactive-tab colour: `text-text-secondary`
+  → `text-primary` (full strength, not the `text-primary/75` tried first); hover:
+  `hover:text-text-primary` → `hover:text-primary-hover`.
+- `docs/DECISIONS.md` — new entry 0102.
+
+**Steps, in order**
+1. Removed the icon, bumped the title/description sizes, verified with a screenshot.
+2. First tab-colour attempt: `text-primary/75` (a translucent indigo). Looked plausible in a
+   screenshot but the user caught it immediately as "not fully that color... looks weird."
+3. Ran `npx playwright test e2e/accessibility.spec.ts` anyway, since the `pill` variant is
+   shared with the run review page's own tabs: 30 of 34 states failed — the translucency
+   dropped contrast below 4.5:1 in states the one page I'd screenshotted didn't cover.
+4. Switched to full-strength `text-primary` (and `hover:text-primary-hover`, an existing token,
+   in place of the opacity-based hover). Re-ran: 34/34 clean, and it was also the look
+   originally asked for.
+
+**Why it was done this way**
+The "looks weird" feedback and the contrast failure turned out to be the same problem, caught
+two different ways — worth noting as a pattern: a colour that reads as visually inconsistent to
+the eye is a reasonable leading indicator that it won't clear contrast either, not just an
+aesthetic nitpick to weigh against the measurement separately.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure. `npx vitest run`: 293/293 clean
+(confirms no test depended on `PageTitle`'s removed icon). `npm run build` clean.
+
+**Open questions / next**
+The pre-existing keyboard bug (`e2e/keyboard.spec.ts`, "My reviews, keyboard only") is still
+open — this was the task in progress when these two follow-ups arrived.
+
+---
+
+## 2026-10-18 · Translucent header zone + taller tabs (follow-up after the refresh shipped)
+
+**Goal**
+A follow-up sketch after PR #27 merged: a distinct zone behind the title and the top of the
+main card, fading into the page's existing gradient below — plus taller tab pills, since "tabs
+are important" and the previous padding made them look like an afterthought.
+
+**What changed**
+- `src/styles/tokens.css` — new `--hero-band-height` (195px) and `--color-hero-band`, the
+  latter set to `var(--color-glass)` directly rather than a new colour (see docs/DECISIONS.md
+  0101 for why).
+- `src/styles/index.css` — `bg-page-glass` gained a second `background-image` layer: a
+  one-stop fade from `--color-hero-band` to transparent over `--hero-band-height`, with its own
+  `background-attachment: scroll` (the gradient blobs stay `fixed`).
+- `src/components/ui/tabs.tsx` — the `pill` variant's vertical padding: triggers
+  `py-[var(--space-2)]` → `py-[var(--space-3)]`, the track `p-[var(--space-1)]` →
+  `p-[var(--space-2)]`.
+
+**Steps, in order**
+1. First attempt: a flat, fully opaque dark neutral with a hard two-stop cutoff, matching the
+   sketch literally. Screenshot showed two problems at once: the title's dark text became
+   unreadable against the now-dark band, and the flat block read as "solid," not "glass."
+2. Corrected per direct feedback ("keep the glass design," then "light mode light colour, dark
+   mode dark colour") by pointing `--color-hero-band` at the existing `--color-glass` token
+   instead of inventing a new one — its per-theme polarity was already exactly what was asked
+   for, and its text-contrast pairing was already proven everywhere else.
+3. Corrected the hard edge ("no sharp edge in the bottom") by replacing the two-stop
+   hold-then-cutoff gradient with a single continuous fade from the band colour to transparent.
+4. Bumped the pill tab padding.
+5. Verified with screenshots in both themes, then the full accessibility suite and `npm run
+   check`.
+
+**Why it was done this way**
+Reusing `--color-glass` rather than tuning a new colour pair solved both of the first attempt's
+problems in one move: it already has the right light/dark polarity, and the existing title text
+colours already have verified contrast against it (it's the same token every other glass card's
+text sits on). See docs/DECISIONS.md 0101 for the fuller reasoning.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts`: 34/34 clean. Full `npm run check`: all green
+except the one already-known pre-existing keyboard failure (`e2e/keyboard.spec.ts`, unrelated —
+see the "Capsule buttons" and "Filters popover" entries below). `npm run build` clean.
+
+**Open questions / next**
+The pre-existing keyboard bug is still open.
+
+---
+
 ## 2026-10-18 · Welcome modal and signature intro get genuine glass (part 5, last of the refresh)
 
 **Goal**

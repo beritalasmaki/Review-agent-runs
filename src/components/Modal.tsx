@@ -52,6 +52,21 @@ export function Modal({
         // The body says what the dialog is for; there is no separate description to point to.
         aria-describedby={undefined}
         onInteractOutside={(event) => event.preventDefault()}
+        // Escape is handled entirely ourselves, not left to Radix's own `DismissableLayer`
+        // (docs/DECISIONS.md, 0103): it tracks which overlay is the topmost "layer" in one
+        // `Set` shared by every Tooltip/Popover/Dialog in the app (a plain `React.createContext`
+        // default value, never given a `.Provider`, so every consumer reads the same object —
+        // confirmed by reading the installed package itself). A tooltip focused and then
+        // tabbed away from earlier in the same keyboard pass can leave a stale entry in that
+        // Set; when that happens, Radix's own Escape handler decides this dialog isn't the
+        // topmost layer and silently skips closing it. Reproduced directly: identical steps,
+        // ~15-45% failure rate depending on run. `onEscapeKeyDown` below suppresses Radix's own
+        // handler so it can't also fire (it otherwise does, in the normal case where its layer
+        // check passes, double-calling `onClose`); this `onKeyDown` is the one and only path.
+        onEscapeKeyDown={(event) => event.preventDefault()}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') onClose()
+        }}
         // Focus goes back to the opener — unless something outside the dialog took it on
         // purpose as it closed, such as the undo box's heading after a decision.
         onCloseAutoFocus={(event) => {

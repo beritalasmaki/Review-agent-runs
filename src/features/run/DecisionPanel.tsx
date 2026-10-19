@@ -159,7 +159,7 @@ export function DecisionPanel({
       className="flex flex-col gap-[var(--space-6)] rounded-lg border border-border bg-surface shadow-card p-[var(--space-4)]"
     >
       <div className="flex flex-col gap-[var(--space-4)]">
-        <div className="flex flex-col gap-[var(--space-1)]">
+        <div className="flex flex-col gap-[var(--space-5)]">
           <SectionHeading id="decision-heading" icon={ShieldCheck}>
             Your decision
           </SectionHeading>
