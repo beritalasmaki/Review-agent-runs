@@ -23,11 +23,11 @@ function PillTabs() {
 }
 
 describe('Tabs, pill variant', () => {
-  it('draws one sliding pill behind the tabs, hidden from assistive tech', () => {
+  it('draws one sliding active-tab underline, hidden from assistive tech', () => {
     const { container } = render(<PillTabs />)
-    const pill = container.querySelector('.t-tabs-pill')
-    expect(pill).not.toBeNull()
-    expect(pill).toHaveAttribute('aria-hidden')
+    const indicator = container.querySelector('.t-tabs-pill')
+    expect(indicator).not.toBeNull()
+    expect(indicator).toHaveAttribute('aria-hidden')
     expect(screen.getAllByRole('tab')).toHaveLength(2)
   })
 
