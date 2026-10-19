@@ -39,6 +39,87 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Ambient background blobs, a glass hero card, and a reverted glass top bar
+
+**Goal**
+"Add few blurred uneven balls in different sizes to float in the background... make it look like
+the background is moving slowly," with colors that "shouldn't differentiate so much from the
+background." Then, mid-session: "make the Main title and description text... closer to each
+other and perhaps on glass card... behind the glass card we could have one of those blurry balls
+floating," followed by "Include these ones inside the card also" (the badge/Archive button/theme
+toggle) and "make sure this upper top navigation in the single run page is transparent for glass
+effect... transparent and blurry." A later correction: "I think those colors are too bright.
+Should be blue tones not yellow or purple."
+
+**What changed**
+- `src/styles/index.css` — `bg-page-glass` gained three more `radial-gradient()` layers (one
+  blue hue, three alphas, three ellipse sizes) and a `bg-page-glass-drift` animation tweening the
+  full `background-position` list.
+- `src/styles/tokens.css` — `--color-blob-1/2/3` tokens (all three theme blocks).
+- `src/styles/transitions.css` — `@keyframes bg-page-glass-drift`.
+- `src/features/run/MyReviews.tsx` — the title/description/badge/Archive-button/theme-toggle row
+  now shares one `bg-glass backdrop-blur` card, `p-[var(--space-4)]` padding, tight
+  `gap-[var(--space-2)]` between title and description.
+- `src/features/run/RunTopBar.tsx` — tried `bg-glass`/`backdrop-blur`, then reverted to opaque
+  (see Why).
+- `src/app/App.tsx`, `src/components/BackgroundBlobs.tsx` — the latter written, then deleted; see
+  Why.
+
+**Steps, in order**
+1. First pass: a `components/BackgroundBlobs.tsx` component, three `aria-hidden` `<span>`s in one
+   `position: fixed; inset: 0` wrapper. `npx playwright test e2e/accessibility.spec.ts` broke
+   almost everywhere — axe flagged real text across unrelated pages as "overlapped by another
+   element." Disabled the component, confirmed the suite went green again, confirming the cause.
+2. Second pass: split into three individually `fixed`/`absolute` spans, each confined near the
+   page's own top. Same failure, fewer pages — the suite still caught it.
+3. Third pass: a `::before` pseudo-element on `<main>` instead of real DOM nodes. Same failure
+   again — axe's heuristic reacts to rendered geometry, not DOM selectability.
+4. Fourth pass, the one that stuck: deleted the component outright; added the three
+   `radial-gradient()`s straight into `bg-page-glass`'s own `background-image` list — the same
+   mechanism the existing hero-band wash and photo layers already used safely. Full suite green.
+5. Mid-task, user flagged the colors (indigo/lime) as too bright and the wrong hue; re-tuned to
+   one muted blue (`--status-blue`) at lower alphas.
+6. Wrapped My reviews' hero row in one glass card per the follow-on request; folded the badge/
+   button/toggle in after the explicit "include these ones inside the card also."
+7. Tried the same `bg-glass`/`backdrop-blur` recipe on `RunTopBar` (`position: sticky`). Broke
+   the suite the same way the blobs had — tried moving the blur to a `position: absolute` child,
+   then tried `position: fixed` on the bar itself instead of `sticky`: both still failed, now
+   flagging text nowhere near the bar. Measured the bar's own real contrast by hand each time
+   (14.2:1 light, 13.5:1 dark) — genuinely fine, confirming this is a suite/position-type
+   limitation, not a real contrast bug. Reverted `RunTopBar` to opaque.
+8. The glass hero card's own added height then failed two more tests (text pushed just past the
+   1440×900 test viewport's bottom edge during the onboarding tour's own scroll-to-spotlight).
+   Confirmed this was new, not pre-existing, by testing the pre-session baseline (`git stash`) —
+   it passed clean. Trimmed the card's padding from `--space-6` to `--space-4` to recover the
+   headroom.
+
+**Why it was done this way**
+Every DOM-based attempt at the blobs shared one root cause: axe's color-contrast rule treats any
+`position: fixed`/`absolute` box of real size as a potential floating layer over whatever its
+rect overlaps, regardless of z-index, `pointer-events`, `aria-hidden`, or whether it's even
+selectable (the pseudo-element case). The fix was architectural, not cosmetic: stop using a
+separate positioned element at all, and let `bg-page-glass`'s existing, already-proven-safe
+layering mechanism carry the new color too.
+
+`RunTopBar` was reverted rather than pushed through with a test change: the suite's objection
+tracks something real — a *sticky, scrolling* blurred backdrop has a different background at
+every scroll position, so one static measurement (however good) can't promise every position
+clears the ratio the way a plain, in-flow glass card can. Weakening the test to accept this
+would remove a real check, not just an inconvenient one.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check`: clean. `node
+scripts/check-theme-bridge.mjs`: ok (70 colours across 3 themes). `npx vitest run`: 293/293.
+`npx playwright test e2e/accessibility.spec.ts` (both themes): 34/34. `npx playwright test
+e2e/keyboard.spec.ts --repeat-each=15`: 45/45. Full `npx playwright test`: 44/44. `npm run
+build`: clean. Screenshots of the hero card and ambient blobs, both themes, both pages.
+
+**Open questions / next**
+`RunTopBar` stays opaque. Making a `position: sticky`/`fixed` surface genuinely safe to blur
+would need either a documented, verified way to special-case it in `e2e/accessibility.spec.ts`'s
+`ownContrast` helper, or a different visual approach (a blur that doesn't move with scroll) — not
+attempted this round.
+
 ## 2026-10-19 · My reviews' status tabs get their track back
 
 **Goal**

@@ -17,6 +17,17 @@ import { cn } from '../../lib/utils'
  * Sticky at the top of the page, so the way back is always one click away
  * (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so headings scrolled to,
  * the view tabs and the sticky side column stay clear of it.
+ *
+ * Opaque, not glass (0117 tried and reverted this): `backdrop-filter` on a `position: sticky` —
+ * or `fixed` — element made axe's color-contrast rule flag unrelated text elsewhere on the page
+ * (not inside this bar, not even nearby) as "overlapped by another element," regardless of
+ * `pointer-events`, regardless of whether the blur lived on this element directly or a plain
+ * `position: absolute` child of it. The real, measured contrast was fine every time (14.2:1
+ * light, 13.5:1 dark on this bar's own text) — the suite's objection tracks something genuine
+ * about a *scrolling* blurred backdrop (what passes underneath it changes continuously, so one
+ * static measurement can't promise every scroll position clears the ratio) that this component
+ * can't yet resolve cleanly. Every other sticky bar in this app (`RunViewTabs`) stays opaque for
+ * the same reason.
  */
 export interface RunTopBarProps {
   run: Run

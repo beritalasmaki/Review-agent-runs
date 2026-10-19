@@ -441,3 +441,51 @@
  *   not apply — confirmed, not just assumed, with the mandatory keyboard stress test
  *   (`--repeat-each=15`) before this shipped.
  */
+
+/* ---- Ambient background blobs ------------------------------------------------------------ */
+
+/*
+ * Not from transitions.dev — this app's own (docs/DECISIONS.md, 0116, rebuilt twice in 0117).
+ * The three attempts that came before this one — a `fixed` wrapper `<span>` covering the whole
+ * viewport, several smaller `fixed`/`absolute` `<span>`s, then a `::before` pseudo-element doing
+ * the same thing — all broke the accessibility suite the same way: axe's color-contrast rule
+ * flags real page text as "overlapped by another element" wherever a `position: fixed` (or
+ * `absolute`) box of real size sits over it, purely from paint-order geometry — regardless of
+ * `pointer-events: none`, `aria-hidden`, or even being a `::before` pseudo-element invisible to
+ * axe's own DOM traversal (confirmed: the pseudo-element version still tripped it, because the
+ * rendered geometry is still there even though the node itself can't be selected). On a layout
+ * this dense, with a sticky top bar spanning the full page width, there was no position/size for
+ * a separate floating box that didn't eventually land on real text somewhere.
+ *
+ * The fix: no separate box at all. These are three more `radial-gradient()` layers on
+ * `bg-page-glass` itself (`index.css`) — the exact same mechanism its existing hero-band wash
+ * and photo already use, on the same element, animated the same way the photo's own
+ * `background-attachment: fixed` already works. A `background-image` layer on an ordinarily-
+ * positioned element was never a problem for axe before this (0089's glass cards, 0108's photo)
+ * and still isn't — only a `position: fixed`/`absolute` *element* is. `animation-name` here
+ * tweens `background-position` across the full six-layer list declared in `index.css` (the
+ * hero-band/wash/photo entries repeat their own static values at every step; only the three blob
+ * entries move) — `background-position` interpolates natively, no need for `@property`-registered
+ * custom properties or a `transform` on a separate box.
+ */
+@keyframes bg-page-glass-drift {
+  0%,
+  100% {
+    background-position:
+      0 0,
+      0 0,
+      -4% -8%,
+      96% -4%,
+      46% 10%,
+      center;
+  }
+  50% {
+    background-position:
+      0 0,
+      0 0,
+      -1% -5%,
+      93% -1%,
+      49% 13%,
+      center;
+  }
+}

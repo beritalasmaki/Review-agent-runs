@@ -343,6 +343,18 @@
    * itself was. */
   --color-glass-chip: color-mix(in srgb, var(--neutral-0) 18%, transparent);
   --color-glass-chip-border: rgb(255 255 255 / 0.55);
+  /* The ambient background blobs (0116, rebuilt twice in 0117): one calm hue, `--status-blue`
+   * (the same muted slate-blue already used for "unknown"/"info" elsewhere in the UI — not the
+   * brand indigo/lime, which read as purple/yellow and were too saturated to "not pop out"), at
+   * three low, different alpha levels for depth rather than three different colours. Mixed down
+   * to an opacity low enough that each `radial-gradient()` layer (part of `bg-page-glass` itself,
+   * index.css) washes toward the page's own colour instead of a visible shape — confirmed
+   * against real rendered pixels and the accessibility suite's own contrast check (every page
+   * these sit behind), not chosen by eye: the first two passes (0116) both measured as real
+   * regressions, caught here, not assumed safe. */
+  --color-blob-1: color-mix(in srgb, var(--status-blue-light) 16%, transparent);
+  --color-blob-2: color-mix(in srgb, var(--status-blue-light) 11%, transparent);
+  --color-blob-3: color-mix(in srgb, var(--status-blue-light) 8%, transparent);
   /* A specular highlight for a glass surface (0098) — a soft diagonal sheen near the top-left
    * corner, like light catching a curved pane. One shared value, not per-theme: the existing
    * `--color-glass-border` (white, both themes) already established that a glass highlight
@@ -507,6 +519,9 @@
     --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
     --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
     --color-glass-chip-border: rgb(255 255 255 / 0.18);
+    --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
+    --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 10%, transparent);
+    --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 7%, transparent);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
@@ -565,6 +580,9 @@
   --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
   --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
   --color-glass-chip-border: rgb(255 255 255 / 0.18);
+  --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
+  --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 10%, transparent);
+  --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 7%, transparent);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);

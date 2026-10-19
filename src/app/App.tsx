@@ -67,7 +67,9 @@ export default function App() {
   return (
     <>
       {/* The frosted-glass page background (docs/DECISIONS.md, 0089, made app-wide by 0097)
-          applies to every screen now, run page included. */}
+          applies to every screen now, run page included. The slowly drifting ambient colour
+          (0116, rebuilt in 0117) is part of `bg-page-glass` itself now — more `radial-gradient()`
+          layers on the same utility, not a separate positioned element. */}
       <main className="min-h-screen bg-page-glass">
         {runId ? (
           <RunReviewPage runId={runId} getRunOptions={delayMs ? { delayMs } : undefined} />
