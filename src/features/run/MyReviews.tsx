@@ -466,7 +466,7 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
@@ -611,7 +611,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           {archiveTable()}
         </section>
@@ -620,7 +620,7 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           <div className="border-b border-border-subtle">
             <ReviewsToolbar

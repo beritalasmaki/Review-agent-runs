@@ -23,7 +23,7 @@ function PillTabs() {
 }
 
 describe('Tabs, pill variant', () => {
-  it('draws one sliding active-tab underline, hidden from assistive tech', () => {
+  it('draws one sliding active-tab indicator, hidden from assistive tech', () => {
     const { container } = render(<PillTabs />)
     const indicator = container.querySelector('.t-tabs-pill')
     expect(indicator).not.toBeNull()
