@@ -45,7 +45,7 @@ function StatusPill({ status }: { status: RunStatus }) {
 
 export function RunOverview({ run }: RunOverviewProps) {
   return (
-    <header className="flex flex-col gap-[var(--space-3)] rounded-lg border border-border-subtle bg-surface shadow-card p-[var(--space-5)]">
+    <header className="flex flex-col gap-[var(--space-5)] rounded-lg border border-border-subtle bg-surface shadow-card p-[var(--space-5)]">
       <div className="self-start">
         <StatusPill status={run.status} />
       </div>
@@ -57,7 +57,7 @@ export function RunOverview({ run }: RunOverviewProps) {
       </h1>
 
       {run.assignment && (
-        <div className="mt-[var(--space-2)] flex flex-col gap-[var(--space-2)]">
+        <div className="flex flex-col gap-[var(--space-2)]">
           <span className={EYEBROW}>
             <Info aria-hidden className="h-4 w-4" />
             Why the agent was asked
@@ -69,7 +69,7 @@ export function RunOverview({ run }: RunOverviewProps) {
         </div>
       )}
 
-      <div className="mt-[var(--space-1)] flex flex-col gap-[var(--space-2)] border-t border-border-subtle pt-[var(--space-3)]">
+      <div className="flex flex-col gap-[var(--space-2)] border-t border-border-subtle pt-[var(--space-5)]">
         <span className={EYEBROW}>
           <Activity aria-hidden className="h-4 w-4" />
           Where the run is now

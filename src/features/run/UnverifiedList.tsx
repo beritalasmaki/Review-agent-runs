@@ -22,20 +22,22 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
   return (
     <section
       aria-labelledby="unverified-heading"
-      className="flex flex-col gap-[var(--space-3)] rounded-lg border border-border-subtle bg-surface shadow-card p-[var(--space-4)]"
+      className="flex flex-col gap-[var(--space-4)] rounded-lg border border-border-subtle bg-surface shadow-card p-[var(--space-4)]"
     >
-      <SectionHeading
-        id="unverified-heading"
-        icon={TriangleAlert}
-        iconClassName="text-status-waived"
-      >
-        {decided ? 'What is still unverified' : 'What is not checked'}
-      </SectionHeading>
-      <p className="text-meta font-normal font-body text-text-secondary">
-        {decided
-          ? 'Everything this decision was made without. This is the list to explain later.'
-          : 'If you approve now, this is the list you would be accepting.'}
-      </p>
+      <div className="flex flex-col gap-[var(--space-5)]">
+        <SectionHeading
+          id="unverified-heading"
+          icon={TriangleAlert}
+          iconClassName="text-status-waived"
+        >
+          {decided ? 'What is still unverified' : 'What is not checked'}
+        </SectionHeading>
+        <p className="text-meta font-normal font-body text-text-secondary">
+          {decided
+            ? 'Everything this decision was made without. This is the list to explain later.'
+            : 'If you approve now, this is the list you would be accepting.'}
+        </p>
+      </div>
       {items.length === 0 ? (
         <p className="border-t border-border-subtle pt-[var(--space-3)] text-meta font-normal font-body text-text-primary">
           Nothing. Every check ran and no score named something it could not check.

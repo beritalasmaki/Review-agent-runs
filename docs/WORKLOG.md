@@ -39,6 +39,76 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Title-to-body spacing fixed to 24px app-wide
+
+**Goal**
+"Spacing between titles and body text should be 24px at least... stick strictly with 8px,
+16px, 24px and 32px" — audit and fix every place a heading sits too close to its paragraph.
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — "My reviews" title block, "Archive" title block, and
+  "Also found in the archive" heading each now wrap their heading + paragraph in their own
+  `gap-[var(--space-5)]` container (was `--space-2`/`--space-3`).
+- `src/features/run/RunOverview.tsx` — the run title card's own gap raised to `--space-5`;
+  removed the `mt-[var(--space-1)]`/`mt-[var(--space-2)]` on the two blocks below the title,
+  which had been compensating for the old, tighter gap and would otherwise have landed off the
+  8/16/24/32 scale once the parent gap changed.
+- `src/features/run/EvidenceTab.tsx`, `StepsTab.tsx`, `UnverifiedList.tsx`,
+  `InProgressBox.tsx`, `DecisionPanel.tsx` — same fix: heading + its description paragraph each
+  get their own 24px wrapper, separate from the card's other internal spacing.
+- `src/components/ui/dialog.tsx` — `DialogContent`'s outer gap (title → body, shared by every
+  `Modal`/`Dialog` in the app) raised from `--space-4` (16px) to `--space-5` (24px).
+- `docs/DECISIONS.md` — new entry 0105.
+
+**Steps, in order**
+1. Confirmed the spacing scale in `tokens.css` (4/8/12/16/24/32/48/64px) and asked the user to
+   scope the "strictly 8/16/24/32" rule: all spacing everywhere (including tight internal
+   button/badge/table-cell chrome), or item-to-item whitespace only. Chose the latter.
+2. Grepped `src/` for every `SectionHeading`/`PageTitle`/`<h1>`/`<h2>` immediately followed by a
+   description paragraph, and read each one to check its actual gap.
+3. Fixed each heading→paragraph pair found under 24px to its own `gap-[var(--space-5)]`
+   wrapper, rather than just widening the whole card's gap (which would also have loosened
+   unrelated internal rhythm — list rows, nav links).
+4. Found the dialog primitive's own title→body gap was a single shared 16px value
+   (`components/ui/dialog.tsx`); fixed once there rather than overriding it per `Modal` caller.
+5. `npx prettier --write` on the two files it flagged after the edits.
+6. Ran the full verification gate (below).
+
+**Why it was done this way**
+Scoped to genuine heading+paragraph pairs and general item-to-item gaps, not every 4px/12px
+value in the codebase: tight internal component chrome (button padding, badge padding, table
+cell padding, icon-to-text gaps inside one control) is a different kind of spacing than "between
+items," and converting it too would have visibly fattened buttons, badges and table rows that
+were already tuned, for a complaint the user's own framing didn't raise. Compact label+value
+pairs (a dialog's small-caps "Decision"/"Requested by" rows, a tour step's eyebrow+body, the
+signature intro's name+tagline) were left alone for the same reason — they read as one visual
+unit, and loosening them would work against the Gestalt proximity the 24px rule exists to serve.
+
+**How to do this by hand**
+For each heading immediately above a description paragraph: wrap both in their own flex column
+with a 24px gap, independent of whatever gap governs the rest of that card or page's layout.
+
+**Verification**
+- `npm run typecheck`, `npm run lint`: clean.
+- `npx prettier --write` then `npm run format:check`: clean.
+- `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npm run
+  check` (typecheck, lint, format, theme-bridge, format-locale, 293 unit tests, 44 e2e tests
+  including the full accessibility suite in both themes and the keyboard spec): all green.
+- `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: 45/45 passed (re-run since
+  `Tabs.tsx` territory — already touched this session for the keyboard-bug fix below — was in
+  scope, out of caution, though this round's edits didn't touch it further).
+- `npm run build`: clean.
+- Screenshots in a real browser (light theme): My reviews, Archive, a run's Evidence tab, All
+  steps tab, and a Decision details dialog — confirmed each title now has visible, consistent
+  breathing room before its body text.
+
+**Open questions / next**
+Dialog-internal small-caps labels (e.g. "Decision", "Requested by" in `ReviewDialogs.tsx`) and
+the onboarding tour's step eyebrow+title+body were left on the tighter scale as label/value
+pairs rather than title+body — flag if the user wants those loosened too.
+
+---
+
 ## 2026-10-19 · Fixed the pre-existing keyboard tab-switching bug; moved run-view tab icons off the headings
 
 **Goal**

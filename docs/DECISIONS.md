@@ -6,6 +6,43 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0105 · Title-to-body spacing fixed to 24px; dialog title gap raised app-wide
+
+**Context.** "Spacing between titles and body text should be 24px at least. There needs to be
+enough whitespace between items. Stick strictly with 8px, 16px, 24px and 32px." Several title/
+heading-to-paragraph pairs across the app were set at 8px or 12px (`--space-2`/`--space-3`):
+the "My reviews" and "Archive" page titles, the run page's own title block (`RunOverview.tsx`),
+the Evidence and All-steps section headings, "Your decision", "What is not checked", "Not ready
+for review yet", and "Also found in the archive". Separately, every `Modal`/`Dialog` in the app
+shares one primitive (`components/ui/dialog.tsx`) whose title-to-body gap was 16px
+(`--space-4`).
+
+**Choice.** Scoped to item-to-item whitespace, confirmed with the user rather than assumed:
+fix every genuine heading→paragraph pairing to `--space-5` (24px), and leave tight internal
+component chrome (button/badge/chip/table-cell padding, icon-to-text gaps inside one control)
+on the existing 4px/12px steps of the scale — converting those too would visibly fatten
+buttons, badges and table rows that were already tuned, for a kind of spacing the user's own
+framing ("between titles and body", "between items") wasn't asking about. Each fix wraps the
+heading and its paragraph in their own `gap-[var(--space-5)]` flex container, distinct from
+whatever gap governs the rest of that card's layout, so raising the title gap didn't also
+inflate unrelated internal rhythm (list rows, nav links). `RunOverview.tsx`'s header also had
+redundant per-child `mt-[var(--space-1)]`/`mt-[var(--space-2)]` compensating for its old 12px
+gap; removed now that the parent gap itself is 24px, since stacking margin on top of the new
+gap would have landed off the 8/16/24/32 scale (28px, not a scale step). The one shared-
+primitive fix — `DialogContent`'s outer `gap-[var(--space-4)]` → `gap-[var(--space-5)]` — raises
+every dialog's title-to-body gap at once (`Modal.tsx`'s callers, including `WelcomeModal`),
+rather than overriding it per call site.
+
+**Consequence.** A future title+description pairing should default to its own
+`gap-[var(--space-5)]` wrapper, matching the rest of the app, rather than reusing whatever gap
+the surrounding card happens to use for its other children. Compact label+value pairs (a
+dialog's small-caps "Decision"/"Requested by" rows, a tour step's eyebrow, the signature
+intro's name+tagline) were deliberately left alone — they read as one unit, not two separate
+items, so loosening them would work against the same Gestalt proximity the 24px rule is meant
+to serve.
+
+---
+
 ## 0104 · Run-view tab icons moved from the section heading onto the tab itself
 
 **Context.** "Move the title icons of the single run page tabs to the tabs. Remove the icon
