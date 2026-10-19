@@ -6,6 +6,33 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0114 · Pill tabs float, with no track box around them
+
+**Context.** A screenshot of the run page's Story/Evidence/All-steps tabs: a visibly boxed
+track (`border border-border-subtle bg-surface-raised p-[var(--space-2)]`, `ui/tabs.tsx`'s
+`pill` variant) sitting on top of the already-glass card underneath it. "Remove the sharp edges
+from these tabs and make float style more. I don't want the tabs to be inside box like that."
+The pill variant's own track never got a border-radius either — 0110 rounded the sliding glass
+capsule behind the active tab, but never the square box containing it, so the box's "sharp
+edges" sat visibly inside a card whose own corners were already rounded.
+
+**Choice.** Removed the track's border, fill and padding entirely
+(`border border-border-subtle bg-surface-raised p-[var(--space-2)]` → nothing) rather than just
+rounding its corners — a rounded box is still a box, and the ask was explicitly not to have one.
+The tabs now sit directly on the card's own surface; only the active tab gets any surface of its
+own, the sliding glass capsule `components/Tabs.tsx` already draws behind it (0110). Both of the
+app's two `pill`-variant tab lists share this track style (`RunViewTabs.tsx`'s Story/Evidence/
+All-steps and `MyReviews.tsx`'s Pending/Requested/Declined/Approved/All-runs) — screenshotted
+both, in both themes, to confirm neither reads worse without the box; both do, if anything,
+read more cleanly against the glass card they sit on.
+
+**Consequence.** A `pill` tab list's spacing now comes entirely from its own `gap` and its
+trigger's own padding, not a track inset — a future `pill` list on a surface with less visual
+texture behind it (a flat opaque background, not a glass card) should get its own look-check
+before assuming this still reads as "floating" rather than "untethered."
+
+---
+
 ## 0113 · A modal confirm footer's destructive action is filled, not outline — a scoped exception to 0039
 
 **Context.** A screenshot of `DecisionDialog.tsx`'s rejected-action confirm step: Cancel
