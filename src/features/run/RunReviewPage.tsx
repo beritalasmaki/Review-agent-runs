@@ -254,8 +254,13 @@ export function RunReviewPage({
          * the order overview, decision, details, view — so the decision is never at the bottom
          * of a long page. The last row takes any spare height, so a short view never pushes a
          * gap in under the overview.
+         *
+         * `pt-[calc(var(--run-bar-height)+var(--space-5))]` (0119): `RunTopBar` is
+         * `position: fixed` now, not `sticky`, so it no longer reserves its own space in normal
+         * flow — this padding is that reserved space, put back by hand, plus the same
+         * `--space-5` top padding this grid always had.
          */}
-        <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-start gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-5)] pb-[var(--space-7)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] md:px-[var(--space-6)] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
+        <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-start gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--run-bar-height,4rem)+var(--space-5))] pb-[var(--space-7)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] md:px-[var(--space-6)] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
           <div
             className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
             data-tour="run-overview"

@@ -39,6 +39,73 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Run page top bar goes glass (reversing an earlier revert)
+
+**Goal**
+0117 tried `bg-glass`/`backdrop-blur` on the run page's sticky top bar and reverted it after a
+real accessibility-suite failure. "These top navigations are still not transparent with blurry
+background? Similar as Apple has?" — Apple's navbar is exactly `fixed` + translucent + blurred,
+confirming the pattern itself is achievable; 0117 just hadn't tried `position: fixed` with the
+layout compensation it needs.
+
+**What changed**
+- `src/features/run/RunTopBar.tsx` — `position: sticky` → `fixed inset-x-0 top-0`; restored
+  `bg-glass backdrop-blur-[var(--blur-glass)]`.
+- `src/features/run/RunReviewPage.tsx` — the grid content wrapper's top padding changed from a
+  plain `--space-5` to `calc(var(--run-bar-height) + var(--space-5))`, since a `fixed` bar no
+  longer reserves its own space in flow the way `sticky` did.
+- `src/features/run/RunReviewPage.test.tsx` — updated a test asserting `.closest('.sticky')` on
+  the breadcrumb to `.closest('.fixed')`, matching the real, intentional change.
+- `src/styles/tokens.css` — light `--color-glass` nudged 58% → 62% (see Why): a real, if
+  marginal, contrast miss turned up on an unrelated page while re-verifying this change.
+
+**Steps, in order**
+1. Confirmed via 0117's own doc comment that `ownContrast` (the accessibility suite's helper for
+   text in a floating layer) only special-cases `position: fixed`, never `sticky` — the likely
+   reason `sticky` + `backdrop-filter` kept getting misclassified.
+2. Switched `RunTopBar` to `fixed`, added the compensating `padding-top` to `RunReviewPage` using
+   the `--run-bar-height` custom property the page already measures via `ResizeObserver` (already
+   used for the sticky "Run details" column and `RunViewTabs`' own offset — no new measurement
+   plumbing needed).
+3. `npx playwright test e2e/accessibility.spec.ts`: 34/34 clean — the position-type theory held.
+4. Verified visually, both themes, both at the top of the page and scrolled, via a fresh
+   production build served with `vite preview` (a long-running dev server from earlier in the
+   session produced a visibly wrong screenshot once — a stale HMR artifact, not a real bug,
+   confirmed by the clean production render).
+5. `npx vitest run` caught the one test asserting the old `.sticky` class; updated it to match
+   the new, intentional `.fixed`.
+6. Running the full suite twice more (not just once) surfaced a separate, pre-existing-adjacent
+   issue: the "N runs still in progress" panel on My reviews measured 4.30:1 in light theme,
+   below the 4.5:1 line, on roughly 1 run in 20–30 — a real borderline case 0118's transparency
+   pass had left with too little margin, not inherent flakiness (confirmed with 30 repeated runs
+   before and after the fix). Nudged light `--color-glass` back up slightly, 58% → 62%.
+7. Also hit one single, non-reproducing failure on an unrelated filters-popover state, returning
+   exactly `0` from `ownContrast`'s "not actually floating" guard rather than a near-threshold
+   value — re-ran the full suite twice more clean, confirming this one was axe's own
+   classification racing on an element unrelated to anything changed this round, not a
+   regression to chase further.
+
+**Why it was done this way**
+0117's own revert comment was explicit that the *measured* contrast was always fine (14.2:1
+light, 13.5:1 dark) — the failure was about the suite's handling of `position: sticky`, not a
+real accessibility problem. That made `position: fixed` (which the suite already has a path for)
+worth trying properly — with the layout compensation 0117's own abandoned `fixed` attempt was
+missing — rather than accepting "glass top bars are impossible here" as the final answer.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check`: clean. `node
+scripts/check-theme-bridge.mjs`: ok (70 colours across 3 themes). `npx vitest run`: 293/293 (one
+test updated to match the intentional `sticky`→`fixed` change). `npx playwright test
+e2e/accessibility.spec.ts` (both themes): 34/34, confirmed clean across three separate full runs
+after the `--color-glass` fix (one additional single non-reproducing failure traced to
+pre-existing axe classification flakiness on an unrelated state, not this round's changes). `npx
+playwright test e2e/keyboard.spec.ts --repeat-each=15`: 45/45. Full `npx playwright test`: 44/44.
+`npm run build`: clean. Screenshots from a production `vite preview` build, both themes, both at
+rest and mid-scroll, confirming the blurred-through-scroll effect renders correctly.
+
+**Open questions / next**
+None.
+
 ## 2026-10-19 · Blobs made visible, glass made more transparent, hero pulled closer to the table
 
 **Goal**

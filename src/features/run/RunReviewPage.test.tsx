@@ -38,14 +38,14 @@ describe('RunReviewPage', () => {
     expect(screen.getByRole('region', { name: 'All 200 steps' })).toBeVisible()
   })
 
-  it('lays out run details, the overview and the decision side by side, with a sticky top bar', async () => {
+  it('lays out run details, the overview and the decision side by side, with a fixed top bar', async () => {
     render(<RunReviewPage runId={runMessyPending.id} getRunOptions={{ delayMs: 0 }} />)
     await screen.findByRole('heading', { level: 1 })
     expect(screen.getByRole('region', { name: 'Run details' })).toBeVisible()
     expect(screen.getByText('Why the agent was asked')).toBeVisible()
     expect(screen.getByText('3 things to solve')).toBeVisible()
     expect(screen.queryByRole('button', { name: /details/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('navigation', { name: 'Breadcrumb' }).closest('.sticky')).not.toBeNull()
+    expect(screen.getByRole('navigation', { name: 'Breadcrumb' }).closest('.fixed')).not.toBeNull()
   })
 
   it('choosing a tab moves focus to that view, and every column stays in place', async () => {

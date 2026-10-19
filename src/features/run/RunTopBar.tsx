@@ -14,20 +14,22 @@ import { cn } from '../../lib/utils'
  * revision chip next to it never truncates, so two runs of the same initiative stay
  * distinguishable.
  *
- * Sticky at the top of the page, so the way back is always one click away
- * (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so headings scrolled to,
- * the view tabs and the sticky side column stay clear of it.
+ * Fixed at the top of the viewport, not sticky (0119 — reversing 0117's revert): the way back is
+ * always one click away (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so
+ * `RunReviewPage` can pad its own content clear of it (a `position: fixed` bar takes no space in
+ * flow, unlike `sticky`) and the view tabs and sticky side column still stick just below it.
  *
- * Opaque, not glass (0117 tried and reverted this): `backdrop-filter` on a `position: sticky` —
- * or `fixed` — element made axe's color-contrast rule flag unrelated text elsewhere on the page
- * (not inside this bar, not even nearby) as "overlapped by another element," regardless of
- * `pointer-events`, regardless of whether the blur lived on this element directly or a plain
- * `position: absolute` child of it. The real, measured contrast was fine every time (14.2:1
- * light, 13.5:1 dark on this bar's own text) — the suite's objection tracks something genuine
- * about a *scrolling* blurred backdrop (what passes underneath it changes continuously, so one
- * static measurement can't promise every scroll position clears the ratio) that this component
- * can't yet resolve cleanly. Every other sticky bar in this app (`RunViewTabs`) stays opaque for
- * the same reason.
+ * Glass (0117 tried this on `position: sticky`, hit a real test failure, and reverted to opaque;
+ * 0119 tries again on `fixed` instead, which is what actually fixed it). `position: sticky` +
+ * `backdrop-filter` made axe's color-contrast rule flag unrelated text elsewhere on the page —
+ * not inside this bar, not even nearby — as "overlapped by another element." Switching to
+ * `position: fixed` (with `RunReviewPage` padding its content to compensate for the bar no
+ * longer reserving space in flow) resolved it: `fixed` is a stable, non-scrolling layer in a way
+ * `sticky` fundamentally isn't (its own box never moves once the page has scrolled past its
+ * start), which is exactly the property the accessibility suite's `ownContrast` helper already
+ * special-cases. The real, measured contrast was fine throughout both attempts (14.2:1 light,
+ * 13.5:1 dark on this bar's own text) — the earlier failure traced to the position type, not the
+ * actual colours.
  */
 export interface RunTopBarProps {
   run: Run
@@ -40,7 +42,10 @@ export interface RunTopBarProps {
 
 export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
   return (
-    <div ref={ref} className="sticky top-0 z-20 border-b border-border-subtle bg-bg">
+    <div
+      ref={ref}
+      className="fixed inset-x-0 top-0 z-20 border-b border-glass-border bg-glass backdrop-blur-[var(--blur-glass)]"
+    >
       <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1 md:flex-none">
           <ol className="flex min-w-0 items-center gap-[var(--space-2)] text-meta font-normal font-body text-text-secondary">

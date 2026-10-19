@@ -315,7 +315,7 @@
    * glass needed to be noticeably less translucent than light glass to keep reading comfortably
    * over the busier dark gradient.
    */
-  --color-glass: color-mix(in srgb, var(--neutral-0) 58%, transparent);
+  --color-glass: color-mix(in srgb, var(--neutral-0) 62%, transparent);
   --color-glass-border: rgb(255 255 255 / 0.3);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.12);
   /* A deeper version of the same shadow, for the one band in a stacked layout (0099) that

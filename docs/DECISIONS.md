@@ -6,6 +6,45 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0119 · The run page's top bar goes glass — reversing 0117's revert, this time on `fixed`
+
+**Context.** 0117 tried `bg-glass`/`backdrop-blur` on `RunTopBar` and reverted it: `position:
+sticky` combined with `backdrop-filter` made axe's color-contrast rule flag unrelated text
+elsewhere on the page as "overlapped by another element," even though the bar's own real
+contrast measured fine. "These top navigations are still not transparent with blurry
+background? Similar as Apple has?" — Apple's own navbar is exactly this pattern (fixed,
+translucent, blurred), which meant it had to be achievable; 0117's attempt just hadn't found the
+right implementation.
+
+**Choice.** `RunTopBar` is `position: fixed` now, not `sticky` — the one position type the
+accessibility suite's own `ownContrast` helper already special-cases as a legitimate floating
+layer. `position: fixed` removes the bar from the page's normal flow entirely (unlike `sticky`,
+which reserves its own space), so `RunReviewPage`'s grid content needed its own
+`padding-top: calc(var(--run-bar-height) + var(--space-5))` to stay clear of it — the same
+`--run-bar-height` the page already measures via `ResizeObserver` and already uses for the
+sticky "Run details" column and `RunViewTabs`' offset. 0117's own earlier, failed attempt at
+`fixed` (mentioned in its own entry) never added this compensating padding, so the bar visually
+sat on top of real page content — a genuine new overlap, not a false positive, which is why that
+attempt failed even worse than `sticky` had. With the padding in place, the full accessibility
+suite passed clean, confirming the earlier failure really was about position type, not about
+glass surfaces being fundamentally incompatible with a top bar.
+
+**Consequence.** `fixed`, with the page compensating its own layout, is now the established
+pattern for a glass bar that needs to stay pinned through scroll in this app — `position: sticky`
+remains unsafe to combine with `backdrop-filter` here (`RunViewTabs` stays opaque, still sticky,
+for the same reason 0117 gave). Any future bar that wants both "stays pinned" and "glass" should
+reach for this pattern directly rather than trying `sticky` first.
+
+Separately, re-running the full suite during this round's verification surfaced a real but
+marginal contrast miss 0118 left behind: My reviews' "N runs still in progress" panel text
+measured at 4.30:1 against light `--color-glass`'s 58% (below the 4.5:1 required), passing most
+runs but not all — a genuine borderline case, not pure measurement noise (confirmed by running
+the exact same test 30 times before and after). Light `--color-glass` moved back up slightly,
+58% → 62%, still visibly more transparent than 0089's original 70% but with real margin above
+the ratio this time, not just a value that happened to measure over 4.5 once.
+
+---
+
 ## 0118 · Blobs paint above the wash, not under it; glass gets more transparent; hero sits closer to the table
 
 **Context.** After 0116/0117 shipped: "I don't see those blurry balls moving? And they are not
