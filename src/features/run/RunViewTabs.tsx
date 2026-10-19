@@ -1,4 +1,5 @@
 import type { Ref } from 'react'
+import { Clock, FileText, List } from 'lucide-react'
 import { TabsList, TabsTrigger } from '../../components/Tabs'
 import { formatCount } from '../../lib/format'
 import type { Run } from '../../lib/types'
@@ -9,6 +10,9 @@ import type { Run } from '../../lib/types'
  * Sticky just under the page's top bar, so the views can still be switched from anywhere in a
  * long run (0044). `ref` lets the page measure its height, so a view's heading scrolled to
  * lands below it.
+ *
+ * Each tab carries the icon its own view's heading used to show (0104): one clear place for it,
+ * not the same icon twice on screen at once.
  *
  * Must render inside the page's `Tabs` root.
  */
@@ -27,6 +31,7 @@ export function RunViewTabs({ run, ref }: RunViewTabsProps) {
         <TabsTrigger
           variant="pill"
           value="story"
+          icon={Clock}
           tooltip="What the agent did, in order, in plain sentences"
         >
           Story
@@ -34,6 +39,7 @@ export function RunViewTabs({ run, ref }: RunViewTabsProps) {
         <TabsTrigger
           variant="pill"
           value="evidence"
+          icon={FileText}
           tooltip="Every file, test and check the page's claims are based on"
         >
           Evidence
@@ -41,6 +47,7 @@ export function RunViewTabs({ run, ref }: RunViewTabsProps) {
         <TabsTrigger
           variant="pill"
           value="steps"
+          icon={List}
           tooltip="The full record, one row for each step the agent took"
         >
           All {formatCount(run.timeline.length, 'step')}

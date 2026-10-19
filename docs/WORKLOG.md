@@ -39,6 +39,94 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Fixed the pre-existing keyboard tab-switching bug; moved run-view tab icons off the headings
+
+**Goal**
+Track down and fix the keyboard-navigation bug on tab lists that earlier sessions had flagged
+as pre-existing and left unfixed, then move the Story/Evidence/All-steps tab icons off their
+section headings and onto the tabs themselves ("remove the icon from the title and put it
+instead to the tab link"), per the user's "go back to the keyboard bug" instruction.
+
+**What changed**
+- `src/components/Tabs.tsx` — new `handleRovingFocusKeyDown`, attached as `onKeyDownCapture` on
+  all three `TabsList` render sites (segmented, pill, line). Intercepts ArrowLeft/ArrowRight/
+  Home/End in the capture phase, before Radix's own (buggy) roving-focus handler runs, and
+  moves focus synchronously.
+- `src/components/Modal.tsx` — `onEscapeKeyDown={(event) => event.preventDefault()}` added
+  alongside the existing `onKeyDown` Escape fallback, so Radix's own Escape handling is fully
+  suppressed and the app's own handler is the only path (closes a double-`onClose`-call bug the
+  fallback alone introduced, caught by the unit tests below).
+- `e2e/keyboard.spec.ts` — "My reviews, keyboard only" updated for the Filters popover (0099):
+  presses Escape to close it before continuing, instead of assuming Tab walks past it.
+- `src/features/run/SectionHeading.tsx` — `icon` prop now optional.
+- `src/features/run/StoryTimeline.tsx`, `EvidenceTab.tsx`, `StepsTab.tsx` — stopped passing an
+  icon to `SectionHeading`; removed the now-unused `lucide-react` imports.
+- `src/features/run/RunViewTabs.tsx` — passes `Clock`/`FileText`/`List` to each `TabsTrigger`'s
+  own `icon` prop instead.
+- `docs/DECISIONS.md` — new entries 0103 (keyboard bug + the two bugs it exposed) and 0104
+  (icon relocation).
+
+**Steps, in order**
+1. Reproduced the dropped-arrow-key-presses bug with a throwaway Playwright script, confirmed
+   it against the real `@radix-ui/react-roving-focus` source (`setTimeout(() =>
+   focusFirst(candidateNodes))` deferring `.focus()` while computing "next" from
+   `event.currentTarget`). Upgraded to `radix-ui@1.8.1` (`npm install radix-ui@1.8.1
+   --save-exact=false`) to check if it was already fixed upstream — same pattern present —
+   then reverted (`npm install radix-ui@1.6.7 --save-exact=false`, confirmed clean via `git
+   status --short package.json package-lock.json`).
+2. Added the capture-phase workaround in `Tabs.tsx`. Verified the specific repro script now
+   nets the correct number of moves.
+3. Re-ran `e2e/keyboard.spec.ts`: a different, later assertion failed (`tabTo(page, /^About
+   Status$/)` timed out) — Tab now reaches further into the page than before because the
+   arrow-key fix let an earlier step in the sequence actually complete. Traced it to Tab
+   cycling within the open Filters popover's own fields, which is correct focus-trap behaviour,
+   not a bug — the test itself was stale from before the popover existed (0099). Updated the
+   test to close the popover with Escape first.
+4. New flake appeared under `--repeat-each=20`: an Escape on the Archive page's Decision
+   Details dialog occasionally left it open. Root-caused to Radix's `DismissableLayerContext`
+   having no `.Provider` anywhere in Radix's own primitives, making its "topmost layer" `Set`
+   global across the app rather than scoped per dialog. Added the `onKeyDown` Escape fallback
+   to `Modal.tsx`. Verified with two consecutive `--repeat-each=20` runs: 60/60 both times.
+5. Made `SectionHeading`'s `icon` optional, removed the icon prop from the three run-view tab
+   bodies, added it to `RunViewTabs.tsx`'s three `TabsTrigger`s instead. Confirmed with
+   screenshots in both themes that each tab now shows its icon once, and the heading below no
+   longer duplicates it.
+6. Ran the full verification gate (below). `npm run test` caught a real regression from step 4:
+   `Modal.test.tsx` and `WelcomeModal.test.tsx` both failed with `onClose` called twice — adding
+   the fallback left Radix's own Escape handler free to also fire in the normal case, not just
+   the stale-layer edge case. Fixed by suppressing Radix's handler outright
+   (`onEscapeKeyDown={(event) => event.preventDefault()}`), making the app's own handler the
+   sole path rather than a race between two. Re-ran: both files green.
+
+**Why it was done this way**
+Neither Radix bug is fixed by editing this app's own component tree in the usual way — both
+live inside Radix's own primitives, confirmed by reading the installed package source directly,
+not assumed from symptoms. The fixes intercept at the one point this app's own code already has
+standing to act: the capture phase for the roving-focus bug (runs before Radix's handler sees
+the event at all), and the dialog's own `onEscapeKeyDown`/`onKeyDown` props for the dismissable-
+layer bug (suppress Radix's decision, substitute a deterministic one). Suppressing Radix's
+Escape handler outright, rather than leaving both live, matters beyond passing the unit tests:
+two independent code paths racing to decide whether to call `onClose` is the same shape of bug
+this whole session was chasing, just one level up.
+
+**Verification**
+- `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: 45/45 passed.
+- `npx vitest run` (full suite): 293/293 passed.
+- `npx playwright test e2e/accessibility.spec.ts` (full suite, both themes): 1 failure on first
+  run (a badge-contrast assertion unrelated to any file touched this session), 6/6 passed on a
+  `--repeat-each=3` re-run of that one test — confirmed pre-existing flake, not a regression.
+- `npm run check` (typecheck, lint, format, theme-bridge, format-locale, unit, full e2e): green,
+  using `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (the
+  pinned `@playwright/test@1.63.0` wanted a headless-shell build newer than what's pre-installed
+  in this container; the regular Chromium build already there works as the documented fallback).
+- `npm run build`: clean.
+- Screenshots: `run-tabs-icons2-light.png` / `-dark.png`, both themes, confirm the icon
+  relocation.
+
+**Open questions / next**
+Re-check both Radix bugs on the next real dependency bump — if either is fixed upstream, the
+workaround is redundant but harmless, not wrong.
+
 ## 2026-10-18 · Bolder title, no icon; inactive tabs read as available, not disabled
 
 **Goal**

@@ -6,6 +6,73 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0104 · Run-view tab icons moved from the section heading onto the tab itself
+
+**Context.** "Move the title icons of the single run page tabs to the tabs. Remove the icon
+from the title and put it instead to the tab link." Story, Evidence and All-steps each showed
+the same icon twice at once: once on the tab that selects the view, once again on the heading
+the view opens with — the same glyph doing the same "what is this" job in two places a few
+rows apart.
+
+**Choice.** `SectionHeading`'s `icon` prop became optional (`features/run/SectionHeading.tsx`);
+`StoryTimeline.tsx`, `EvidenceTab.tsx` and `StepsTab.tsx` each stopped passing one (and dropped
+the now-unused `lucide-react` import). `RunViewTabs.tsx` passes the same three icons
+(`Clock`/`FileText`/`List`) to the matching `TabsTrigger`'s own `icon` prop instead — a prop the
+`pill` variant already supported, so no new component code was needed, only moving which call
+site uses it.
+
+**Consequence.** Any future view added to this tab group should follow the same split: the icon
+identifies the view from its tab, the heading's job is just to name the content once you're
+already there.
+
+---
+
+## 0103 · Rapid arrow-key tab switching dropped moves — a real Radix bug, worked around, not patched over
+
+**Context.** Pressing ArrowRight/ArrowLeft on a tab list faster than about one macrotask apart
+(a fast keyboard user, or any Playwright `keyboard.press` loop without an inter-press delay)
+netted far fewer tab moves than key presses — three rapid presses landed one tab over, not
+three. Traced into `@radix-ui/react-roving-focus` itself (confirmed present in the pinned
+1.6.7 and in the latest 1.8.1, by upgrading, grepping the bundled source for the same
+`setTimeout(() => focusFirst(candidateNodes))` pattern, and reverting): its keydown handler
+computes "next tab" from `event.currentTarget` — whichever element the browser *currently*
+reports as focused — but defers the actual `.focus()` call with a bare zero-delay `setTimeout`.
+A second keypress arriving before that timeout fires still sees the first tab as focused, so it
+computes "next" from the same stale starting point.
+
+**Choice.** `components/Tabs.tsx` intercepts arrow keys in the capture phase
+(`onKeyDownCapture` on `TabsList`), which runs before Radix's own listener on the focused
+trigger ever sees the event. It computes the next tab synchronously from a fresh DOM query,
+calls `preventDefault`/`stopPropagation`, and focuses it immediately — no timeout, so the DOM's
+focus state is always correct before a second keystroke can possibly arrive.
+
+**Two more bugs surfaced once this was fixed, both worked around rather than chased upstream.**
+Reaching "About Status" by keyboard for the first time (the arrow-key fix made it reachable in
+one test's actual sequence) exposed a stale-layer bug in
+`@radix-ui/react-dismissable-layer`: its `DismissableLayerContext` is a plain
+`React.createContext` default that nothing ever wraps in a `.Provider`, so the `layers` `Set`
+tracking which overlay is topmost (and therefore whose Escape handler fires) is global across
+every Tooltip/Popover/Dialog in the app, not scoped per instance — an earlier tooltip
+interaction could leave a stale entry that made Radix skip closing an unrelated dialog on
+Escape (reproduced directly, 15–45% failure rate). `components/Modal.tsx`'s `DialogContent` now
+sets `onEscapeKeyDown={(event) => event.preventDefault()}` to suppress Radix's own decision
+entirely and handles Escape itself in a plain `onKeyDown`, so there is exactly one path to
+close, not two racing to decide whose turn it is (an earlier version left Radix's handler live
+alongside the fallback, which worked in the browser but double-fired `onClose` in jsdom unit
+tests — `Modal.test.tsx` and `WelcomeModal.test.tsx` caught it). `e2e/keyboard.spec.ts`'s "My
+reviews, keyboard only" test was also updated: it predated the Filters popover (0099) and still
+assumed Tab would walk straight through an inline panel; a popover is a focus trap by design, so
+the test now presses Escape to close it before continuing, rather than expecting Tab to escape
+it on its own.
+
+**Consequence.** None of this is a fix to Radix itself — both are confirmed-upstream bugs,
+worked around at the boundary where this app's own code already has a say (the capture phase,
+the dialog's own event handler). A future Radix upgrade should re-check both: if either bug is
+fixed upstream, the workaround becomes redundant but not wrong, since both are written to be
+idempotent with correct Radix behaviour underneath them.
+
+---
+
 ## 0102 · Inactive tabs read as available, not disabled — full-strength brand colour, not faded
 
 **Context.** Two follow-up requests after the header-band work: "the main title and description

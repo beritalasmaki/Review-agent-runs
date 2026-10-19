@@ -1,5 +1,4 @@
 import { Button } from '../../components/ui/button'
-import { FileText } from 'lucide-react'
 import { isSystemActor } from '../../lib/actors'
 import { buildEvidenceGroups } from '../../lib/evidence'
 import type { EvidenceKind } from '../../lib/evidence'
@@ -35,8 +34,8 @@ export function EvidenceTab({ run, onOpenStep }: EvidenceTabProps) {
       aria-labelledby="evidence-heading"
       className="flex min-w-0 flex-col gap-[var(--space-5)]"
     >
-      <div className="flex flex-col gap-[var(--space-2)]">
-        <SectionHeading id="evidence-heading" focusTarget icon={FileText}>
+      <div className="flex flex-col gap-[var(--space-5)]">
+        <SectionHeading id="evidence-heading" focusTarget>
           Evidence
         </SectionHeading>
         <p className="max-w-[45rem] text-body font-normal font-body text-text-secondary">

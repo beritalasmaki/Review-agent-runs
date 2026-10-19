@@ -105,13 +105,20 @@ test('My reviews, keyboard only', async ({ page }) => {
   await keys.press('ArrowRight')
   await expect(page.getByRole('tab', { name: /Approved/, selected: true })).toBeFocused()
 
-  // Filters open with Enter; the panel's first field is next in the order.
+  // Filters open with Enter, as a popover (0099) — Tab cycles within its own fields while
+  // open, same as any other overlay; Escape closes it and returns focus to the trigger.
   await tabTo(page, /^Filters/)
   await keys.press('Enter')
   await expect(page.getByRole('button', { name: /^Filters/ })).toHaveAttribute(
     'aria-expanded',
     'true',
   )
+  await keys.press('Escape')
+  await expect(page.getByRole('button', { name: /^Filters/ })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  )
+  await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused()
 
   // An info tip shows on keyboard focus.
   await tabTo(page, /^About Status$/)

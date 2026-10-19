@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
-import type { ComponentType, ReactNode } from 'react'
+import type { KeyboardEvent, ComponentType, ReactNode } from 'react'
 import { cn } from '../lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import * as UI from './ui/tabs'
@@ -40,6 +40,49 @@ export function Tabs({
       {children}
     </UI.Tabs>
   )
+}
+
+/**
+ * Works around a real bug in `@radix-ui/react-roving-focus` (confirmed still present in the
+ * latest 1.8.1, not just the 1.6.7 this app pins — docs/DECISIONS.md, 0103): its own arrow-key
+ * handler defers the actual `element.focus()` call with a bare `setTimeout`, and computes
+ * "which tab is next" from `event.currentTarget` — whichever tab the browser *currently*
+ * reports as focused. Press the key again before that timeout has run (anything faster than
+ * about one macrotask, which a fast typist or `Playwright.keyboard.press` without an
+ * inter-press delay both reliably do) and focus hasn't actually moved yet, so the second press
+ * computes "next" from the *same starting tab* as the first. Three rapid presses land one tab
+ * over, not three, every time — reproduced on both this app's tab lists, not anything
+ * page-specific.
+ *
+ * Attached as `onKeyDownCapture` on the list: the capture phase runs before the event reaches
+ * the focused tab itself, where Radix's own (buggy) listener lives, so calling
+ * `stopPropagation` here keeps Radix's handler from ever seeing the keystroke. The move itself
+ * is synchronous — a real, immediate `.focus()` call, no timeout — so the DOM's own focus state
+ * is always correct by the time a second keystroke can possibly arrive, however fast it comes.
+ * `loop: true` matches Radix's own default, which this app has never overridden.
+ */
+function handleRovingFocusKeyDown(event: KeyboardEvent<HTMLElement>) {
+  const { key } = event
+  if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') return
+  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
+  const target = event.target
+  if (!(target instanceof HTMLElement) || target.getAttribute('role') !== 'tab') return
+  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')).filter(
+    (tab) => tab.getAttribute('aria-disabled') !== 'true',
+  )
+  const currentIndex = tabs.indexOf(target)
+  if (currentIndex === -1 || tabs.length === 0) return
+  const nextIndex =
+    key === 'Home'
+      ? 0
+      : key === 'End'
+        ? tabs.length - 1
+        : key === 'ArrowRight'
+          ? (currentIndex + 1) % tabs.length
+          : (currentIndex - 1 + tabs.length) % tabs.length
+  event.preventDefault()
+  event.stopPropagation()
+  tabs[nextIndex].focus()
 }
 
 /** `segmented`: the full-width bar described below. `pill`: a compact rounded track whose
@@ -90,7 +133,12 @@ export function TabsList({
     )
   }
   return (
-    <UI.TabsList variant="segmented" aria-label={label} className={className}>
+    <UI.TabsList
+      variant="segmented"
+      aria-label={label}
+      className={className}
+      onKeyDownCapture={handleRovingFocusKeyDown}
+    >
       {children}
     </UI.TabsList>
   )
@@ -205,7 +253,13 @@ function PillTabsList({
 }) {
   const { listRef, indicatorRef } = useSlidingIndicator('pill')
   return (
-    <UI.TabsList ref={listRef} variant="pill" aria-label={label} className={className}>
+    <UI.TabsList
+      ref={listRef}
+      variant="pill"
+      aria-label={label}
+      className={className}
+      onKeyDownCapture={handleRovingFocusKeyDown}
+    >
       <span
         ref={indicatorRef}
         aria-hidden
@@ -242,6 +296,7 @@ function LineTabsList({
       variant="line"
       aria-label={label}
       className={cn('relative', className)}
+      onKeyDownCapture={handleRovingFocusKeyDown}
     >
       <span ref={indicatorRef} aria-hidden className="t-tabs-line bg-primary-strong" />
       {children}
