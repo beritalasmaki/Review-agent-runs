@@ -20,9 +20,12 @@ const tabsListVariants = cva('', {
   variants: {
     variant: {
       segmented: 'flex divide-x divide-border-subtle border-y border-border-subtle',
-      // No border or fill of its own (docs/DECISIONS.md, 0114) — the tabs float directly on
-      // whatever surface the caller sits on; only the active tab gets a surface, the sliding
-      // glass capsule behind it (components/Tabs.tsx).
+      // No border or fill of its own by default (docs/DECISIONS.md, 0114) — the tabs float
+      // directly on whatever surface the caller sits on; only the active tab gets a surface,
+      // the sliding glass capsule behind it (components/Tabs.tsx). A caller with more than a
+      // small, fixed set of views (My reviews' scrolling, badge-carrying status tabs) can still
+      // restore a track via its own `className` (0115) — floating doesn't read as a single
+      // control once there's a list long enough to need its own scroll affordance.
       pill: 'relative inline-flex gap-[var(--space-1)]',
       line: 'scrollbar-none flex gap-[var(--space-2)] overflow-x-auto border-b border-border-subtle px-[var(--space-5)] pt-[var(--space-3)]',
     },

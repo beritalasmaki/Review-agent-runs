@@ -39,6 +39,48 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · My reviews' status tabs get their track back
+
+**Goal**
+Right after dropping the pill tab track entirely (the previous entry, same day): "This style
+doesn't fit in these tabs. I would keep the style in single run page but not here" — a
+screenshot of My reviews' Pending/Requested/Declined/Approved/All-runs tabs now floating, with a
+stray vertical line that only showed up on this list, not the run page's three-tab one.
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — its `TabsList`'s `className` now adds
+  `rounded-lg border border-border-subtle bg-surface-raised p-[var(--space-2)]`, restoring a
+  track, rounded this time to match the card around it (rounded since 0111).
+- `src/components/ui/tabs.tsx` — doc comment on the `pill` variant updated: floating is the
+  shared default, but a caller can restore a track via its own `className` when the list is
+  long enough, or busy enough (badges, horizontal scroll), to need one.
+- `RunViewTabs.tsx` untouched — no override, so the run page's three tabs keep floating.
+
+**Steps, in order**
+1. Confirmed the run page's tabs (3 items, no scroll) were the one place the floating look was
+   actually asked for; My reviews' tabs (5 items, each with a count badge, horizontal scroll)
+   are a different shape of list.
+2. Added the track back on `MyReviews.tsx`'s own `TabsList` only, via `className` (already
+   merged onto the variant's classes by `cn()`/`tailwind-merge`), rather than reverting the
+   shared variant — which would have brought back the run page's box too.
+3. Screenshotted both tab lists again, both themes: My reviews reads as a contained control
+   again (and the stray line is gone), the run page stays floating.
+
+**Why it was done this way**
+A `className` override on the one caller that needs it, not a second named variant — the same
+mechanism `btn-glass`/`btn-glass-fill`-era overrides already used elsewhere in this codebase, so
+`ui/tabs.tsx` doesn't need to grow a `pill-boxed` variant for what is, so far, one caller's
+exception.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check`: clean. `node
+scripts/check-theme-bridge.mjs`: ok. `npx vitest run`: 293/293. `npx playwright test
+e2e/accessibility.spec.ts` (both themes): 34/34. `npx playwright test e2e/keyboard.spec.ts
+--repeat-each=15`: 45/45. `npm run build`: clean. Screenshots of both tab lists, both themes.
+
+**Open questions / next**
+None.
+
 ## 2026-10-19 · Pill tabs float, no boxed track
 
 **Goal**
