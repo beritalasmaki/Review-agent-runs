@@ -39,6 +39,56 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Reject run's modal confirm button is filled red, not a second outline
+
+**Goal**
+A screenshot of `DecisionDialog.tsx`'s rejected confirm step: Cancel and "Reject run" both
+read as outline buttons, equally secondary. "In modals there can't be two secondary buttons
+next to each other. Make the primary action primary (and red background if its removal). Do
+this change in everywhere needed."
+
+**What changed**
+- `src/components/ui/button.tsx` — new `destructiveFill` variant: filled with
+  `--color-status-fail`, text via the already-defined shadcn-bridge `--color-destructive-
+  foreground` token (white in light, near-black in dark). The existing `destructive` variant
+  (outline) is unchanged.
+- `src/features/run/DecisionDialog.tsx` — the rejected case's confirm button now uses
+  `destructiveFill` instead of `destructive`.
+
+**Steps, in order**
+1. Searched every two-button modal footer in the app (`ArchiveConfirmDialog`, `ReportDialog`,
+   `NewRunDialog`, `DecisionDialog`) for the same problem. Only `DecisionDialog`'s rejected case
+   had it — the other three already pair Cancel with a filled `default` confirm button.
+2. Checked `DecisionPanel.tsx`'s own standalone Reject button (outline, from 0039) — a
+   different layout (stacked, with its own caption, not beside another button), so left alone.
+3. Computed contrast by hand for both themes (white on `#b3261e` = 6.25:1; near-black on
+   `#f2897f` = 7.10:1), then confirmed the same numbers against the real rendered button with a
+   throwaway Playwright script (typed a rejection reason, read `getComputedStyle` on the
+   button, screenshotted both themes).
+4. Added the `destructiveFill` variant and switched `DecisionDialog.tsx`'s rejected case to it.
+
+**Why it was done this way**
+A new variant instead of changing `destructive` itself: `DecisionPanel`'s own Reject button
+needed to keep reading as quiet so Approve stays the one reflex action (0039's actual point),
+while the modal confirm footer needed the opposite — one button has to clearly win against
+Cancel. Reused the shadcn-bridge `--color-destructive`/`-foreground` tokens already sitting in
+`index.css` rather than inventing new ones — they were defined for exactly this shape of
+problem and had simply never been wired into a real button.
+
+**How to do this by hand**
+Same as the steps above — inspect every Cancel+Action modal footer for a destructive action,
+give it the filled variant.
+
+**Verification**
+`npx tsc --noEmit`: clean. `npx eslint src --max-warnings 0`: clean. `npx prettier --check`:
+clean. `node scripts/check-theme-bridge.mjs`: ok (67 colours verified across 3 themes). `npx
+vitest run`: 293/293. `npx playwright test e2e/accessibility.spec.ts` (both themes): 34/34.
+`npm run build`: clean. Screenshots of the rejected confirm step in both themes confirm the
+button reads as the one filled primary action next to an outline Cancel.
+
+**Open questions / next**
+None — the audit found exactly one place with the problem, and it's fixed.
+
 ## 2026-10-19 · Icon audit: added where they dual-encode, left alone everywhere else
 
 **Goal**
