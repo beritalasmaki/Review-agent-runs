@@ -7,7 +7,10 @@ import { Slot } from 'radix-ui'
  * shadcn/ui's Button, restyled onto this project's tokens (docs/DECISIONS.md, 0070): the same
  * API — `variant`, `size`, `asChild`, `buttonVariants` — with our type, spacing and colours in
  * place of shadcn's defaults. The colour rules still hold (src/styles/README.md): the decision
- * actions are never the brand colour, and a red action is an outline, never a red fill.
+ * actions are never the brand colour. A red action is an outline on its own (`destructive`,
+ * `DecisionPanel`'s standalone Reject) but a fill beside another button in a modal confirm
+ * footer (`destructiveFill`, docs/DECISIONS.md 0113) — two different problems, not a reversal:
+ * "never a reflex" next to a caption, "never a second secondary button" next to Cancel.
  *
  * No colour transition on most variants, on purpose: one on the line tabs made keyboard tests
  * drop key presses (docs/WORKLOG.md, 2026-09-24) — but that was a transition keyed to rapid
@@ -35,9 +38,19 @@ const buttonVariants = cva(
          * hover/focus (not the shine — it read poorly here), with a small grow. */
         outline:
           'border-border bg-surface text-text-primary transition duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:scale-[1.02] hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
-        /** Reject run: a red outline, never a red fill (src/styles/README.md). */
+        /** `DecisionPanel`'s own standalone Reject run: a red outline, never a red fill
+         * (docs/DECISIONS.md, 0039) — it sits under Approve with its own caption, not beside
+         * another button, so staying quiet is what keeps Approve the one default-reflex action. */
         destructive:
           'border-status-fail bg-surface text-status-fail-tint-fg hover:bg-status-fail-tint-bg active:bg-status-fail-tint-bg',
+        /** A modal confirm footer's destructive action (Reject run), beside Cancel: filled, so
+         * it reads as the dialog's one primary action rather than a second secondary button
+         * next to Cancel (docs/DECISIONS.md, 0113 — a narrower exception to 0039, scoped to the
+         * confirm-footer pattern only). `text-destructive-foreground` is the shadcn-bridge pair
+         * for `bg-destructive` (src/styles/index.css) — already defined to flip white-in-light/
+         * near-black-in-dark, verified at 6.25:1 / 7.10:1 against this red. */
+        destructiveFill:
+          'btn-shine border-destructive bg-destructive text-destructive-foreground hover:opacity-85',
         ghost:
           'btn-shine border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
         /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". */

@@ -195,7 +195,7 @@ export function DecisionDialog({
         <CancelButton onClick={onClose}>Cancel</CancelButton>
         <Button
           size="sm"
-          variant={action === 'rejected' ? 'destructive' : 'default'}
+          variant={action === 'rejected' ? 'destructiveFill' : 'default'}
           onClick={() => void handleSubmit()}
           disabled={!canSubmit}
         >

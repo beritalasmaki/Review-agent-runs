@@ -6,6 +6,41 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0113 · A modal confirm footer's destructive action is filled, not outline — a scoped exception to 0039
+
+**Context.** A screenshot of `DecisionDialog.tsx`'s rejected-action confirm step: Cancel
+(outline) and "Reject run" (also outline, red border only) sitting side by side in the footer.
+"In modals there can't be two secondary buttons next to each other. Make the primary action
+primary (and red background if its removal). Do this change in everywhere needed." Checked every
+other two-button modal footer in the app (`ArchiveConfirmDialog`, `ReportDialog`, `NewRunDialog`)
+— each already pairs Cancel with a filled `default` confirm button; `DecisionDialog`'s rejected
+case was the one place a confirm footer's primary action was still an outline, because it reused
+the `destructive` variant 0039 deliberately made outline-only.
+
+0039's reasoning ("the filled button can't become a reflex") is about `DecisionPanel`'s
+standalone three-button panel, where Approve, Request changes and Reject sit stacked with their
+own captions, not side by side — a different problem from a modal's Cancel/Confirm pair, where
+exactly one button is supposed to read as the primary action and a bare red outline next to a
+grey outline reads as two equally-weighted secondary choices instead of one clear confirm.
+
+**Choice.** Added a `destructiveFill` button variant (`src/components/ui/button.tsx`) alongside
+the existing `destructive`, rather than changing `destructive` itself: filled with
+`--color-status-fail`, text via the shadcn-bridge `--color-destructive-foreground` token
+(`src/styles/index.css`), which already existed — defined to flip white-in-light/near-black-in-
+dark exactly as a filled destructive surface needs (`src/styles/README.md`) — but had never been
+wired into a real button before. Measured directly against the rendered pixels: 6.25:1 in light,
+7.10:1 in dark, both comfortably over 4.5:1. `DecisionDialog.tsx`'s rejected case now uses
+`destructiveFill`; `DecisionPanel.tsx`'s own standalone Reject button keeps plain `destructive`
+(outline) unchanged — 0039's reasoning still holds there, since that layout was never the
+"two buttons next to each other" problem this fixes.
+
+**Consequence.** `destructive` now means "a red action on its own, never the reflex" and
+`destructiveFill` means "a red action that must win against a neutral Cancel it's paired with" —
+two names for two different layouts, not a graduated scale. Any future confirm-footer dialog
+with a destructive action should reach for `destructiveFill` directly rather than `destructive`.
+
+---
+
 ## 0112 · Icons added where they dual-encode, not everywhere — an audited pass, not a sweep
 
 **Context.** A pasted UX reference: icons belong on a button only when they speed scanning, show
