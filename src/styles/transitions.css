@@ -473,19 +473,19 @@
   100% {
     background-position:
       0 0,
-      0 0,
       -4% -8%,
       96% -4%,
       46% 10%,
+      0 0,
       center;
   }
   50% {
     background-position:
       0 0,
-      0 0,
       -1% -5%,
       93% -1%,
       49% 13%,
+      0 0,
       center;
   }
 }
