@@ -39,6 +39,46 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Icon audit: added where they dual-encode, left alone everywhere else
+
+**Goal**
+A pasted UX brief: icons on a button only when they speed scanning, signal direction/
+progression, or add reassurance in a risky moment — never decoration. "Especially onboarding
+needs some enhancement." Audit every button against this, fix only the real gaps.
+
+**What changed**
+- `components/OnboardingTour.tsx` — Back gets a leading `ChevronLeft`, Next a trailing
+  `ChevronRight`, Done (last step) a leading `Check`. "Skip tour" stays bare.
+- `app/WelcomeModal.tsx` — "Take the tour" gets a trailing `ArrowRight`, matching the existing
+  "Open the archive" pattern for the same shape of action.
+- `features/run/DecisionDialog.tsx` — new `ACTION_ICON` map carries `Check`/`ArrowLeft`/`X`
+  from `DecisionPanel`'s own three buttons through to the confirming dialog one step later,
+  where the reassurance matters most (about to commit, most consequentially for "Reject run").
+- `features/run/ReviewDialogs.tsx` — `NewRunDialog`'s "Send request" gets a trailing
+  `ArrowRight`.
+
+**Steps, in order**
+1. Forked an audit of every `<Button>` in the app against the three criteria, rather than
+   adding icons on instinct — most buttons already followed an established house style (leading
+   icon names the subject, trailing `ArrowRight` for forward progression) and needed nothing.
+2. Implemented the four real gaps the audit found, matching each to an icon an adjacent or
+   originating button already used, not inventing new ones.
+3. Screenshotted all four in both themes (the real first-visit flow for the welcome modal and
+   tour, both Approve and Reject confirm dialogs) to confirm the icons render and match their
+   originating buttons, not just that the code compiles.
+
+**Why it was done this way**
+The brief explicitly says icons must never be decorative — the audit's job was as much to
+confirm what *not* to touch (DecisionPanel's own buttons, every dismiss/cancel action, My
+reviews/ReviewsTable/ArchiveTable/UndoBox, all already correct) as to find the four real gaps.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts` (full suite, both themes): 34/34. `npx
+playwright test e2e/keyboard.spec.ts e2e/onboarding-tour.spec.ts e2e/approve-flow.spec.ts`:
+10/10 (including the tour's own Back/Skip/Next tab-trap test). `npx vitest run`: 293/293. `npm
+run build`: clean. Screenshots: welcome modal, two tour steps, both decision confirm dialogs
+(Approve and Reject), light and dark.
+
 ## 2026-10-19 · Table card corners rounded, to match the glass pill tabs
 
 **Goal**
