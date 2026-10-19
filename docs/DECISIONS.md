@@ -6,6 +6,43 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0118 · Blobs paint above the wash, not under it; glass gets more transparent; hero sits closer to the table
+
+**Context.** After 0116/0117 shipped: "I don't see those blurry balls moving? And they are not
+blu[e]ish? Also noticed the title card is far from the table. Should be closer to it. Also
+noticed the card and the table are not transparent at all? Can you make them transparent a bit."
+
+**Choice.** Three independent fixes:
+- **The blobs were real, just invisible.** `bg-page-glass`'s layer order had the page-wide
+  `--color-glass` wash listed *before* the blob gradients — `background-image` paints first-
+  listed layers on top, so the wash (70%/55% opaque at the time) was sitting over the blobs,
+  diluting them most of the way to nothing. Reordered so the blobs paint above the wash, below
+  the hero band. Their own alpha was also roughly doubled (`--color-blob-1/2/3`, tokens.css),
+  since the first values were tuned while still being diluted a second time and read as too
+  faint once they weren't.
+- **"Not transparent at all" was also real, not a request to break an existing rule.**
+  `--color-glass` dropped from 70%/55% (light/dark) to 58%/51% — light moved further than dark
+  could, since dropping dark the same amount (to 46%) measured as a real contrast regression on
+  the archive toast's own "Undo" link (4.26:1, caught by the accessibility suite, not assumed
+  safe) once the glass let more of the busier dark photo through. 51% was the lowest dark value
+  that still cleared 4.5:1.
+- **Hero-to-table gap**: `MyReviews.tsx`'s outer page wrapper went from `gap-[var(--space-5)]`
+  (24px) to `gap-[var(--space-3)]` (12px) — the gap between the hero card and the "Runs" table
+  directly below it, not the title-to-description gap inside either (which 0136 separately
+  pinned to ≥24px and stays untouched: a different pair of elements, not a reversal of that
+  rule). The hero card's own padding also had to drop again, `--space-5` → `--space-4`, to keep
+  content clear of the accessibility suite's test-viewport fold once the tighter table gap no
+  longer absorbed the difference on its own.
+
+**Consequence.** `--color-glass`'s two percentages are the load-bearing numbers for every glass
+surface in the app now at a new baseline — any future glass addition should assume 58%/51%, not
+the 0089-era 70%/55%, and still re-measure rather than assume. Layer order inside a multi-layer
+`background-image` is now a real, previously-undocumented footgun this app has hit twice
+(0108's photo was added at the *bottom* on purpose; the blobs needed to be *above* the wash,
+easy to get backwards without rendering and actually looking).
+
+---
+
 ## 0117 · My reviews' hero gets one glass card; the run page's sticky top bar stays opaque
 
 **Context.** Two follow-on requests in the same round as 0116's ambient blobs: "make the Main

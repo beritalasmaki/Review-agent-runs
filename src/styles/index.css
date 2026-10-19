@@ -196,19 +196,22 @@
  * the whole element) gives the photo the same translucent wash every other glass surface in the
  * app already uses, everywhere, not just near the title.
  *
- * Three more layers, between the wash and the photo (docs/DECISIONS.md, 0116, rebuilt twice in
- * 0117): soft `radial-gradient()` "blobs" in one calm blue (`--color-blob-1/2/3`, tokens.css),
- * drifting slowly via `transitions.css`'s `bg-page-glass-drift` keyframe. Not a separate
- * positioned element — three earlier attempts at that (a full-viewport `fixed` wrapper, several
- * smaller `fixed`/`absolute` spans, a `::before` pseudo-element) all broke the accessibility
- * suite the same way: axe's color-contrast rule treats any `position: fixed`/`absolute` box of
- * real size as a potential floating layer over whatever page text its rect happens to overlap —
- * regardless of `pointer-events`, `aria-hidden`, or being invisible to axe's own DOM traversal as
- * a pseudo-element — and on a layout this dense, with a sticky top bar spanning the full page
+ * Three more layers, above the wash (docs/DECISIONS.md, 0116, rebuilt three times in 0117/0118):
+ * soft `radial-gradient()` "blobs" in one calm blue (`--color-blob-1/2/3`, tokens.css), drifting
+ * slowly via `transitions.css`'s `bg-page-glass-drift` keyframe. Not a separate positioned
+ * element — three earlier attempts at that (a full-viewport `fixed` wrapper, several smaller
+ * `fixed`/`absolute` spans, a `::before` pseudo-element) all broke the accessibility suite the
+ * same way: axe's color-contrast rule treats any `position: fixed`/`absolute` box of real size as
+ * a potential floating layer over whatever page text its rect happens to overlap — regardless of
+ * `pointer-events`, `aria-hidden`, or being invisible to axe's own DOM traversal as a
+ * pseudo-element — and on a layout this dense, with a sticky top bar spanning the full page
  * width, nothing was ever clear of real text. A `background-image` layer on this ordinarily-
  * positioned element was never that problem — it's the same mechanism the hero band and photo
- * above already use safely. `background-attachment: fixed`, like the photo: stays visible as the
- * page scrolls, rather than scrolling away after the first screen. Each gradient defines its own
+ * above already use safely. Listed *before* the wash (0118 — the first version listed them
+ * after, i.e. visually underneath it, and the wash's own opacity muted them down to invisible):
+ * `background-image` layers paint first-listed-on-top, so the blobs now sit above the wash and
+ * below the hero band. `background-attachment: fixed`, like the photo: stays visible as the page
+ * scrolls, rather than scrolling away after the first screen. Each gradient defines its own
  * finite ellipse (different radii per blob — the "different sizes" asked for) with a soft 70%
  * fade, which is the blur the request asked for — no `filter: blur()` needed, a gradient's own
  * fade already is one.
@@ -217,18 +220,18 @@
   background-color: var(--color-bg);
   background-image:
     linear-gradient(to bottom, var(--color-hero-band) 0%, transparent var(--hero-band-height)),
-    linear-gradient(var(--color-glass), var(--color-glass)),
     radial-gradient(32rem 30rem at -4% -8%, var(--color-blob-1), transparent 70%),
     radial-gradient(26rem 24rem at 96% -4%, var(--color-blob-2), transparent 70%),
-    radial-gradient(24rem 20rem at 46% 10%, var(--color-blob-3), transparent 70%), var(--page-photo);
+    radial-gradient(24rem 20rem at 46% 10%, var(--color-blob-3), transparent 70%),
+    linear-gradient(var(--color-glass), var(--color-glass)), var(--page-photo);
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
   background-size: auto, auto, auto, auto, auto, cover;
   background-position:
     0 0,
-    0 0,
     -4% -8%,
     96% -4%,
     46% 10%,
+    0 0,
     center;
   background-attachment: scroll, fixed, fixed, fixed, fixed, fixed;
   animation: bg-page-glass-drift 70s ease-in-out infinite;
