@@ -39,6 +39,47 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Pill tabs float, no boxed track
+
+**Goal**
+A screenshot of the run page's Story/Evidence/All-steps tabs: a visible box (border + fill)
+around the whole tab row. "Remove the sharp edges from these tabs and make float style more. I
+don't want the tabs to be inside box like that."
+
+**What changed**
+- `src/components/ui/tabs.tsx` — the `pill` variant's track (`tabsListVariants`) dropped
+  `border border-border-subtle bg-surface-raised p-[var(--space-2)]` entirely, down to
+  `relative inline-flex gap-[var(--space-1)]`. Only the active tab still gets a surface: the
+  sliding glass capsule `components/Tabs.tsx` already draws behind it (0110).
+- `src/components/Tabs.tsx` — updated a stale doc comment on the `pill` variant that still
+  described 0107's reverted bottom-border look instead of 0110's current glass capsule.
+
+**Steps, in order**
+1. Found the box in `ui/tabs.tsx`'s `tabsListVariants` pill entry — the track itself, not the
+   active-tab indicator, which was already fully rounded.
+2. Checked both call sites sharing this variant (`RunViewTabs.tsx`, `MyReviews.tsx`'s status
+   tabs) rather than assuming the screenshot's one location was the only one to fix.
+3. Removed the border/fill/padding, rather than just rounding the box's corners — the ask was
+   no box, not a rounder one.
+4. Screenshotted both tab lists, both themes, with a throwaway Playwright script (bypassing the
+   welcome intro via the same `sessionStorage` flags `e2e/fixtures.ts` uses) to confirm the
+   floating look reads cleanly against the glass card underneath.
+
+**Why it was done this way**
+The track's border-radius was never actually the problem — it had none, so "sharp edges" was
+accurate, but rounding them would still have left a box the user explicitly said they didn't
+want. Removing the track styling outright matches "float style" literally: nothing but the
+active tab's own glass capsule has a surface.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check`: clean. `node
+scripts/check-theme-bridge.mjs`: ok. `npx vitest run`: 293/293. `npx playwright test
+e2e/accessibility.spec.ts` (both themes): 34/34. `npx playwright test e2e/keyboard.spec.ts
+--repeat-each=15`: 45/45. `npm run build`: clean. Screenshots of both tab lists in both themes.
+
+**Open questions / next**
+None.
+
 ## 2026-10-19 · Reject run's modal confirm button is filled red, not a second outline
 
 **Goal**

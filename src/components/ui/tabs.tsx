@@ -20,7 +20,10 @@ const tabsListVariants = cva('', {
   variants: {
     variant: {
       segmented: 'flex divide-x divide-border-subtle border-y border-border-subtle',
-      pill: 'relative inline-flex gap-[var(--space-1)] border border-border-subtle bg-surface-raised p-[var(--space-2)]',
+      // No border or fill of its own (docs/DECISIONS.md, 0114) — the tabs float directly on
+      // whatever surface the caller sits on; only the active tab gets a surface, the sliding
+      // glass capsule behind it (components/Tabs.tsx).
+      pill: 'relative inline-flex gap-[var(--space-1)]',
       line: 'scrollbar-none flex gap-[var(--space-2)] overflow-x-auto border-b border-border-subtle px-[var(--space-5)] pt-[var(--space-3)]',
     },
   },

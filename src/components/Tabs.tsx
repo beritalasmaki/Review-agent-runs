@@ -85,10 +85,9 @@ function handleRovingFocusKeyDown(event: KeyboardEvent<HTMLElement>) {
   tabs[nextIndex].focus()
 }
 
-/** `segmented`: the full-width bar described below. `pill`: a compact track for a small set of
- * views in a toolbar, where a full-width bar would dominate — the selected tab is marked by its
- * own text colour plus a thin bottom border (0107), not a filled capsule, which read as a box
- * fighting the rest of the app's soft, borderless glass surfaces. `line`: text tabs on a rule,
+/** `segmented`: the full-width bar described below. `pill`: a small set of views in a toolbar,
+ * floating with no track of its own (docs/DECISIONS.md, 0114) — only the active tab gets a
+ * surface, the sliding glass capsule behind it. `line`: text tabs on a rule,
  * the selected one underlined in the brand colour — for tabs that filter one list, each
  * carrying its own icon and count (docs/DECISIONS.md, 0060). Pill and line now share the exact
  * same underline mechanics; only the track chrome around them differs. */
