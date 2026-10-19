@@ -39,6 +39,47 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Pill tabs' indicator: back to a glass capsule
+
+**Goal**
+"Can we replace the tabs with glassmorphism style? The line tab looks outdated" — reverse 0107's
+bottom-border indicator on the My reviews status tabs back to a translucent capsule, now that
+there's a real reason it should work (0108's photo background).
+
+**What changed**
+- `src/components/Tabs.tsx` — `useSlidingIndicator`'s `place()` branches `pill` (full
+  `translate(x, y)` + `height`) from `line` (translateX + width-only) again. `PillTabsList`'s
+  indicator span: `bg-primary-strong` → `rounded-full border border-glass-chip-border
+  bg-glass-chip shadow-glass backdrop-blur-[var(--blur-glass)]` (the same recipe `btn-glass`
+  already uses).
+- `src/styles/transitions.css` — `.t-tabs-pill` back to the absolutely-positioned,
+  `overflow: hidden` box geometry with its `::before` specular sheen restored.
+- `docs/DECISIONS.md` — new entry 0110, explicitly framed as a reversal of 0107 and why it's
+  defensible now (the track sits over real photographic texture, not the old gradient).
+
+**Steps, in order**
+1. Confirmed 0107's own reasoning no longer held: it moved away from the capsule because the
+   track had nothing real behind it for `backdrop-filter` to blur — true before 0108 replaced
+   the gradient with a real photo, not true any more.
+2. Restored the pill-specific sizing branch, the capsule CSS, and the glass-chip classes;
+   screenshotted both themes and a tab switch to confirm the capsule resizes and slides
+   correctly, not just repositions.
+3. Re-ran the full accessibility suite — text on a translucent surface is exactly the kind of
+   change that regresses contrast quietly; reusing `btn-glass`'s already-tuned tokens doesn't
+   exempt it from being checked, it was re-verified anyway. 34/34, both themes.
+
+**Why it was done this way**
+Framed as an explicit reversal in the decision log, not a quiet re-edit: the underlying judgment
+call (glass needs real texture behind it) didn't change between 0107 and 0110 — the page itself
+did. Worth being honest that this is the second direction this indicator has taken, with a real
+reason, not drift.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts` (full suite, both themes): 34/34. `npx playwright
+test e2e/keyboard.spec.ts --repeat-each=15` (Tabs.tsx touched again): 45/45. `npx vitest run`:
+293/293. `npx playwright test e2e/approve-flow.spec.ts e2e/onboarding-tour.spec.ts`: 7/7. `npm
+run build`: clean. Screenshots both themes, before and after a tab switch.
+
 ## 2026-10-19 · A real photo for the page background, and the primary button finally fixed
 
 **Goal**

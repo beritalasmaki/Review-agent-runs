@@ -6,6 +6,37 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0110 · Pill tabs' active indicator goes back to a glass capsule, reversing 0107
+
+**Context.** "Can we replace the tabs with glassmorphism style? The line tab looks outdated" —
+pointing at the My reviews status tabs' bottom-border indicator. 0107 had deliberately moved
+away from a filled capsule to this same bottom border, because the capsule read as a flat,
+opaque box fighting the rest of the app's soft design at the time.
+
+**Choice.** Reversed, not reinvented: `useSlidingIndicator`'s `place()` branches `pill`/`line`
+apart again (full `translate(x, y)` + `height` for the pill, `translateX` + width-only for the
+line, which keeps its thin underline), `.t-tabs-pill` goes back to the absolutely-positioned,
+`overflow: hidden` box geometry with its `::before` specular sheen restored, and
+`PillTabsList`'s indicator span gets a real glass recipe — `rounded-full border
+border-glass-chip-border bg-glass-chip shadow-glass backdrop-blur-[var(--blur-glass)]` — the
+exact same tokens `btn-glass` (the outline button) already uses, not a new one invented for
+this. What makes this a defensible reversal and not just flip-flopping: 0107's capsule sat on a
+track that, at the time, had nothing real behind it for `backdrop-filter` to blur — the gradient
+background hadn't been replaced with a real photo yet (that came later, 0108). The My reviews
+card this track lives on is itself genuinely glass (`bg-glass`, `backdrop-blur`), and now sits
+over real photographic texture, so a translucent capsule here has something actual to reveal —
+the same condition 0109 used to judge the primary button the *other* way (no texture behind it,
+so no glass).
+
+**Consequence.** Re-ran the full accessibility suite after restoring this (34/34, both themes) —
+text sitting on a translucent glass surface is exactly the kind of change that can quietly
+regress contrast, so this was verified, not assumed safe because the recipe is reused from
+`btn-glass`. The standing rule from 0109 holds and cuts both ways: before adding or removing
+glass from any surface, check what's actually behind it in the rendered page — here, the answer
+flipped from "nothing" to "a real photo" as the page's own background changed underneath it.
+
+---
+
 ## 0109 · Primary buttons stop being "glass" where there was never anything to be glass over
 
 **Context.** "Still those primary buttons are ugly" / "need to be still polished and made more

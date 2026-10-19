@@ -347,9 +347,9 @@
    * corner, like light catching a curved pane. One shared value, not per-theme: the existing
    * `--color-glass-border` (white, both themes) already established that a glass highlight
    * reads correctly against either theme's glass without needing its own dark-theme variant.
-   * Consumed by `.glass-sheen::before` (index.css, buttons and the warning badge) — no longer by
-   * the pill tabs' own indicator, which dropped its filled-capsule surface for a bottom border
-   * and has nothing left for a sheen to sit on (0107). */
+   * Consumed by `.glass-sheen::before` (index.css, buttons and the warning badge) and
+   * `.t-tabs-pill::before` (transitions.css, the tab indicator's own capsule surface — back
+   * again in 0110 after 0107 had briefly dropped it). */
   --glass-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.4) 0%, transparent 45%);
 
   /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text

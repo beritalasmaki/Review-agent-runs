@@ -7,7 +7,7 @@ Input, NativeSelect, Popover, RadioGroup, Sonner, Switch, Table, Tabs, Textarea 
 Each was fetched from shadcn-ui/ui on GitHub (the registry is blocked here) and restyled onto
 our tokens. The API stays shadcn's, with a few additions, each noted in the file's header
 comment. Every control in the app is built from these. The files beside `ui/` put them
-together for this app: `Modal` (Dialog), `Tabs` (Tabs, with a sliding active-tab underline), `InfoTip`
+together for this app: `Modal` (Dialog), `Tabs` (Tabs, with a sliding active-tab indicator), `InfoTip`
 (Tooltip), `StatusBadge` (Badge), `ThemeToggle` (Switch), `notify` (Sonner) and
 `OnboardingTour` (Popover).
 
@@ -21,11 +21,12 @@ Rules:
 - Every state a component can be in has a Storybook story, including empty and error.
 - Status is never carried by colour alone: icon plus text as well.
 
-`Tabs` has three variants: `segmented`, `pill` and `line`. The pill variant has a sliding
-bottom-border indicator from transitions.dev (docs/DECISIONS.md, 0047, 0107 — not a filled
-capsule, which read as a box fighting the rest of the app's soft, borderless glass look) and
-optional per-tab tooltips (`tooltip`). `line` is underlined text tabs for filtering one list
-(0060), sharing the exact same sliding-underline mechanics as pill.
+`Tabs` has three variants: `segmented`, `pill` and `line`. The pill variant has a sliding glass
+capsule behind the active tab, from transitions.dev (docs/DECISIONS.md, 0047, 0110 — briefly a
+bottom border in 0107, reversed once the track it sits on had a real photo behind its own glass
+to reveal) and optional per-tab tooltips (`tooltip`). `line` is underlined text tabs for
+filtering one list (0060) — a thin sliding bar, not a capsule, sharing only its horizontal
+sliding mechanics with pill.
 
 `InfoTip` is the small "i" that explains a label, on hover and keyboard focus. `notify()`
 shows a short confirmation that stays until closed; the page renders `<Toaster />` for it. Both
