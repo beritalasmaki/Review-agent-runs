@@ -39,6 +39,68 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Button shine split into two strengths
+
+**Goal**
+"I think that shiny hover effect in primary buttons should only appear when user is clicking
+final action e.g. Approve, Start the tour (onboarding) or Archive? But in all other places the
+hover could be just simple small fade-in shine... I noticed when in onboarding the shining
+hover came every time user hovered 'next' button... it was annoying."
+
+**What changed**
+- `src/styles/transitions.css` — split `.btn-shine` into two classes: `.btn-shine` (unchanged,
+  the full 2.3s travelling sweep) and a new `.btn-shine-sm` (the same stripe, but it only fades
+  its opacity in over 180ms, no travel).
+- `src/components/ui/button.tsx` — the `default` and `ghost` variants now carry `btn-shine-sm`
+  as their base instead of `btn-shine`.
+- `src/lib/utils.ts` — registered `btn-shine`/`btn-shine-sm` as one tailwind-merge class group,
+  so a call site's `className="btn-shine"` actually replaces the variant's own `btn-shine-sm`
+  rather than both classes applying together.
+- Four call sites opted back up to the full `btn-shine`, each a genuine one-off final action:
+  `DecisionPanel.tsx`'s "Approve and release", `DecisionDialog.tsx`'s decision-confirm button
+  (all three outcomes — it's always the one click that submits), `WelcomeModal.tsx`'s "Take the
+  tour", and `ReviewDialogs.tsx`'s "Move to the archive" confirm.
+
+**Steps, in order**
+1. Found every `default`-variant `<Button>` in the app (12 occurrences) and sorted them into
+   "genuine final action" (the user's three named examples, plus the decision-confirm dialog
+   that's structurally the same thing) vs. everything else — repeated/navigational buttons
+   (the tour's Next/Done, a table row's Review, a sort icon) or a secondary step in a longer
+   flow (Undo, Create report, Send request).
+2. Added `.btn-shine-sm` beside the existing `.btn-shine` in transitions.css, downgraded
+   `default`/`ghost`'s base class in button.tsx, then added the class-group registration in
+   `lib/utils.ts` so overriding it at a call site actually works instead of stacking both.
+3. Added `className="btn-shine"` at the four call sites identified in step 1.
+4. Wrote a one-off Playwright spec (deleted after use, not part of the suite) that hovers each
+   of "Take the tour", the tour's "Next", and "Approve and release", reading the real computed
+   `::after` style over time: confirmed "Take the tour" and "Approve and release" both carry
+   `btn-shine` and visibly travel (`transform` matrix changing across 1.2s), while "Next" carries
+   `btn-shine-sm` and only fades opacity 0 → 1 with no travel.
+
+**Why it was done this way**
+A per-call-site override, not a prop on `Button`, because the distinction is about what the
+button *does* (a one-off commitment vs. something stepped through repeatedly), which the
+component itself has no way to know — the same reasoning 0098's `glass-sheen` and `btn-glass`
+already use for other opt-in treatments. Grouping both class names under one tailwind-merge
+class group (rather than, say, always rendering both and letting CSS specificity decide) keeps
+the override a one-line, readable `className` rather than something that silently depends on
+source order.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check`: clean. A
+temporary vitest sanity check confirmed `cn('btn-shine-sm ...', 'btn-shine')` drops the `-sm`
+variant (deleted after confirming). `npx vitest run`: 293/293. `node
+scripts/check-theme-bridge.mjs` (`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium`,
+the preinstalled Chromium build not matching this Playwright version's pinned revision): ok, 70
+colours across 3 themes. `npx playwright test e2e/accessibility.spec.ts`: 34/34. `npx
+playwright test e2e/keyboard.spec.ts --repeat-each=15`: 45/45. Full `npx playwright test
+--ignore-snapshots`: 44/44, including the onboarding-tour and approve-flow specs. `npm run
+build`: clean. The one-off hover-probe spec (above) confirmed the real rendered behaviour
+matches intent in both the full-shine and small-shine cases.
+
+**Open questions / next**
+None.
+
 ## 2026-10-19 · Run page top bar goes glass (reversing an earlier revert)
 
 **Goal**

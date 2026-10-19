@@ -6,6 +6,44 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0120 · Button shine, two strengths: full sweep only for a one-off final action
+
+**Context.** "I think that shiny hover effect in primary buttons should only appear when user
+is clicking final action e.g. Approve, Start the tour (onboarding) or Archive? But in all other
+places the hover could be just simple small fade-in shine... I noticed when in onboarding the
+shining hover came every time user hovered 'next' button... it was annoying." 0083 gave every
+`default`/`ghost`/`destructiveFill` button the same 2.3-second travelling sweep on hover. That
+reads fine for a button a reviewer clicks once, but the onboarding tour's own "Next" button is
+the same component shown on every one of its steps — hovering it while reading through the tour
+replayed the full sweep each time.
+
+**Choice.** Split `.btn-shine` into two CSS classes (transitions.css): `.btn-shine` keeps the
+original travelling sweep, now reserved for a genuine one-off, final action — "Approve and
+release" (`DecisionPanel` and its confirm dialog), "Take the tour" (`WelcomeModal`), "Move to
+the archive" (confirm dialog), and `destructiveFill`'s "Reject run" confirm (already full-
+strength, unchanged). A new `.btn-shine-sm` fades the same stripe's opacity in, with no travel,
+over 180ms instead of 2300ms — quiet enough to hover repeatedly without it reading as a show
+replaying. `button.tsx`'s `default` and `ghost` variants now carry `btn-shine-sm` as their base;
+a call site opts up to the full sweep with an explicit `className="btn-shine"`. The two names
+are registered as one tailwind-merge class group (`lib/utils.ts`, the same mechanism `btn-glass`
+already uses for `bg-color`/`border-color`/etc.) so passing `btn-shine` at a call site actually
+drops the variant's own `btn-shine-sm` instead of both applying at once.
+
+**Why these four, not others.** Everything else `default`-variant that stays on the quiet
+`btn-shine-sm` base is either repeated/navigational (the tour's own Next/Done, a table row's
+"Review", a sort icon) or a secondary step in a longer flow (Undo, "Create report", "Send
+request", "Open the full review") — none of them the one decisive commitment the user's
+examples all share. The decision-confirm dialog's own button (`DecisionDialog.tsx`) gets
+`btn-shine` for all three outcomes, not just "approved": it is always the single click that
+actually submits the decision, same category as the other three regardless of which outcome.
+
+**Consequence.** A future final/decisive action should reach for `className="btn-shine"`
+directly rather than accepting the variant's quiet default; anything stepped through
+repeatedly, or that merely opens a confirm dialog for one of the four above, should leave the
+default alone.
+
+---
+
 ## 0119 · The run page's top bar goes glass — reversing 0117's revert, this time on `fixed`
 
 **Context.** 0117 tried `bg-glass`/`backdrop-blur` on `RunTopBar` and reverted it: `position:

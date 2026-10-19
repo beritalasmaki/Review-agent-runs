@@ -275,30 +275,44 @@
  * 2026-09-24 — a colour transition on the tabs dropped arrow-key presses). A CSS-only diagonal
  * sweep gets the same "shiny" read without either cost: it is keyed to `:hover`/`:focus-visible`
  * — pseudo-classes the mouse sets, never a per-keystroke React re-render — and needs no script.
- * Applied to the `default` (filled) and `ghost` (text-only, filled on hover) button variants.
  * Not `outline` — tried there too (0084), but read poorly on a bordered, lightly-filled button;
  * it has its own plain hover fade plus a small grow instead (button.tsx). Not `destructive`
  * (a red shine would read as an alert, not an affordance) or `link` (already animates its own
- * underline). Scoped via a plain `.btn-shine` class on those two variants (button.tsx) rather
- * than the `data-slot`/`data-variant` attributes `Button` already carries: a `Button` rendered
- * `asChild` inside another Radix primitive (e.g. the Filters button, inside a
- * `CollapsibleTrigger`) has its own `data-slot` overwritten by the wrapper, the same class of
- * collision `components/Tabs.tsx`'s `PillTabsList` already works around for `data-state` — a
- * plain class survives that composition because `cn()` concatenates class lists, never
- * overwrites one attribute with another. The stripe's colour is `--color-button-shine`
- * (tokens.css) — `currentColor` at partial opacity, each variant's own text colour, so it is
- * correct against any fill in both themes with one rule instead of one per variant.
+ * underline). The stripe's colour is `--color-button-shine` (tokens.css) — `currentColor` at
+ * partial opacity, each variant's own text colour, so it is correct against any fill in both
+ * themes with one rule instead of one per variant.
+ *
+ * Two strengths (0120 — "it was annoying" hovering the onboarding tour's Next button every
+ * step): the full travelling sweep below, `.btn-shine`, is for a genuine final/decisive action
+ * only — one a reviewer commits to rarely, never by repeatedly hovering the same button in a
+ * loop (Approve and release, Take the tour, Move to the archive, Reject run). Everywhere else
+ * a `default`/`ghost`/`destructiveFill` button appears — including anything stepped through
+ * repeatedly, like the tour's own Next/Done — gets `.btn-shine-sm` instead: the same stripe,
+ * but it only fades its opacity in place, no travel, so hovering it again and again reads as a
+ * quiet acknowledgement rather than a show replaying each time. `button.tsx`'s `default`/
+ * `ghost` variants carry `.btn-shine-sm` as their base; a call site opts up to the full
+ * `.btn-shine` with an explicit `className` (registered as one tailwind-merge class group in
+ * `lib/utils.ts`, so the two never both apply). Scoped via a plain class rather than the
+ * `data-slot`/`data-variant` attributes `Button` already carries: a `Button` rendered `asChild`
+ * inside another Radix primitive (e.g. the Filters button, inside a `CollapsibleTrigger`) has
+ * its own `data-slot` overwritten by the wrapper, the same class of collision
+ * `components/Tabs.tsx`'s `PillTabsList` already works around for `data-state` — a plain class
+ * survives that composition because `cn()` concatenates class lists, never overwrites one
+ * attribute with another.
  */
 :root {
   --shine-dur: 2300ms;
+  --shine-sm-dur: 180ms;
   --shine-ease: cubic-bezier(0.22, 1, 0.58, 1);
 }
 
-.btn-shine {
+.btn-shine,
+.btn-shine-sm {
   position: relative;
   overflow: hidden;
 }
-.btn-shine::after {
+.btn-shine::after,
+.btn-shine-sm::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -309,17 +323,28 @@
     var(--color-button-shine) 52%,
     transparent 85%
   );
-  transform: translateX(-120%);
   pointer-events: none;
+}
+.btn-shine::after {
+  transform: translateX(-120%);
+}
+.btn-shine-sm::after {
+  opacity: 0;
 }
 .btn-shine:hover::after,
 .btn-shine:focus-visible::after {
   transform: translateX(120%);
   transition: transform var(--shine-dur) var(--shine-ease);
 }
+.btn-shine-sm:hover::after,
+.btn-shine-sm:focus-visible::after {
+  opacity: 1;
+  transition: opacity var(--shine-sm-dur) var(--shine-ease);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .btn-shine::after {
+  .btn-shine::after,
+  .btn-shine-sm::after {
     content: none;
   }
 }
