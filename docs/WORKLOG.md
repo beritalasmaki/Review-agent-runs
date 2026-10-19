@@ -39,6 +39,71 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · A real photo for the page background, and the primary button finally fixed
+
+**Goal**
+Follow through on 0106's open finding instead of leaving it open: swap the procedural gradient
+for the user's own reference photo ("use this image, add little blur... add glass-style lines"),
+and finally fix the primary button ("still those primary buttons are ugly" — the third round of
+this complaint), which 0106 had diagnosed but not yet acted on.
+
+**What changed**
+- `public/textures/page-glass-light.webp`, `-dark.webp` — the user's reference photo, processed
+  with Python/Pillow: blurred, a handful of soft diagonal "glass line" streaks drawn over it,
+  dark variant separately tuned (darker, navy-tinted, brighter lines) rather than a flat-dimmed
+  copy of the light one.
+- `src/styles/tokens.css` — new `--page-photo` token (per theme), replacing `--page-gradient` as
+  `bg-page-glass`'s base layer. `--texture-noise` (0106) removed entirely, now unused.
+- `src/styles/index.css` — `bg-page-glass` now layers: hero-band fade, a new page-wide
+  `linear-gradient(var(--color-glass), var(--color-glass))` wash (fixing a real contrast
+  regression, see Steps), then the photo. `bg-welcome-scrim` uses the photo too.
+- `src/features/run/ReviewsTable.tsx`, `MyReviews.tsx` — the "Review" row link and "Create
+  report" button drop `btn-glass-fill glass-sheen`, falling back to `Button`'s plain solid
+  `default` variant.
+- `src/styles/index.css`, `tokens.css`, `src/lib/utils.ts` — `btn-glass-fill` and its tokens
+  (`--color-glass-fill-chip`/`-chip-border`) removed outright, now fully unused; also removed
+  `--color-glass-fill`/`-border`, found orphaned (unused even before this session) in the same
+  comment block.
+- `docs/DECISIONS.md` — new entries 0108 (photo background), 0109 (button fix).
+
+**Steps, in order**
+1. The user's reference image only reached me as embedded conversation content at first, with no
+   backing file — asked for a real upload/URL rather than guessing or faking a substitute.
+2. Processed the real file with Pillow once it arrived: `Image.resize` (LANCZOS) →
+   `GaussianBlur(radius=6)` → hand-drawn diagonal streaks on a separate layer (`ImageDraw.line`,
+   randomised position/width/opacity, blurred again for softness) → composited. Dark variant:
+   `ImageEnhance.Brightness`/`Contrast`/`Color` tuned down, blended with a navy tint. First pass
+   at the dark variant read as muddy fog, not "glass at night" — re-tuned (less crushed
+   brightness, more contrast, brighter/more frequent lines) until it read right.
+3. Wired `--page-photo` into `bg-page-glass`, ran `npx playwright test e2e/accessibility.spec.ts`:
+   5 failures, down to 3.6:1 in places — the hero band's own fade only covers the first
+   `--hero-band-height`, leaving the rest of the page's open background un-muted against a photo
+   with real brightness variation (unlike the old smooth gradient). Added a second, page-wide
+   `--color-glass` wash layer between the hero band and the photo; re-ran clean, 34/34.
+4. For the button: dropped `btn-glass-fill`/`glass-sheen` from both call sites, confirmed nothing
+   else referenced the class, removed the utility and its tokens rather than leave them orphaned.
+   Screenshotted the result: a fully-opaque solid pill in both themes, replacing the previous
+   ~65-70%-translucent wash that had no glass surface to actually reveal.
+
+**Why it was done this way**
+The button and the background turned out to share one lesson, stated plainly in 0109: glass is a
+property of what a surface sits over, not a style a component can opt into by itself. The
+background fix (reusing `--color-glass` as a flat wash) and the button fix (dropping glass for a
+plain solid fill) are the same realization applied in opposite directions — add real translucency
+where there's genuine content to reveal, remove it where there was never anything behind the
+element for `backdrop-filter` to do real work on.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts` (full suite, both themes): 34/34, including a
+real catch-and-fix mid-session (5 failures → 0). `npx vitest run`: 293/293. `npx playwright test
+e2e/keyboard.spec.ts e2e/approve-flow.spec.ts e2e/onboarding-tour.spec.ts`: 10/10. `npm run
+build`: clean. Screenshots of the button and the full page background, both themes.
+
+**Open questions / next**
+A future change to the background photo (different crop, brighter source) needs the same
+accessibility re-run before being called safe — the wash is tuned to this photo's luminance
+range, not photos in general.
+
 ## 2026-10-19 · Page-glass texture for `backdrop-filter`, and the pill tabs' box-to-underline change
 
 **Goal**

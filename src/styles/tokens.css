@@ -329,29 +329,20 @@
    * than the neutral glass needs to be, rather than toward plain white/black. Tuned against a
    * real contrast measurement of the rendered pixels, the same way `--color-glass` was. */
   --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-light) 80%, transparent);
-  /* A glass surface for a *filled* button (0092 — "Create report", the row "Review" link-
-   * button): `--color-glass`'s light wash would wash out the white text a filled button needs,
-   * so this mixes toward the same primitive `--color-primary`/`--color-text-primary` already
-   * use per theme (dark in light theme, light in dark theme) instead — translucent but still
-   * dark enough for light text here, where the solid button is dark-filled with light text.
-   * The border is the same primitive at a touch more opacity, so the edge reads as a slightly
-   * firmer version of the same glass, not a separate colour. Tuned against a real contrast
-   * measurement of the rendered pixels, the same way --color-glass-warning was. */
-  /* A *more* translucent glass for small elements that sit on top of an already-glass surface
-   * — a button inside the glass My reviews card, the tabs' own sliding pill (0095). Reusing
-   * `--color-glass`/`--color-glass-fill` there read as flat and opaque: two ~70%-opaque white
-   * layers compose to ~91% opaque, which looks like a plain solid surface, not "more glass."
-   * These mix to a much lower opacity so the card (and the page gradient behind it) still
-   * visibly shows through a second time. Buttons and the tab indicator use these, not
-   * `--color-glass`/`--color-glass-fill` (which stay as they were for the card chrome itself).
-   * Tuned against a real contrast measurement of the rendered pixels, the same way
-   * `--color-glass` itself was. */
-  --color-glass-fill: color-mix(in srgb, var(--neutral-12) 85%, transparent);
-  --color-glass-fill-border: color-mix(in srgb, var(--neutral-12) 95%, transparent);
+  /* A *more* translucent glass for a small element that sits on top of an already-glass surface
+   * — a button inside the glass My reviews card (0095). Reusing `--color-glass` there read as
+   * flat and opaque: two ~70%-opaque white layers compose to ~91% opaque, which looks like a
+   * plain solid surface, not "more glass." Mixes to a much lower opacity so the card (and the
+   * page behind it) still visibly shows through a second time. Only the `outline`-variant glass
+   * button (`btn-glass`) uses this now — the filled variant's own `-fill-chip` counterpart was
+   * removed (0109): the primary "Review"/"Create report" buttons it styled sit on the page's
+   * opaque table/selection-bar chrome, not open glass, so there was never real translucency
+   * behind them for `backdrop-filter` to reveal regardless of how this token was tuned; they use
+   * the plain solid `Button` variant now, like every other primary action in the app. Tuned
+   * against a real contrast measurement of the rendered pixels, the same way `--color-glass`
+   * itself was. */
   --color-glass-chip: color-mix(in srgb, var(--neutral-0) 18%, transparent);
   --color-glass-chip-border: rgb(255 255 255 / 0.55);
-  --color-glass-fill-chip: color-mix(in srgb, var(--neutral-12) 68%, transparent);
-  --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-12) 82%, transparent);
   /* A specular highlight for a glass surface (0098) — a soft diagonal sheen near the top-left
    * corner, like light catching a curved pane. One shared value, not per-theme: the existing
    * `--color-glass-border` (white, both themes) already established that a glass highlight
@@ -425,18 +416,15 @@
  */
 :root {
   --page-gradient: var(--page-gradient-light);
-  /* Grain for `backdrop-filter: blur()` to actually do something (docs/DECISIONS.md, 0106):
-   * blur only reveals detail that's really there, and a smooth multi-stop gradient blurred is
-   * the same smooth gradient — every "glass" surface in the app was reading as a flat tinted
-   * shape, not glass, because there was nothing but low-frequency colour behind it. A fine
-   * tiled fractal-noise speckle (SVG `feTurbulence`, baked to a low, per-pixel-varying alpha via
-   * `feColorMatrix` rather than a single flat opacity, so it reads as grain, not a wash) gives
-   * every blurred surface real high-frequency texture to soften — the visible difference between
-   * the sharp grain on the open page and the same grain smoothed out behind a glass panel is
-   * what actually reads as "glass", the same role noise plays in Apple's own blur materials.
-   * Dark speckle on the light theme's pale gradient, light speckle on the dark theme's own
-   * (`--texture-noise-dark` below) — a same-luminance speckle would barely register either way. */
-  --texture-noise: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20type%3D'matrix'%20values%3D'0%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200.03%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'200'%20height%3D'200'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+  /* A real photo behind the page's glass, not a procedural gradient or noise (docs/DECISIONS.md,
+   * 0108, replacing 0106's `feTurbulence` grain): "liquid glass" only reads as glass when there
+   * is genuine, busy detail for `backdrop-filter: blur()` to soften — Apple's own reference
+   * material is always photographic or app content, never a flat wash or synthetic speckle.
+   * `public/textures/page-glass-*.webp`: the user's own reference photo (frost/rain on glass),
+   * lightly blurred and with a handful of soft diagonal streaks drawn over it for depth —
+   * processed once, not generated at runtime, since this is a real image, not an SVG filter.
+   * Replaces `--page-gradient` as `bg-page-glass`'s base layer. */
+  --page-photo: url('/textures/page-glass-light.webp');
   --blur-glass: 20px;
   /* The page's own header zone (docs/DECISIONS.md, 0101): a translucent wash behind the title
    * and the top of the page's main card, tinting that zone without flattening it to a solid
@@ -517,19 +505,12 @@
 
     --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
     --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
-    /* Dark theme's solid fill button flips to a light surface with dark text (same flip as
-     * --color-primary-foreground), so the glass version flips with it — see the light theme's
-     * own comment on this token pair. */
-    --color-glass-fill: color-mix(in srgb, var(--neutral-1) 85%, transparent);
-    --color-glass-fill-border: color-mix(in srgb, var(--neutral-1) 95%, transparent);
     --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
     --color-glass-chip-border: rgb(255 255 255 / 0.18);
-    --color-glass-fill-chip: color-mix(in srgb, var(--neutral-1) 62%, transparent);
-    --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-1) 78%, transparent);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
-    --texture-noise: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20type%3D'matrix'%20values%3D'0%200%200%200%201%200%200%200%200%201%200%200%200%200%201%200%200%200%200.035%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'200'%20height%3D'200'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+    --page-photo: url('/textures/page-glass-dark.webp');
   }
 }
 
@@ -582,16 +563,12 @@
 
   --color-glass: color-mix(in srgb, var(--neutral-12) 55%, transparent);
   --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
-  --color-glass-fill: color-mix(in srgb, var(--neutral-1) 85%, transparent);
-  --color-glass-fill-border: color-mix(in srgb, var(--neutral-1) 95%, transparent);
   --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
   --color-glass-chip-border: rgb(255 255 255 / 0.18);
-  --color-glass-fill-chip: color-mix(in srgb, var(--neutral-1) 62%, transparent);
-  --color-glass-fill-chip-border: color-mix(in srgb, var(--neutral-1) 78%, transparent);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);
-  --texture-noise: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20type%3D'matrix'%20values%3D'0%200%200%200%201%200%200%200%200%201%200%200%200%200%201%200%200%200%200.035%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'200'%20height%3D'200'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+  --page-photo: url('/textures/page-glass-dark.webp');
 }
 
 /*

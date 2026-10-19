@@ -6,6 +6,68 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0109 · Primary buttons stop being "glass" where there was never anything to be glass over
+
+**Context.** "Still those primary buttons are ugly" / "need to be still polished and made more
+accessible" — the third round of the same complaint about the "Review" row button and "Create
+report," both styled with `btn-glass-fill`. 0106 had already found the root cause but not acted
+on it: both buttons sit on the page's own opaque white table card or the opaque `bg-primary-
+tint` selection bar, never on open page background, so `backdrop-filter: blur()` had nothing to
+reveal regardless of how much texture the page itself had — the translucent fill just read as a
+dull, washed-out grey/pale pill in both themes, which is exactly what it was.
+
+**Choice.** Both call sites (`ReviewsTable.tsx`'s row "Review" link, `MyReviews.tsx`'s "Create
+report") drop `btn-glass-fill`/`glass-sheen` and fall back to `Button`'s plain solid `default`
+variant — the same fully-opaque neutral fill every other primary action in the app already uses
+(the run page's "Approve and release," for one, which was never part of this complaint). Since
+nothing else referenced `btn-glass-fill`, removed it outright rather than leave it defined and
+unused: the `@utility` itself, `--color-glass-fill-chip`/`-chip-border` (and, found orphaned in
+the same pass — unused even before this change — `--color-glass-fill`/`-border`, their
+would-be non-chip counterpart that no card chrome ever actually consumed), and its entry in
+`lib/utils.ts`'s `GLASS_BUTTON` tailwind-merge conflict group.
+
+**Consequence.** The standing rule this confirms: glass is a property of *what a surface sits
+over*, not a style any button can opt into. A future "make it glass" request should start by
+asking what, concretely, is behind the element — if the answer is an opaque card or bar, the
+honest answer is a solid fill, not a more-tuned translucent one.
+
+---
+
+## 0108 · The page background is a real, user-supplied photo, not a procedural gradient
+
+**Context.** "We can use this image, add little blur to it and add smooth glass-style lines
+like drawn long lines that gives more extra depth to it" — following 0106's finding that
+`backdrop-filter: blur()` only works on genuine texture, and the user's own rain-on-glass
+reference photo (close to Apple's own glass reference material, unlike this app's procedural
+gradient).
+
+**Choice.** The photo was processed once, offline, not generated at runtime: upscaled, given a
+light Gaussian blur, a handful of soft diagonal "glass line" streaks drawn over it for depth,
+and exported as two theme variants (`public/textures/page-glass-light.webp`,
+`-dark.webp` — the dark one separately darkened, tinted navy and given brighter, more frequent
+lines rather than a flat-dimmed copy of the light version, since a first pass at a uniform
+darken read as muddy fog, not "glass at night"). `--page-photo` (tokens.css) replaces
+`--page-gradient` as `bg-page-glass`'s base layer; the synthetic noise texture (0106) is dropped
+from that utility, since real photographic detail already gives `backdrop-filter` genuine
+texture to blur, making synthetic grain on top of it redundant.
+
+**A real regression, caught by the accessibility suite, not assumed safe because the gradient
+version had been safe.** The photo's brighter regions dropped text contrast as low as 3.6:1 in
+five states, because the hero-band wash that muted the old gradient near the title only covers
+the first `--hero-band-height` — page text sitting on the open background further down had
+nothing muting the photo's own brighter areas. Fixed by adding a second, page-wide wash between
+the hero band and the photo: `linear-gradient(var(--color-glass), var(--color-glass))` — the
+same translucent value every other glass surface already uses, painted as a flat "gradient"
+since `background-image` has no plain-colour layer of its own. Re-ran the full suite clean,
+34/34, both themes, after the fix.
+
+**Consequence.** Any future change to `--page-photo` (a different crop, a brighter source image)
+needs the same accessibility re-run before being called done — the wash protects against the
+*current* photo's luminance range, not photos in general, and a sufficiently bright future photo
+could still need a stronger wash or a second contrast pass.
+
+---
+
 ## 0107 · Pill tabs' active indicator: a bottom border, not a filled capsule
 
 **Context.** "Instead the active tab being inside 'a box' can't it just be bottom border

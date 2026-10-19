@@ -165,42 +165,49 @@
 /*
  * The frosted-glass page background (docs/DECISIONS.md, 0089 — piloted on My reviews only;
  * 0097 made it app-wide, on every screen `App.tsx`'s `<main>` renders; 0101 added the hero band
- * below). `--color-bg` stays the `background-color` fallback exactly as `bg-bg` already uses it
- * everywhere else; `--page-gradient` (tokens.css) layers on top as `background-image`, fading
- * to transparent at each blob's edge so the flat colour still shows through at the gaps. Fixed
- * attachment so the blobs stay put as the page scrolls, the same way a frosted window doesn't
- * move when you scroll past it.
+ * below; 0108 replaced the procedural gradient with a real photo). `--color-bg` stays the
+ * `background-color` fallback exactly as `bg-bg` already uses it everywhere else;
+ * `--page-photo` (tokens.css — a processed photo in `public/textures/`, not a gradient) layers
+ * on top as `background-image`, covering the viewport and fixed in place so it stays put as the
+ * page scrolls, the same way a frosted window doesn't move when you scroll past it.
  *
- * A second, lower `background-image` layer underneath the gradient: `--color-hero-band` (itself
+ * A second, lower `background-image` layer underneath the photo: `--color-hero-band` (itself
  * `--color-glass` — the same translucent wash every other glass surface uses, light in light
  * theme and dark in dark theme, not a new flat colour) fading smoothly from the page's own top
  * down to transparent over `--hero-band-height` — a tinted zone behind the page's title and the
- * top of its main card (0101), not a solid block: the vivid gradient underneath still shows
- * through the wash's own translucency, and the fade itself has no hard edge to begin with.
- * Unlike the gradient blobs, this layer scrolls with the page (its own `background-attachment:
- * scroll`, the first value in the comma-separated pair below) — it's tied to specific content
- * near the top of the page, not an ambient backdrop. Where the glass card's own translucency
- * sits over the band, the band's own tint shows through the card too — one more place glass has
- * real colour behind it to reveal, not a flat interior.
+ * top of its main card (0101), not a solid block: the photo underneath still shows through the
+ * wash's own translucency, and the fade itself has no hard edge to begin with. Unlike the photo,
+ * this layer scrolls with the page (its own `background-attachment: scroll`, the first value in
+ * the comma-separated pair below) — it's tied to specific content near the top of the page, not
+ * an ambient backdrop. Where the glass card's own translucency sits over the band, the band's
+ * own tint shows through the card too — one more place glass has real colour behind it to
+ * reveal, not a flat interior.
  *
- * A fine noise layer on top (`--texture-noise`, tokens.css; docs/DECISIONS.md, 0106) gives every
- * `backdrop-filter: blur()` surface in the app something it can actually do visible work on: the
- * gradient alone is smooth low-frequency colour, which blurs into itself unchanged, so glass
- * panels were reading as flat tinted shapes rather than glass. The grain tiles and stays fixed
- * to the viewport like the gradient blobs, not the hero band.
+ * No separate noise layer here any more (0106 added one, 0108 removed it): the photo itself is
+ * genuine high-frequency detail, which is what `backdrop-filter: blur()` actually needs to do
+ * visible work — synthetic grain on top of a real photo would be redundant.
+ *
+ * A third, page-wide wash between the hero band and the photo (0108, fixing a real contrast
+ * regression the accessibility suite caught): the hero band's own fade only covers the first
+ * `--hero-band-height` — below that, page text sitting directly on the open background (not on
+ * a card) had nothing muting the photo's own brighter areas, and measured as low as 3.6:1.
+ * `var(--color-glass)` painted as a flat "gradient" (both stops the same colour — `background-
+ * image` has no plain-colour layer of its own, only `background-color`, which is one layer for
+ * the whole element) gives the photo the same translucent wash every other glass surface in the
+ * app already uses, everywhere, not just near the title.
  */
 @utility bg-page-glass {
   background-color: var(--color-bg);
   background-image:
-    var(--texture-noise),
     linear-gradient(to bottom, var(--color-hero-band) 0%, transparent var(--hero-band-height)),
-    var(--page-gradient);
-  background-repeat: repeat, no-repeat, no-repeat;
-  background-size:
-    200px 200px,
-    auto,
-    auto;
-  background-attachment: fixed, scroll, fixed;
+    linear-gradient(var(--color-glass), var(--color-glass)), var(--page-photo);
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-size: auto, auto, cover;
+  background-position:
+    0 0,
+    0 0,
+    center;
+  background-attachment: scroll, fixed, fixed;
 }
 
 /*
@@ -214,11 +221,9 @@
  */
 @utility bg-welcome-scrim {
   background-color: var(--color-modal-scrim);
-  background-image: var(--texture-noise), var(--page-gradient);
-  background-repeat: repeat, no-repeat;
-  background-size:
-    200px 200px,
-    auto;
+  background-image: var(--page-photo);
+  background-size: cover;
+  background-position: center;
   backdrop-filter: blur(var(--blur-glass));
 }
 
@@ -234,11 +239,11 @@
  * same-slot utility from the variant.
  *
  * `btn-glass` is for the `outline` variant. Every on-page button sits on top of the already-
- * glass My reviews card, so it uses `--color-glass-chip`/`-fill-chip` (0095) — a noticeably
- * lower opacity than `--color-glass`/`-fill` itself — rather than stacking the card's own
- * translucency a second time, which read as flat and opaque (two ~70%-opaque layers compose to
- * ~91%, indistinguishable from a plain solid surface). The button's own `hover:` classes are a
- * different Tailwind "slot" than these, so they still apply untouched on top.
+ * glass My reviews card, so it uses `--color-glass-chip` (0095) — a noticeably lower opacity
+ * than `--color-glass` itself — rather than stacking the card's own translucency a second time,
+ * which read as flat and opaque (two ~70%-opaque layers compose to ~91%, indistinguishable from
+ * a plain solid surface). The button's own `hover:` classes are a different Tailwind "slot" than
+ * these, so they still apply untouched on top.
  */
 @utility btn-glass {
   background-color: var(--color-glass-chip);
@@ -249,26 +254,16 @@
 }
 
 /*
- * `btn-glass-fill` is for the `default` (filled) variant's two on-page instances ("Create
- * report", the row "Review" link-button): `--color-glass-chip`'s light wash would wash out the
- * white text a filled button needs, so this uses `--color-glass-fill-chip` instead — a dark
- * glass in light theme, a light glass in dark theme, matching whichever way the solid button's
- * own fill/text colours already flip per theme (tokens.css).
- */
-@utility btn-glass-fill {
-  background-color: var(--color-glass-fill-chip);
-  border-color: var(--color-glass-fill-chip-border);
-  border-radius: 9999px;
-  box-shadow: var(--shadow-glass);
-  backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
-}
-
-/*
  * A specular highlight for a glass surface (docs/DECISIONS.md, 0098): a soft diagonal sheen
  * near the top-left corner, like light catching the top of a curved pane, on top of whatever
- * glass background/border classes already apply (`btn-glass`, `btn-glass-fill`, the tab's
- * sliding pill, the "N need your review" badge). Additive only — no colour, no blur, no border
- * of its own — so it composes with any of those rather than needing its own copy of each.
+ * glass background/border classes already apply (`btn-glass`, the tab's sliding pill, the "N
+ * need your review" badge). Additive only — no colour, no blur, no border of its own — so it
+ * composes with any of those rather than needing its own copy of each. No longer used by a
+ * filled button (0109 dropped `btn-glass-fill`: the primary "Review"/"Create report" buttons
+ * sit on the page's own opaque table/selection-bar chrome, where there is nothing for
+ * `backdrop-filter` to blur regardless of page texture — glass was the wrong tool for them, not
+ * an under-tuned one; they use the plain solid `Button` variant like every other primary action
+ * in the app now).
  *
  * A static gradient, not a pointer-tracked one: wiring live pointer state through a shared,
  * reusable surface was tried once for `Button` and deliberately dropped (see `transitions.css`,
