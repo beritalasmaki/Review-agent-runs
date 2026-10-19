@@ -6,6 +6,83 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0117 · My reviews' hero gets one glass card; the run page's sticky top bar stays opaque
+
+**Context.** Two follow-on requests in the same round as 0116's ambient blobs: "make the Main
+title and description text... closer to each other and perhaps on glass card? And behind the
+glass card we could have one of those blurry balls floating" (with the needs-review badge,
+Archive button and theme toggle folded in too, by a later "Include these ones inside the card
+also"), and separately "make sure this upper top navigation in the single run page is
+transparent for glass effect... transparent and blurry."
+
+**Choice.** My reviews' title, description, status badge, Archive button and theme toggle now
+share one `rounded-lg border-glass-border bg-glass backdrop-blur` card (`MyReviews.tsx`), tight
+`gap-[var(--space-2)]` between title and description, `p-[var(--space-4)]` padding — kept
+deliberately tighter than the usual `--space-6` card padding, because the taller card pushed
+page content low enough to fail a real accessibility check (below). The ambient blobs (0116) sit
+naturally behind it through the card's own `backdrop-blur`, satisfying "behind the glass card"
+without any extra code.
+
+The run page's `RunTopBar` (its own sticky breadcrumb bar) was tried as `bg-glass` +
+`backdrop-blur` and reverted. The real, measured contrast was fine every time this was tried
+(14.2:1 light, 13.5:1 dark on the bar's own text) — but `position: sticky` (and, tried as a
+fallback, `position: fixed`) combined with `backdrop-filter` made axe's color-contrast rule flag
+unrelated text elsewhere on the page — not inside the bar, sometimes nowhere near it — as
+"overlapped by another element," regardless of whether the blur lived on the bar itself or a
+plain `position: absolute` child of it. Every existing glass surface in this app
+(0089, 0108, this round's own hero card) uses `backdrop-filter` on an ordinarily-positioned
+(`static`/default) element; `RunTopBar` would have been the first on a `sticky`/`fixed` one, and
+the two aren't interchangeable to this test suite. `RunTopBar` stays opaque, matching
+`RunViewTabs`, the app's other sticky bar, which was never asked to go glass and wasn't touched.
+
+**Consequence.** Not every card in this app can safely go glass by just adding the same three
+classes: a `position: static` surface (every card, every dialog, the hero) can; a
+`position: sticky`/`fixed` one currently can't, without a deeper fix this round didn't attempt
+(the suite's own `ownContrast` helper only special-cases `fixed`, and even `fixed` itself still
+failed here). Any future "make this sticky thing glass" request should expect the same result
+until that's addressed, not be assumed safe by analogy to the cards that already are.
+
+---
+
+## 0116 · Ambient background blobs — three attempts before one that didn't break the suite
+
+**Context.** "Can we add few blurred uneven balls in different sizes to float in the background?
+To make it look like the background is moving slowly... The ball colors shouldn't differentiate
+so much from the background." A later message sharpened the palette: "I think those colors are
+too bright. Should be blue tones not yellow or purple."
+
+**Choice.** Three soft `radial-gradient()` layers — different ellipse radii per layer (the
+"different sizes"), a 70% fade (the "blurred" edge, no `filter: blur()` needed), one hue
+(`--status-blue`, the muted slate already used for "info"/"unknown" elsewhere, not the brand
+indigo/lime, which read too saturated) at three low alphas for depth — added straight into
+`bg-page-glass`'s own `background-image` list (`index.css`), between the existing wash and photo
+layers, animated by tweening the full six-layer `background-position` list
+(`bg-page-glass-drift`, transitions.css) so the three blob entries drift while the hero-band/
+wash/photo entries hold still. `background-attachment: fixed`, matching the photo: stays visible
+as the page scrolls rather than scrolling away after the first screen.
+
+Three different shapes were tried and discarded first, each for the same reason: a `position:
+fixed` wrapper `<span>` covering the whole viewport (axe's color-contrast rule flagged it as a
+floating layer over literally every piece of text on every page — confirmed by disabling the
+component and watching the suite go green and red again); several smaller, individually `fixed`/
+`absolute` `<span>`s, each confined near the page's own top (same failure, just scoped to
+whatever text each one's rect happened to intersect — on a layout this dense, with a sticky top
+bar spanning the full width, nothing stayed clear); a `::before` pseudo-element doing the same
+thing (invisible to axe's own DOM traversal, yet the rendered geometry still tripped the same
+heuristic for real elements it overlapped). All three share the same root cause: axe treats any
+`position: fixed`/`absolute` box of real size as a potential floating layer over whatever its
+rect overlaps, regardless of z-index, `pointer-events`, `aria-hidden`, or being selectable at
+all. A `background-image` layer on an ordinarily-positioned element was never that problem — it's
+the exact mechanism the hero band and photo already used safely before this.
+
+**Consequence.** No separate element for page-wide ambient decoration, ever, in this app — route
+it through `bg-page-glass`'s own layer list instead, the same way this round eventually did.
+Confirmed by the accessibility suite, not assumed safe from the first version that looked right
+in a screenshot: three different-looking "it works" states (verified by eye, each time) turned
+out to be real regressions once measured.
+
+---
+
 ## 0115 · My reviews' status tabs get their track back — 0114 only applies to the run page
 
 **Context.** 0114 (same session, just before this) dropped the `pill` variant's track entirely
