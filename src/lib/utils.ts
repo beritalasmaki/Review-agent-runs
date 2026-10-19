@@ -36,11 +36,23 @@ const TYPE_SCALE = [
  */
 const GLASS_BUTTON = ['btn-glass']
 
-const twMerge = extendTailwindMerge<'glass-btn'>({
+/**
+ * `btn-shine`/`btn-shine-sm` (src/styles/transitions.css, docs/DECISIONS.md 0120) are the two
+ * strengths of the button hover stripe: a call site opts up from the `default`/`ghost`
+ * variants' quiet `btn-shine-sm` base to the full `btn-shine` sweep for a one-off, final action
+ * by passing `className="btn-shine"`. Grouping both names together is what makes that `cn()`
+ * call actually drop the variant's own `btn-shine-sm` instead of applying both at once — the
+ * same "classes in one group are mutually exclusive, last one wins" mechanism `TYPE_SCALE`
+ * above already relies on for `text-meta` vs. a colour class.
+ */
+const BUTTON_SHINE = ['btn-shine', 'btn-shine-sm']
+
+const twMerge = extendTailwindMerge<'glass-btn' | 'btn-shine'>({
   extend: {
     classGroups: {
       'font-size': [{ text: TYPE_SCALE }],
       'glass-btn': GLASS_BUTTON,
+      'btn-shine': BUTTON_SHINE,
     },
     conflictingClassGroups: {
       'glass-btn': ['bg-color', 'border-color', 'shadow', 'backdrop-blur', 'rounded'],

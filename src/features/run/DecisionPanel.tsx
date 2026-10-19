@@ -281,7 +281,7 @@ export function DecisionPanel({
             disabled={!ready}
             aria-describedby={hintId}
             data-popping={popping || undefined}
-            className="t-pop"
+            className="btn-shine t-pop"
           >
             <span className="t-pop-label">
               <Check aria-hidden className="h-4 w-4" strokeWidth={2.5} />

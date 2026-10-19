@@ -196,6 +196,7 @@ export function DecisionDialog({
         <Button
           size="sm"
           variant={action === 'rejected' ? 'destructiveFill' : 'default'}
+          className="btn-shine"
           onClick={() => void handleSubmit()}
           disabled={!canSubmit}
         >

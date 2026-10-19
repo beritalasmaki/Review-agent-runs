@@ -19,6 +19,14 @@ import { Slot } from 'radix-ui'
  * focus set directly, never a cascading React re-render from arrow-key navigation elsewhere, so
  * it cannot reproduce that bug — the same reasoning transitions.css's "Button shine" already
  * relies on for `default`/`ghost` (0083).
+ *
+ * The shine itself comes in two strengths (0120, transitions.css): `default`/`ghost` carry the
+ * quiet `btn-shine-sm` (a small in-place fade) as their base, since most of what they're used
+ * for is stepped through repeatedly (a tour's Next, a table row's Review) where the full
+ * travelling sweep got old fast. A call site opts up to the full `btn-shine` only for a genuine
+ * one-off, final action — Approve and release, Take the tour, Move to the archive — via an
+ * explicit `className`; `destructiveFill`'s Reject-run confirm keeps `btn-shine` as its base,
+ * since it's always exactly that kind of action.
  */
 const buttonVariants = cva(
   [
@@ -32,8 +40,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         /** The page's main action: Approve and release, Review, Undo, Create report. A light
-         * stripe sweeps across it on hover/focus — see transitions.css, "Button shine". */
-        default: 'btn-shine border-text-primary bg-text-primary text-surface hover:opacity-85',
+         * stripe fades in on hover/focus — see transitions.css, "Button shine" — full-strength
+         * only where a call site opts up to `btn-shine` for a one-off, final action (0120). */
+        default: 'btn-shine-sm border-text-primary bg-text-primary text-surface hover:opacity-85',
         /** The quieter action beside it: Request changes, Cancel, Filters. A plain fade on
          * hover/focus (not the shine — it read poorly here), with a small grow. */
         outline:
@@ -52,7 +61,7 @@ const buttonVariants = cva(
         destructiveFill:
           'btn-shine border-destructive bg-destructive text-destructive-foreground hover:opacity-85',
         ghost:
-          'btn-shine border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
+          'btn-shine-sm border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
         /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". */
         link: 'border-transparent bg-transparent text-primary underline-offset-2 hover:underline',
       },

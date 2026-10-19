@@ -454,7 +454,7 @@ export function ArchiveConfirmDialog({ runs, onClose, onConfirm }: ArchiveConfir
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={onConfirm}>
+        <Button className="btn-shine" onClick={onConfirm}>
           <Archive aria-hidden className="h-4 w-4" />
           Move to the archive
         </Button>
