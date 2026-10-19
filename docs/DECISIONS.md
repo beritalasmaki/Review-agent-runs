@@ -6,6 +6,32 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0111 · My reviews' main table card gets rounded corners back, reversing part of 0099
+
+**Context.** "Make sure the table corners are rounded also to be cohesive" — following 0110's
+return to a rounded glass capsule on the active tab, the outer card the tabs sit inside (the
+"Runs" table, "Also found in the archive," and the Archive page's own table) still had the
+straight corners 0099 deliberately gave it, so the two no longer matched: a rounded pill inside
+a square-cornered frame.
+
+**Choice.** All three `<section>` cards in `MyReviews.tsx` (lines wrapping the main table, the
+inline archive preview, and the standalone archive page) gain `rounded-lg overflow-hidden` —
+`rounded-lg` resolves to the same 10px `--radius-lg` every other rounded surface in the app
+uses, and `overflow-hidden` clips the card's own content (the tabs row, the table, any inner
+straight-edged chrome) to that shape rather than letting square content poke past a rounded
+frame. The run page's Story/Evidence/All-steps sticky bar already had its own `rounded-t-lg` and
+needed no change — it was never part of 0099's "straight corners" scope.
+
+**Consequence.** `overflow-hidden` on a card whose sticky inner elements (the tabs row, the
+table's own sticky header should it ever gain one) rely on the *page's* scroll container, not
+the card's own — confirmed this doesn't break anything (card has no fixed height or own
+scrollbar, so it never becomes its own scrolling context) rather than assumed. Any future card
+in this family should default to `rounded-lg overflow-hidden` from the start, not straight
+corners — 0099's reasoning for going straight no longer holds now that the pill tabs it was
+reacting to are round again.
+
+---
+
 ## 0110 · Pill tabs' active indicator goes back to a glass capsule, reversing 0107
 
 **Context.** "Can we replace the tabs with glassmorphism style? The line tab looks outdated" —

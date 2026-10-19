@@ -39,6 +39,44 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Table card corners rounded, to match the glass pill tabs
+
+**Goal**
+"Apply it to the run page tabs too. Make sure the table corners are rounded also to be
+cohesive." — confirm the glass capsule indicator (just restored on My reviews) already applies
+to the run page's own tabs, and round the main table card's corners to match it.
+
+**What changed**
+- `src/features/run/MyReviews.tsx` — the three `<section>` cards (the main "Runs" table, "Also
+  found in the archive," the Archive page's own table) gain `rounded-lg overflow-hidden`.
+- No code change needed for the run page's own tabs: `RunViewTabs.tsx` already uses the shared
+  `pill` variant with no `indicatorClassName` override, so it picked up the glass capsule the
+  moment `components/Tabs.tsx` changed in the previous commit — confirmed by screenshot, not
+  assumed.
+- `docs/DECISIONS.md` — new entry 0111, framed as reversing part of 0099 (which had deliberately
+  removed rounding from this same card).
+
+**Steps, in order**
+1. Screenshotted the run page's Story/Evidence/All-steps tabs to confirm the glass capsule
+   already renders there with zero additional code — it does, since both tab lists share the
+   same `PillTabsList` component.
+2. Added `rounded-lg overflow-hidden` to all three straight-edged `<section>` cards in
+   `MyReviews.tsx`; screenshotted both themes to confirm the corner reads cleanly against the
+   rounded pill above it, and that `overflow-hidden` doesn't clip or break anything inside
+   (the sticky tabs row, the table, the toolbar).
+
+**Why it was done this way**
+Checked the `overflow-hidden` risk explicitly rather than assuming it was safe: the card has no
+fixed height and isn't itself a scroll container, so adding `overflow-hidden` only clips content
+to the rounded shape — it can't interfere with `position: sticky` elements inside it, which
+resolve against the page's own scrolling, not the card's.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts` (full suite, both themes): 34/34. `npx playwright
+test e2e/keyboard.spec.ts --repeat-each=15`: 45/45. `npx vitest run`: 293/293. `npx playwright
+test e2e/approve-flow.spec.ts e2e/onboarding-tour.spec.ts`: 7/7. `npm run build`: clean.
+Screenshots of the rounded card corner and the run-page tabs, both themes.
+
 ## 2026-10-19 · Pill tabs' indicator: back to a glass capsule
 
 **Goal**
