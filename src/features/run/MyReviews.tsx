@@ -478,7 +478,6 @@ function ReviewsBoard({
                 variant="pill"
                 label="Run types"
                 className="scrollbar-none w-full max-w-full justify-start overflow-x-auto"
-                indicatorClassName="border-0 bg-glass-chip shadow-glass backdrop-blur-[var(--blur-glass)]"
               >
                 {TABS.map(({ value, label, mark, icon: Icon }) => (
                   <TabsTrigger key={value} variant="pill" value={value} className="group">

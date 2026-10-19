@@ -182,13 +182,25 @@
  * near the top of the page, not an ambient backdrop. Where the glass card's own translucency
  * sits over the band, the band's own tint shows through the card too — one more place glass has
  * real colour behind it to reveal, not a flat interior.
+ *
+ * A fine noise layer on top (`--texture-noise`, tokens.css; docs/DECISIONS.md, 0106) gives every
+ * `backdrop-filter: blur()` surface in the app something it can actually do visible work on: the
+ * gradient alone is smooth low-frequency colour, which blurs into itself unchanged, so glass
+ * panels were reading as flat tinted shapes rather than glass. The grain tiles and stays fixed
+ * to the viewport like the gradient blobs, not the hero band.
  */
 @utility bg-page-glass {
   background-color: var(--color-bg);
   background-image:
+    var(--texture-noise),
     linear-gradient(to bottom, var(--color-hero-band) 0%, transparent var(--hero-band-height)),
     var(--page-gradient);
-  background-attachment: scroll, fixed;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size:
+    200px 200px,
+    auto,
+    auto;
+  background-attachment: fixed, scroll, fixed;
 }
 
 /*
@@ -202,7 +214,11 @@
  */
 @utility bg-welcome-scrim {
   background-color: var(--color-modal-scrim);
-  background-image: var(--page-gradient);
+  background-image: var(--texture-noise), var(--page-gradient);
+  background-repeat: repeat, no-repeat;
+  background-size:
+    200px 200px,
+    auto;
   backdrop-filter: blur(var(--blur-glass));
 }
 

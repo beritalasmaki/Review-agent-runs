@@ -6,6 +6,77 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0107 · Pill tabs' active indicator: a bottom border, not a filled capsule
+
+**Context.** "Instead the active tab being inside 'a box' can't it just be bottom border
+instead? I think being in box fights somehow the design because it has sharp edges." The pill
+tab variant (My reviews' status tabs, the run page's Story/Evidence/All-steps tabs) marked the
+selected tab with a sliding filled capsule behind it — a small opaque box inside an already
+glass, borderless design, which read as the same "box fighting the design" complaint that had
+already moved the pill track's own corners from rounded to straight (0099) without fully
+settling it.
+
+**Choice.** The pill variant's sliding indicator (`components/Tabs.tsx`'s `useSlidingIndicator`,
+`.t-tabs-pill` in `transitions.css`) now uses the exact same geometry as the `line` variant's
+underline — a thin 2px bar pinned to the list's own bottom edge, tweening `transform`/`width`
+only — rather than its own `translate(x, y)` + `height` logic for a filled rect. The two kinds
+are now mechanically identical; `kind` only picks which CSS class a caller's track gets. Default
+colour is `bg-primary-strong` (matching the `line` variant's own indicator, for one consistent
+"this is the active tab" signal app-wide), dropping the old `bg-surface shadow-sm` capsule look
+and the `.t-tabs-pill::before` glass-sheen highlight that only made sense on a filled surface.
+`MyReviews.tsx`'s own `indicatorClassName` override (a glass-chip capsule style) is removed for
+the same reason — nothing left for a glass surface treatment to sit on.
+
+**Consequence.** `--glass-sheen` (tokens.css) is now consumed by buttons and the warning badge
+only, not the tab indicator — noted in its own comment so a future edit doesn't look for a
+caller that no longer exists. Any future tab variant should default to this same underline
+mechanic rather than reinvent a filled-surface indicator, unless a specific design reason calls
+for one.
+
+---
+
+## 0106 · A fine noise texture behind every glass surface, so blur has something to reveal
+
+**Context.** "I think both dark mode and light mode primary button looks terrible... Liquid
+glass inspired style doesn't work in this website well because the background is only gradient
+style and doesn't have any texture or lines behind." Confirmed by measuring the rendered
+button: `backdrop-filter: blur()` only does visible work on content with texture behind it: a
+smooth multi-stop gradient blurred is the same smooth gradient, so every glass surface in the
+app — buttons, popovers, the welcome modal's scrim — was reading as a flat tinted shape, not
+glass, exactly as Apple's own reference images (busy photographic content behind their glass)
+made obvious by contrast.
+
+**Choice.** `--texture-noise` (tokens.css, one value per theme) is a tiled SVG `feTurbulence`
+data URI, its alpha scaled per-pixel via `feColorMatrix` (not a single flat opacity) so it reads
+as grain, not a wash — dark speckle in light theme, light speckle in dark theme, since a same-
+luminance speckle barely registers against its own background either way. Layered into
+`bg-page-glass` (`index.css`, the whole app's body background) and `bg-welcome-scrim`, tiled and
+pinned to the viewport like the existing gradient blobs.
+
+**A real regression, caught by the existing accessibility suite, not assumed fixed.** The first
+alpha values (0.05 light / 0.06 dark) dropped one real paragraph's contrast to 4.46:1 against
+the 4.5:1 requirement — text sitting inside the page's hero-band zone, where the noise and the
+band's own tint compound. Reduced to 0.03 / 0.035; re-ran the full suite clean (34/34, both
+themes) at the lower alpha, confirming grain this faint is still enough to register as blur-
+worthy texture even though it's also faint enough to leave text contrast alone, rather than
+assuming a smaller number was automatically "safe enough."
+
+**A second, more important finding from the same verification pass, not yet acted on.** Several
+of today's "glass" elements — the primary Review button, the Filters popover — sit on top of the
+page's own *opaque* white table card, not the open gradient background. `backdrop-filter: blur()`
+only ever reveals what is actually rendered behind an element, so texturing the body did nothing
+for these: there's a solid opaque panel between them and the textured canvas regardless. The fix
+here only helps surfaces that genuinely float over the open page or over other visible content
+(the welcome modal's scrim, any future true overlay) — elements nested inside an opaque card
+need a different treatment (a solid, confident fill) rather than glass, a conclusion the button
+work itself hadn't reached before this measurement.
+
+**Consequence.** Any future glass surface should be checked against this same question before
+reaching for `backdrop-blur`: what, concretely, is behind it in the rendered page? If the answer
+is "an opaque card," glass is the wrong tool regardless of how much texture the body itself has.
+
+---
+
 ## 0105 · Title-to-body spacing fixed to 24px; dialog title gap raised app-wide
 
 **Context.** "Spacing between titles and body text should be 24px at least. There needs to be

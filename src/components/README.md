@@ -7,7 +7,7 @@ Input, NativeSelect, Popover, RadioGroup, Sonner, Switch, Table, Tabs, Textarea 
 Each was fetched from shadcn-ui/ui on GitHub (the registry is blocked here) and restyled onto
 our tokens. The API stays shadcn's, with a few additions, each noted in the file's header
 comment. Every control in the app is built from these. The files beside `ui/` put them
-together for this app: `Modal` (Dialog), `Tabs` (Tabs, with a sliding pill), `InfoTip`
+together for this app: `Modal` (Dialog), `Tabs` (Tabs, with a sliding active-tab underline), `InfoTip`
 (Tooltip), `StatusBadge` (Badge), `ThemeToggle` (Switch), `notify` (Sonner) and
 `OnboardingTour` (Popover).
 
@@ -22,8 +22,10 @@ Rules:
 - Status is never carried by colour alone: icon plus text as well.
 
 `Tabs` has three variants: `segmented`, `pill` and `line`. The pill variant has a sliding
-background from transitions.dev (docs/DECISIONS.md, 0047) and optional per-tab tooltips
-(`tooltip`). `line` is underlined text tabs for filtering one list (0060).
+bottom-border indicator from transitions.dev (docs/DECISIONS.md, 0047, 0107 — not a filled
+capsule, which read as a box fighting the rest of the app's soft, borderless glass look) and
+optional per-tab tooltips (`tooltip`). `line` is underlined text tabs for filtering one list
+(0060), sharing the exact same sliding-underline mechanics as pill.
 
 `InfoTip` is the small "i" that explains a label, on hover and keyboard focus. `notify()`
 shows a short confirmation that stays until closed; the page renders `<Toaster />` for it. Both

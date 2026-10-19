@@ -85,11 +85,13 @@ function handleRovingFocusKeyDown(event: KeyboardEvent<HTMLElement>) {
   tabs[nextIndex].focus()
 }
 
-/** `segmented`: the full-width bar described below. `pill`: a compact rounded track whose
- * selected tab is a raised white pill — for a small set of views in a toolbar, where a
- * full-width bar would dominate. `line`: text tabs on a rule, the selected one underlined in
- * the brand colour — for tabs that filter one list, each carrying its own icon and count
- * (docs/DECISIONS.md, 0060). */
+/** `segmented`: the full-width bar described below. `pill`: a compact track for a small set of
+ * views in a toolbar, where a full-width bar would dominate — the selected tab is marked by its
+ * own text colour plus a thin bottom border (0107), not a filled capsule, which read as a box
+ * fighting the rest of the app's soft, borderless glass surfaces. `line`: text tabs on a rule,
+ * the selected one underlined in the brand colour — for tabs that filter one list, each
+ * carrying its own icon and count (docs/DECISIONS.md, 0060). Pill and line now share the exact
+ * same underline mechanics; only the track chrome around them differs. */
 export type TabsVariant = 'segmented' | 'pill' | 'line'
 
 export interface TabsListProps {
@@ -98,9 +100,9 @@ export interface TabsListProps {
   variant?: TabsVariant
   /** Names the tab list for assistive tech when there is no visible heading for it. */
   label?: string
-  /** Pill variant only: overrides the sliding indicator's own surface (`bg-surface shadow-sm`
-   * by default) — for a caller on a non-default background, e.g. a glass card's own frosted
-   * capsule (docs/DECISIONS.md, 0091), where the plain white pill would read as a mistake. */
+  /** Pill variant only: overrides the active-tab underline's own colour (`bg-primary-strong` by
+   * default, docs/DECISIONS.md 0107) — for a caller needing a different accent against its own
+   * background. */
   indicatorClassName?: string
 }
 
@@ -146,10 +148,10 @@ export function TabsList({
 
 /**
  * The shared measuring behind both sliding indicators — transitions.dev "Tabs sliding"
- * (src/styles/transitions.css, docs/DECISIONS.md 0047, 0084). The active tab is measured and
- * its position (and, for the pill, its size) written onto one element behind the labels; CSS
- * owns the tween. The first placement, and any placement after a resize (a font finishing
- * loading, a wrap), happens without a transition, so the indicator never slides in from the
+ * (src/styles/transitions.css, docs/DECISIONS.md 0047, 0084, 0107). The active tab is measured
+ * and its horizontal position and width written onto one thin bar pinned to the list's own
+ * bottom edge; CSS owns the tween. The first placement, and any placement after a resize (a font
+ * finishing loading, a wrap), happens without a transition, so the indicator never slides in from the
  * left edge. A `requestAnimationFrame` poll checks which tab carries `aria-selected="true"`
  * (not `data-state` — see the comment in `place()` below) once a frame and re-measures only on
  * a change, so it follows every way a tab can become active — click, Enter, Space, or a caller
@@ -180,12 +182,9 @@ function useSlidingIndicator(kind: 'pill' | 'line') {
       const listBox = list.getBoundingClientRect()
       const tabBox = active.getBoundingClientRect()
       const apply = () => {
-        if (kind === 'pill') {
-          indicator.style.transform = `translate(${tabBox.left - listBox.left}px, ${tabBox.top - listBox.top}px)`
-          indicator.style.height = `${tabBox.height}px`
-        } else {
-          indicator.style.transform = `translateX(${tabBox.left - listBox.left}px)`
-        }
+        // Both kinds are a thin bar pinned to the list's own bottom edge (0107) — only the
+        // horizontal position and width ever move; `kind` only picks the CSS class now.
+        indicator.style.transform = `translateX(${tabBox.left - listBox.left}px)`
         indicator.style.width = `${tabBox.width}px`
         indicator.style.opacity = '1'
       }
@@ -263,7 +262,7 @@ function PillTabsList({
       <span
         ref={indicatorRef}
         aria-hidden
-        className={cn('t-tabs-pill bg-surface shadow-sm', indicatorClassName)}
+        className={cn('t-tabs-pill bg-primary-strong', indicatorClassName)}
       />
       {children}
     </UI.TabsList>

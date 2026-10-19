@@ -122,32 +122,24 @@
 
 /* ---- Tabs sliding --------------------------------------------------------------------- */
 
-/* The pill: width and transform are written inline by `TabsList` (pill variant) so the
- * transition tweens between the previous and next measured positions. */
+/* The pill variant's active-tab indicator (docs/DECISIONS.md, 0107): a thin bottom border, not
+ * a filled capsule behind the tab — a box with its own edges around the selected tab read as
+ * fighting the rest of the glass, soft-edged design, the same complaint that already took the
+ * pill track's own corners from rounded to straight (0099) didn't fully settle. Geometrically
+ * identical to `.t-tabs-line` below (translateX + width only, pinned to the list's own bottom
+ * edge) — `useSlidingIndicator` in `components/Tabs.tsx` no longer branches the two apart. */
 .t-tabs-pill {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
-  height: 0;
+  height: 2px;
   width: 0;
-  overflow: hidden;
   transform: translateX(0);
   transition:
     transform var(--tabs-dur) var(--tabs-ease),
     width var(--tabs-dur) var(--tabs-ease);
   will-change: transform, width;
   z-index: 0;
-  pointer-events: none;
-}
-/* The same specular highlight `.glass-sheen` gives buttons and the warning badge (0098,
- * tokens.css's own comment on `--glass-sheen`), but as its own rule: the indicator already has
- * `position: absolute` from the rule above, and `.glass-sheen` itself sets `position: relative`
- * — applying both to the same element would make source order, not intent, decide which wins. */
-.t-tabs-pill::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--glass-sheen);
   pointer-events: none;
 }
 .t-tab {

@@ -39,6 +39,71 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-19 · Page-glass texture for `backdrop-filter`, and the pill tabs' box-to-underline change
+
+**Goal**
+Two follow-ups raised together after the keyboard-bug round: "both dark mode and light mode
+primary button looks terrible... the background is only gradient style and doesn't have any
+texture or lines behind," and separately, "instead the active tab being inside 'a box' can't it
+just be bottom border instead? ... being in box fights somehow the design."
+
+**What changed**
+- `src/styles/tokens.css` — new `--texture-noise` token (tiled SVG `feTurbulence` data URI, one
+  value per theme), measured and tuned down twice for a real contrast regression (see Steps).
+- `src/styles/index.css` — `bg-page-glass` and `bg-welcome-scrim` both gained the noise as an
+  extra tiled `background-image` layer.
+- `src/components/Tabs.tsx` — `useSlidingIndicator`'s `place()` no longer branches `pill` vs.
+  `line`; both now compute the same `translateX`/`width`-only bar. `PillTabsList`'s indicator
+  span default class: `bg-surface shadow-sm` → `bg-primary-strong`.
+- `src/styles/transitions.css` — `.t-tabs-pill` rewritten from an absolutely-positioned filled
+  rect (`top`/`height` written inline) to a `bottom: 0`, `height: 2px` bar — now geometrically
+  identical to `.t-tabs-line`. Its `::before` glass-sheen pseudo-element removed (nothing left
+  for a sheen to sit on).
+- `src/features/run/MyReviews.tsx` — removed the `indicatorClassName` override that gave the old
+  capsule its glass-chip look; falls back to the new default.
+- `docs/DECISIONS.md` — new entries 0106 (texture) and 0107 (tab indicator).
+
+**Steps, in order**
+1. Measured the rendered primary button's actual background/text colours (`getComputedStyle` in
+   a throwaway Playwright script) rather than reasoning from token values alone — confirmed
+   ~6:1 contrast (technically passing) but a visually dull, flat-looking fill in both themes.
+2. Root-caused: `backdrop-filter: blur()` only does visible work on texture that's actually
+   there; the page's smooth gradient blurs into itself unchanged. Built `--texture-noise`
+   (`feTurbulence` + `feColorMatrix` scaling alpha per-pixel, not a flat opacity) and wired it
+   into `bg-page-glass`/`bg-welcome-scrim`.
+3. `npx playwright test e2e/accessibility.spec.ts`: one failure — a hero-band paragraph dropped
+   to 4.46:1 (needs 4.5:1), the noise and the band's own tint compounding. Reduced alpha 0.05→
+   0.03 (light) and 0.06→0.035 (dark); re-ran clean, 34/34.
+4. Zoomed crops of the Filters popover and the Review button revealed both sit on the page's
+   *opaque* white table card, not the open gradient — `backdrop-filter` only reveals what's
+   actually behind an element, so the new texture does nothing for either. Recorded as an open
+   finding in 0106 rather than silently calling the button "fixed."
+5. Separately, converted the pill tabs' filled sliding capsule to a bottom border by reusing the
+   `line` variant's exact positioning math (removed the pill-specific `top`/`height` branch in
+   `place()`), screenshotted both tab lists (My reviews status tabs, run page Story/Evidence/
+   All-steps) in both themes, confirmed the underline slides correctly on click.
+
+**Why it was done this way**
+The button and the tab-box complaints turned out to share one root cause worth naming even
+though the fixes are unrelated: "glass"/"box" surfaces in this app were carrying visual weight
+(a filled capsule, an un-textured blur) that the rest of the design — soft, borderless, textured
+— no longer wanted. Fixing the texture didn't fix the button, because the button was never
+positioned where texture could reach it; that's a real, separate finding to carry into whatever
+button treatment comes next, not something this round should paper over.
+
+**Verification**
+`npx playwright test e2e/accessibility.spec.ts` (full suite, both themes): 34/34. `npx vitest
+run`: 293/293. `npx playwright test e2e/keyboard.spec.ts --repeat-each=15`: 45/45 (Tabs.tsx
+territory touched again). `npx playwright test e2e/approve-flow.spec.ts
+e2e/onboarding-tour.spec.ts`: 7/7. `npm run build`: clean.
+
+**Open questions / next**
+The primary button's own treatment is still unresolved — glass doesn't reach it regardless of
+page texture, since it sits on an opaque card. A follow-up background-texture direction (a real
+decorative asset vs. a more elaborate procedural streak effect) and a "liquid/wavy on hover" tab
+underline were both raised as further ideas and are intentionally not built yet, pending which
+direction the user picks.
+
 ## 2026-10-19 · Title-to-body spacing fixed to 24px app-wide
 
 **Goal**
