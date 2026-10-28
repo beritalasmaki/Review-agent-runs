@@ -50,7 +50,7 @@ const HELP = 'text-caption font-normal font-body leading-relaxed text-text-secon
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section aria-label={title} className="flex flex-col">
-      <h3 className="border-b border-border-subtle pb-[var(--space-2)] text-caption font-semibold font-heading tracking-wide text-text-secondary uppercase">
+      <h3 className="pb-[var(--space-2)] text-caption font-semibold font-heading tracking-wide text-text-secondary uppercase">
         {title}
       </h3>
       <dl className="flex flex-col">{children}</dl>
@@ -60,7 +60,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-[var(--space-1)] border-b border-border-subtle py-[var(--space-3)] last:border-b-0">
+    <div className="flex flex-col gap-[var(--space-1)] py-[var(--space-3)]">
       <dt className={LABEL}>{label}</dt>
       <dd className="flex flex-col items-start gap-[var(--space-1)]">{children}</dd>
     </div>
@@ -88,7 +88,7 @@ export function RunDetails({ run, className, tabIndex, ref }: RunDetailsProps) {
       tabIndex={tabIndex}
       aria-labelledby="run-details-heading"
       className={cn(
-        'flex flex-col gap-[var(--space-4)] rounded-lg border border-border-subtle bg-surface shadow-card p-[var(--space-4)]',
+        'flex flex-col gap-[var(--space-4)] rounded-lg bg-surface shadow-card-smoky p-[var(--space-4)]',
         className,
       )}
     >

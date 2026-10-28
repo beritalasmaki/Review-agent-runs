@@ -156,7 +156,7 @@ export function DecisionPanel({
   return (
     <section
       aria-labelledby="decision-heading"
-      className="flex flex-col gap-[var(--space-6)] rounded-lg border border-border bg-surface shadow-card p-[var(--space-4)]"
+      className="flex flex-col gap-[var(--space-6)] rounded-lg bg-surface shadow-card-smoky p-[var(--space-4)]"
     >
       <div className="flex flex-col gap-[var(--space-4)]">
         <div className="flex flex-col gap-[var(--space-5)]">
@@ -206,10 +206,8 @@ export function DecisionPanel({
                 <div
                   key={item.id}
                   className={cn(
-                    'flex flex-col gap-[var(--space-2)] rounded-md border px-[var(--space-3)] py-[var(--space-3)]',
-                    checked
-                      ? 'border-border-subtle bg-bg'
-                      : 'border-status-waived/40 bg-status-waived-tint-bg',
+                    'flex flex-col gap-[var(--space-2)] rounded-md px-[var(--space-3)] py-[var(--space-3)]',
+                    checked ? 'bg-bg' : 'border border-status-waived/40 bg-status-waived-tint-bg',
                   )}
                 >
                   <label
@@ -245,7 +243,7 @@ export function DecisionPanel({
         )}
       </fieldset>
 
-      <div className="flex flex-col gap-[var(--space-3)] border-t border-border-subtle pt-[var(--space-4)]">
+      <div className="flex flex-col gap-[var(--space-3)] pt-[var(--space-4)]">
         <span className="flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
           <StepNumber>2</StepNumber>
           Choose one

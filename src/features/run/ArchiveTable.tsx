@@ -62,7 +62,7 @@ export function ArchiveTable({
         <col className="w-48" />
         <col className="w-28" />
       </colgroup>
-      <TableHeader className="border-b border-border-subtle bg-surface-raised">
+      <TableHeader className="bg-surface-raised">
         <TableRow>
           <ColumnHeader label="Details" />
           <ColumnHeader
@@ -124,7 +124,7 @@ export function ArchiveTable({
           return (
             <TableRow
               key={run.id}
-              className="border-b border-border-subtle bg-surface transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-border-subtle"
+              className="bg-surface transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-border-subtle"
             >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />
