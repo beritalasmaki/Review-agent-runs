@@ -319,7 +319,7 @@ export function RunReviewPage({
 
           <div
             data-tour="run-tabs-view"
-            className="min-w-0 rounded-lg border border-border-subtle bg-surface shadow-card md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
+            className="min-w-0 rounded-lg bg-surface shadow-card-smoky md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
           >
             <RunViewTabs ref={tabsRef} run={run} />
             <div className="px-[var(--space-5)] pb-[var(--space-5)]">

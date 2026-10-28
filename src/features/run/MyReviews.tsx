@@ -406,7 +406,7 @@ function ReviewsBoard({
   return (
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-3)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
       {!onArchivePage ? (
-        <div className="overflow-hidden rounded-lg border border-glass-border bg-glass p-[var(--space-4)] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
+        <div className="overflow-hidden rounded-lg bg-glass p-[var(--space-4)] shadow-glass-smoky backdrop-blur-[var(--blur-glass)]">
           <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)]">
             <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
@@ -468,7 +468,7 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="overflow-hidden rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg bg-glass shadow-glass-smoky backdrop-blur-[var(--blur-glass)]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
@@ -501,7 +501,7 @@ function ReviewsBoard({
               </TabsList>
             </div>
             <TabsContent value={tab}>
-              <div data-tour="search-filters" className="border-b border-border-subtle">
+              <div data-tour="search-filters">
                 <ReviewsToolbar
                   searchLabel="Search runs"
                   searchPlaceholder="Search runs, also in the archive"
@@ -613,7 +613,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="overflow-hidden rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg bg-glass shadow-glass-smoky backdrop-blur-[var(--blur-glass)]"
         >
           {archiveTable()}
         </section>
@@ -622,9 +622,9 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="overflow-hidden rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg bg-glass shadow-glass-smoky backdrop-blur-[var(--blur-glass)]"
         >
-          <div className="border-b border-border-subtle">
+          <div>
             <ReviewsToolbar
               searchLabel="Search the archive"
               searchPlaceholder="Search the archive"
@@ -711,11 +711,7 @@ function InProgress({
   now: Date
 }) {
   return (
-    <Collapsible
-      open={open}
-      onOpenChange={onToggle}
-      className="flex flex-col border-t-4 border-surface-raised"
-    >
+    <Collapsible open={open} onOpenChange={onToggle} className="flex flex-col">
       <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-[var(--space-4)] rounded-b-lg data-[state=open]:rounded-b-none px-[var(--space-5)] py-[var(--space-4)] text-left hover:bg-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring">
         <span
           aria-hidden
@@ -738,14 +734,14 @@ function InProgress({
         </span>
       </CollapsibleTrigger>
       <CollapsibleContent asChild>
-        <ul className="flex flex-col rounded-b-lg border-t border-border-subtle bg-bg">
+        <ul className="flex flex-col rounded-b-lg bg-bg">
           {runs.map((run) => {
             const progress = progressOf(run)
             const sentBack = reviewStatus(run) === 'requested' && run.decision
             return (
               <li
                 key={run.id}
-                className="grid grid-cols-[minmax(0,1fr)_15rem_12.5rem_8rem] items-center gap-[var(--space-4)] border-b border-border-subtle py-[var(--space-3)] pr-[var(--space-5)] pl-[calc(var(--space-7)+var(--space-2))]"
+                className="grid grid-cols-[minmax(0,1fr)_15rem_12.5rem_8rem] items-center gap-[var(--space-4)] py-[var(--space-3)] pr-[var(--space-5)] pl-[calc(var(--space-7)+var(--space-2))]"
               >
                 <span className="flex min-w-0 flex-col gap-[var(--space-1)]">
                   <span

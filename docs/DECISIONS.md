@@ -6,6 +6,53 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0121 · Card/table borders dropped on My reviews and the run page; a "smoky" halo instead
+
+**Context.** "Let's remove the clear border lines from the title, content areas and table" —
+scoped by follow-up to My reviews plus the single run review page, not the dialogs or other
+cards app-wide. Mid-round: "Can we add like smoky background behind the cards and table so it
+looks like border is fading away instead of being sharp line" — a card without its own border
+still ends abruptly against the page unless something fills in for the line that used to mark
+its edge.
+
+**Choice.** Every outer card border (`border border-border-subtle`/`border-border`/
+`border-glass-border`) and inner divider line (`border-b`/`border-t` under a heading or between
+stacked rows) on these two pages' title, content-area cards and tables came out — the hero/
+title card and "Runs"/"Archived runs" cards on My reviews, `RunOverview`/`RunDetails`/
+`DecisionPanel`/`UndoBox`/`InProgressBox`/`UnverifiedList`/`EvidenceTab`/`RunShape`/the tabbed-
+view card on the run page, and the header/row separators in `ReviewsTable`/`ArchiveTable`/
+`StepsTab`/`EvidenceTab`'s per-group list. Two exceptions, kept deliberately: `CheckCard`'s
+colored `border-l-[3px]` accent (the status signal, not a box outline) and the open checklist
+item's `border-status-waived/40` in `DecisionPanel` (same reasoning) stayed; the My reviews
+status-tabs' own track border and `RunTopBar`'s bottom border stayed too, since those are
+functional control/navigation chrome, not a content divider.
+
+In place of the line, two new shadow tokens (`tokens.css`) — `--shadow-card-smoky` and
+`--shadow-glass-smoky` — add one more, symmetric, zero-offset layer on top of the existing
+`--shadow-card`/`--shadow-glass-lg` recipe: `0 0 14px <ink>`, surrounding the box evenly on
+every side instead of only falling below it like the first two layers do. Applied only at the
+same sites the borders came off, as a new name rather than a change to `--shadow-card`/
+`--shadow-glass-lg` in place, since those two are also the shadow for dialogs, popovers,
+tooltips, buttons and tabs — well outside what either request asked for.
+
+**The blur radius had to stay small.** A first pass used a much wider halo (48–64px blur) and
+broke the accessibility suite, deterministically, every run: the Archive page's own description
+paragraph sits with no card of its own, `--space-5` (24px) above the "Archived runs" card below
+it, and a 64px blur reaches 24px away with enough opacity to measurably darken the page behind
+that bare text, dropping it under 4.5:1. 14px stays well inside the smallest such card-to-bare-
+text gap found on either page, confirmed with the exact failing test run 10 times clean after
+the fix, then the full suite run three times (one unrelated, pre-existing `elmPartiallyObscured`
+flake on the filters popover, already documented in 0119, at its usual ~1-in-30 rate — not this
+round's doing).
+
+**Consequence.** A future card on either of these two pages that wants this treatment reaches
+for `shadow-card-smoky`/`shadow-glass-smoky` directly rather than `shadow-card`/`shadow-glass-
+lg` plus a border; anywhere else in the app, a card's border is still the un-smoky default,
+since this round deliberately didn't touch `--shadow-card`/`--shadow-glass`/`--shadow-glass-lg`
+themselves.
+
+---
+
 ## 0120 · Button shine, two strengths: full sweep only for a one-off final action
 
 **Context.** "I think that shiny hover effect in primary buttons should only appear when user

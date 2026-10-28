@@ -39,6 +39,75 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-28 · Dropped card/table borders on My reviews and the run page; smoky halo instead
+
+**Goal**
+"Let's remove the clear border lines from the title, content areas and table" (scoped, via a
+follow-up question, to My reviews plus the single run review page), then mid-round: "Can we add
+like smoky background behind the cards and table so it looks like border is fading away instead
+of being sharp line."
+
+**What changed**
+- Outer card borders and inner divider lines removed from: My reviews' title/hero card and
+  "Runs"/"Archived runs" cards (`MyReviews.tsx`); `RunOverview`, `RunDetails`, `DecisionPanel`,
+  `UndoBox`, `InProgressBox`, `UnverifiedList`, `EvidenceTab`, `RunShape`, and the tabbed-view
+  card on `RunReviewPage.tsx`; the header/row separator lines in `ReviewsTable.tsx`,
+  `ArchiveTable.tsx`, `StepsTab.tsx`, and `EvidenceTab.tsx`'s per-group rows.
+- `CheckCard.tsx` kept its colored `border-l-[3px]` status accent, dropping only the full box
+  outline around it; `DecisionPanel.tsx`'s open (unticked) checklist item kept its
+  `border-status-waived/40` tint for the same reason — status signal, not a box line.
+- Left alone on purpose: the status tabs' own track border and `RunTopBar`'s bottom border —
+  functional control/navigation chrome, not a content divider.
+- `tokens.css` — two new tokens, `--shadow-card-smoky`/`--shadow-glass-smoky`: the existing
+  `--shadow-card`/`--shadow-glass-lg` recipe plus one more symmetric, zero-offset, 14px-blur
+  layer, so a card's edge fades into the page on every side instead of just underneath it.
+  Applied only at the sites above — `--shadow-card`/`--shadow-glass`/`--shadow-glass-lg`
+  themselves untouched, since those also shadow dialogs, popovers, tooltips, buttons and tabs.
+
+**Steps, in order**
+1. Ran three parallel Explore agents to inventory every border class on the title/hero card,
+   every other content-area card, and the two tables, with exact file/line/className and which
+   color token each one resolves to (solid opaque vs. already-translucent).
+2. Asked which pages were in scope (My reviews only / + the run page / app-wide) before editing
+   anything, since the blast radius differs by an order of magnitude; confirmed "My reviews +
+   the single run review page."
+3. Removed each border class file by file, judging case by case whether a given line was a
+   content divider (removed) or a functional/status signal (kept) — see "What changed."
+4. Added the two new shadow tokens and swapped `shadow-card`/`shadow-glass-lg` for
+   `shadow-card-smoky`/`shadow-glass-smoky` at exactly the sites whose border just came off.
+5. First attempt used a 48–64px blur on the new halo layer; the accessibility suite caught a
+   real, deterministic (10/10 reproduction) regression — a bare paragraph on the Archive page,
+   24px above the "Archived runs" card with no card of its own, measured 4.21:1, below the
+   4.5:1 line, because the wide blur reached far enough to darken the page behind it. Confirmed
+   with `git stash` that the baseline passed clean and the change reproduced it every time, not
+   a flake.
+6. Tightened the halo to a 14px blur (comfortably inside the smallest card-to-bare-text gap on
+   either page) and re-ran the same test 10 times clean, then the full suite three times.
+7. Checked visually with a production build (`vite preview`) and real screenshots, both themes,
+   My reviews and the run page.
+
+**Why it was done this way**
+A per-component border removal, not a global token change, because `--shadow-card`/
+`--shadow-glass`/`--shadow-glass-lg` are also used by dialogs, popovers, tooltips, buttons and
+tabs — well outside either request. New token names (`-smoky` suffix) keep that boundary explicit
+rather than relying on remembering not to touch the originals. The halo's blur radius is tuned
+empirically against the real accessibility suite, not chosen by eye, the same discipline this
+app has used for every contrast-sensitive token change.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check` (all touched
+files): clean. `npx vitest run`: 293/293. `node scripts/check-theme-bridge.mjs`
+(`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium`): ok, 70 colours across 3 themes.
+`npx playwright test e2e/accessibility.spec.ts`: 34/34, confirmed clean across three full runs
+(one unrelated pre-existing flake at its usual rate, see docs/DECISIONS.md 0121). `npx
+playwright test e2e/keyboard.spec.ts --repeat-each=10`: 30/30. Full `npx playwright test
+--ignore-snapshots`: 44/44. `npm run build`: clean. Screenshots from a production build, both
+themes, My reviews and the run page, confirmed the borders are gone and the halo reads as a
+soft fade, not a muddy or broken edge.
+
+**Open questions / next**
+None.
+
 ## 2026-10-19 · Button shine split into two strengths
 
 **Goal**

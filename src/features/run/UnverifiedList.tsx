@@ -22,7 +22,7 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
   return (
     <section
       aria-labelledby="unverified-heading"
-      className="flex flex-col gap-[var(--space-4)] rounded-lg border border-border-subtle bg-surface shadow-card p-[var(--space-4)]"
+      className="flex flex-col gap-[var(--space-4)] rounded-lg bg-surface shadow-card-smoky p-[var(--space-4)]"
     >
       <div className="flex flex-col gap-[var(--space-5)]">
         <SectionHeading
@@ -39,7 +39,7 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
         </p>
       </div>
       {items.length === 0 ? (
-        <p className="border-t border-border-subtle pt-[var(--space-3)] text-meta font-normal font-body text-text-primary">
+        <p className="pt-[var(--space-3)] text-meta font-normal font-body text-text-primary">
           Nothing. Every check ran and no score named something it could not check.
         </p>
       ) : (
@@ -47,7 +47,7 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
           {items.map((item) => (
             <li
               key={item.id}
-              className="flex gap-[var(--space-3)] border-t border-border-subtle py-[var(--space-3)] text-meta font-normal font-body leading-relaxed text-text-primary"
+              className="flex gap-[var(--space-3)] py-[var(--space-3)] text-meta font-normal font-body leading-relaxed text-text-primary"
             >
               <span
                 aria-hidden

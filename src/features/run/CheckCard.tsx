@@ -25,9 +25,9 @@ export interface CheckCardProps {
 }
 
 const TONE = {
-  unknown: 'border-status-waived/40 border-l-status-waived bg-status-waived-tint-bg',
-  fail: 'border-status-fail/40 border-l-status-fail bg-status-fail-tint-bg',
-  waived: 'border-border-subtle border-l-status-waived bg-surface-raised',
+  unknown: 'border-l-status-waived bg-status-waived-tint-bg',
+  fail: 'border-l-status-fail bg-status-fail-tint-bg',
+  waived: 'border-l-status-waived bg-surface-raised',
 } as const
 
 const HEADLINE = {
@@ -48,7 +48,7 @@ export function CheckCard({ gate, timeline, actionable = false }: CheckCardProps
       id={checkCardId(gate.id)}
       tabIndex={-1}
       className={cn(
-        'max-w-[45rem] rounded-md border border-l-[3px] px-[var(--space-4)] py-[var(--space-3)]',
+        'max-w-[45rem] rounded-md border-l-[3px] px-[var(--space-4)] py-[var(--space-3)]',
         LINK_TARGET,
         TONE[result],
       )}

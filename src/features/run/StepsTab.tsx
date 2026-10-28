@@ -85,7 +85,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         ref={focused ? focusRef : undefined}
         tabIndex={focused ? -1 : undefined}
         className={cn(
-          'border-b border-border-subtle text-meta font-normal font-body text-text-primary',
+          'text-meta font-normal font-body text-text-primary',
           attention ? 'bg-status-waived-tint-bg/60' : nested ? 'bg-bg' : 'hover:bg-bg',
           focused && 'outline-2 -outline-offset-2 outline-focus-ring',
           nested && 'text-text-secondary',
@@ -136,7 +136,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         </p>
       ) : (
         <Table
-          containerClassName="rounded-lg border border-border-subtle bg-surface shadow-card"
+          containerClassName="rounded-lg bg-surface shadow-card-smoky"
           className="min-w-[40rem] table-fixed"
         >
           <colgroup>
@@ -146,7 +146,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
             <col />
             <col className="w-[7rem]" />
           </colgroup>
-          <TableHeader className="border-b border-border-subtle bg-surface-raised text-caption font-semibold font-heading text-text-secondary">
+          <TableHeader className="bg-surface-raised text-caption font-semibold font-heading text-text-secondary">
             <TableRow>
               <TableHead scope="col" className={CELL}>
                 #
@@ -186,7 +186,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
 
               return (
                 <Fragment key={`group-${row.firstNumber}`}>
-                  <TableRow className="border-b border-border-subtle bg-surface-raised text-meta font-normal font-body text-text-primary">
+                  <TableRow className="bg-surface-raised text-meta font-normal font-body text-text-primary">
                     <TableCell className={cn(CELL, 'font-mono text-text-secondary tabular-nums')}>
                       {formatStepNumber(row.firstNumber, total, last)}
                     </TableCell>
@@ -220,7 +220,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
                   </TableRow>
                   {visible.map((event, index) => renderStep(event, row.firstNumber + index, true))}
                   {state === 'preview' && row.events.length > PREVIEW_ROWS && (
-                    <TableRow className="border-b border-border-subtle bg-bg">
+                    <TableRow className="bg-bg">
                       <TableCell colSpan={3} />
                       <TableCell
                         className={cn(CELL, 'text-meta font-medium font-body')}

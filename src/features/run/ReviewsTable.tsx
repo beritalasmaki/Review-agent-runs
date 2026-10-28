@@ -266,7 +266,7 @@ export function ReviewsTable({
         <col className="w-36" />
         <col className="w-28" />
       </colgroup>
-      <TableHeader className="border-b border-border-subtle bg-surface-raised">
+      <TableHeader className="bg-surface-raised">
         <TableRow>
           <ColumnHeader label="Details" />
           <ColumnHeader label="Select" hiddenLabel="Select" />
@@ -327,7 +327,7 @@ export function ReviewsTable({
             <TableRow
               key={run.id}
               data-tour={index === 0 ? 'first-run-row' : undefined}
-              className="border-b border-border-subtle bg-surface transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-border-subtle"
+              className="bg-surface transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-border-subtle"
             >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />
