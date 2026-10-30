@@ -363,6 +363,13 @@
    * itself was. */
   --color-glass-chip: color-mix(in srgb, var(--neutral-0) 18%, transparent);
   --color-glass-chip-border: rgb(255 255 255 / 0.55);
+  /* The hand-drawn "scribble" mark behind a card's title (0122 — "se reuna jää sellaiseksi
+   * abstraktiksi", an abstract edge instead of a blurred one): a single ink tone, revealed
+   * through `public/textures/scribble.svg` via `mask-image` (the SVG's own alpha, not its
+   * colour — `mask-mode: alpha` in `index.css` — so one file works in both themes). Dark ink
+   * at low opacity in light theme; the reverse in dark, the same "flip the ink, not the
+   * drawing" the glass tokens already use. */
+  --color-scribble: color-mix(in srgb, var(--neutral-12) 34%, transparent);
   /* The ambient background blobs (0116, rebuilt three times in 0117/0118): one calm hue,
    * `--status-blue` (the same muted slate-blue already used for "unknown"/"info" elsewhere in
    * the UI — not the brand indigo/lime, which read as purple/yellow and were too saturated to
@@ -541,6 +548,7 @@
     --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
     --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
     --color-glass-chip-border: rgb(255 255 255 / 0.18);
+    --color-scribble: color-mix(in srgb, var(--neutral-1) 38%, transparent);
     --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
     --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
     --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
@@ -605,6 +613,7 @@
   --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
   --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
   --color-glass-chip-border: rgb(255 255 255 / 0.18);
+  --color-scribble: color-mix(in srgb, var(--neutral-1) 38%, transparent);
   --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
   --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
   --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);

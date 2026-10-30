@@ -314,3 +314,47 @@
   background: var(--glass-sheen);
   pointer-events: none;
 }
+
+/*
+ * The abstract "scribble" mark behind a title/content area's own edge (docs/DECISIONS.md,
+ * 0122 — "se reuna jää sellaiseksi abstraktiksi", an abstract edge instead of a blurred one): a
+ * hand-drawn ink loop (`public/textures/scribble.svg`, generated — several smooth, overlapping,
+ * roughly-circular pen strokes around a centroid, thinning in radius/width/opacity toward the
+ * edges so the shape fades on its own rather than hard-clipping) stands in for the card's own
+ * flat fill and border/shadow edge. One SVG works in both themes: `mask-mode: alpha` reads only
+ * the drawing's alpha, never its colour, so `--color-scribble` (tokens.css — dark ink in light
+ * theme, light ink in dark theme, the same "flip the ink" every glass token already does) is
+ * free to paint it correctly per theme with no second file.
+ *
+ * `::before` with `inset: 0` sized to its own parent's own box, never larger — the same shape
+ * `glass-sheen` above already uses safely. Not a `background-image` on the element itself (the
+ * mechanism `bg-page-glass` uses for the blobs): masking needs its own layer so the mark's alpha
+ * can be read independently of whatever else the element's own background is doing. Confined to
+ * the parent's own box on purpose, same reasoning as `glass-sheen`: three earlier attempts at a
+ * `position: fixed`/`absolute` layer sized to *exceed* its own natural footprint (to bleed past
+ * a box's edge) broke the accessibility suite — axe's color-contrast rule treats any
+ * `position: fixed`/`absolute` box of real size as a potential floating layer over whatever text
+ * its rect happens to overlap, and a bleeding layer's rect reaches into neighbouring content it
+ * was never meant to cover. A same-size `::before`, like `glass-sheen`'s, has never hit that:
+ * its rect never extends past content that already accounts for it.
+ */
+@utility scribble-mark {
+  position: relative;
+}
+.scribble-mark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-scribble);
+  -webkit-mask-image: url('/textures/scribble.svg');
+  mask-image: url('/textures/scribble.svg');
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 48rem 20rem;
+  mask-size: 48rem 20rem;
+  -webkit-mask-position: -2% center;
+  mask-position: -2% center;
+  pointer-events: none;
+}

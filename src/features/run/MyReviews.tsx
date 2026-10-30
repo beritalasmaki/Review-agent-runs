@@ -406,7 +406,7 @@ function ReviewsBoard({
   return (
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-3)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
       {!onArchivePage ? (
-        <div className="overflow-hidden rounded-lg bg-glass p-[var(--space-4)] shadow-glass-smoky backdrop-blur-[var(--blur-glass)]">
+        <div className="scribble-mark p-[var(--space-4)]">
           <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)]">
             <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
