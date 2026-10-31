@@ -318,11 +318,10 @@
 /*
  * The abstract "scribble" mark behind a title/content area's own edge (docs/DECISIONS.md,
  * 0122 — "se reuna jää sellaiseksi abstraktiksi", an abstract edge instead of a blurred one): a
- * hand-drawn ink loop (`public/textures/scribble.svg`, generated — several smooth, overlapping,
- * roughly-circular pen strokes around a centroid, thinning in radius/width/opacity toward the
- * edges so the shape fades on its own rather than hard-clipping) stands in for the card's own
- * flat fill and border/shadow edge. One SVG works in both themes: `mask-mode: alpha` reads only
- * the drawing's alpha, never its colour, so `--color-scribble` (tokens.css — dark ink in light
+ * hand-drawn ink mark (`public/textures/scribble.svg` — a supplied asset, not generated; an
+ * earlier generated attempt read as too mechanical) stands in for the card's own flat fill and
+ * border/shadow edge. One SVG works in both themes: `mask-mode: alpha` reads only the drawing's
+ * alpha, never its baked-in fill colour, so `--color-scribble` (tokens.css — dark ink in light
  * theme, light ink in dark theme, the same "flip the ink" every glass token already does) is
  * free to paint it correctly per theme with no second file.
  *
@@ -352,9 +351,9 @@
   mask-mode: alpha;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
-  -webkit-mask-size: 48rem 20rem;
-  mask-size: 48rem 20rem;
-  -webkit-mask-position: -2% center;
-  mask-position: -2% center;
+  -webkit-mask-size: 58rem 21.2rem;
+  mask-size: 58rem 21.2rem;
+  -webkit-mask-position: center;
+  mask-position: center;
   pointer-events: none;
 }
