@@ -407,8 +407,8 @@ function ReviewsBoard({
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-3)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
       {!onArchivePage ? (
         <div className="p-[var(--space-4)]">
-          <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)]">
-            <div className="dither-edge -m-[var(--space-7)] flex flex-col gap-[var(--space-2)] p-[var(--space-7)]">
+          <div className="dither-edge -m-[var(--space-4)] flex flex-wrap items-end justify-between gap-[var(--space-5)] p-[var(--space-4)]">
+            <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
               <p className="text-lead leading-relaxed text-text-secondary">
                 Agent runs assigned to you. Decide on pending runs, and find your past decisions.
