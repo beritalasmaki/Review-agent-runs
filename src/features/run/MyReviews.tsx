@@ -407,7 +407,7 @@ function ReviewsBoard({
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-3)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
       {!onArchivePage ? (
         <div className="p-[var(--space-4)]">
-          <div className="dither-edge -m-[var(--space-4)] flex flex-wrap items-end justify-between gap-[var(--space-5)] p-[var(--space-4)]">
+          <div className="dither-edge -m-[1.75rem] flex flex-wrap items-end justify-between gap-[var(--space-5)] p-[1.75rem]">
             <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
               <p className="text-lead leading-relaxed text-text-secondary">
