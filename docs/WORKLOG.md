@@ -154,14 +154,31 @@ files): clean. `npx vitest run`: 293/293. `node scripts/check-theme-bridge.mjs`
 reviews and the run page in both the pending and decided states, plus the Evidence and All-steps
 tabs: no clipping, consistent padding, title and table cards measured pixel-identical in `x` and
 `width`. `npx playwright test e2e/accessibility.spec.ts`: first full run 46/68 failed (the two
-real bugs above); after the pointer-events and bleed-size fixes, the two originally-failing
-scenarios pass individually. [full-suite re-run pending — see below.]
+real bugs above); after the pointer-events and bleed-size fixes, both originally-failing
+scenarios pass individually, repeatedly.
+
+A second, unrelated kind of failure remained in a full-suite run (not reproducible running a
+single scenario alone): `measuredBackgroundContrast` (this file's own helper, used for every
+glass surface, not new to this round) returning `null` for a handful of `DecisionPanel`
+paragraphs, because `page.screenshot()` there is viewport-only (not `fullPage`) and
+`DecisionPanel`'s own content genuinely exceeds the test's 900px-tall viewport — specifically for
+"pending run, Story" (`<span>To approve, tick 3 more items…</span>`, measured `rect.y: 916` at a
+900px-tall viewport) and "clean run" (a different `DecisionPanel` paragraph, same cause). Checked
+against the commit immediately before any dither-edge work on this component (`3d9856b`, the
+0121 smoky-halo version, via a throwaway `git worktree`): the exact same paragraph already sat
+off-screen there too, at `rect.y: 950` — slightly *further* down than this round's version, not
+less. This is a pre-existing gap in `measuredBackgroundContrast` itself (it can only sample pixels
+actually inside the one screenshot it takes), not a regression from the dither edge or this
+round's padding/gap changes, and out of this round's scope to fix. Flagged here rather than
+silently worked around.
 
 **Open questions / next**
-A full `npx playwright test e2e/accessibility.spec.ts` re-run (plus keyboard.spec.ts and the
-rest of the e2e suite) was still in progress when this entry was drafted, against the final
-pointer-events + 16px-bleed-everywhere state; confirm it comes back clean before considering
-this round closed.
+Whether `measuredBackgroundContrast` should take a `fullPage` screenshot (or scroll the target
+into view first) so it can verify contrast for glass-surface text below a 900px viewport —
+pre-existing, not caused by this round, left for whoever picks it up next. This round's own
+dither-edge changes are confirmed clean: the click-interception and bleed-overlap bugs are
+fixed and verified (individually and in a full serial run), and every scenario that does not hit
+the pre-existing off-screen limitation above passes in both themes.
 
 ---
 
