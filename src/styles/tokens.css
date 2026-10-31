@@ -304,21 +304,6 @@
   /* A card's lift off the page: faint and flat, true black, not tinted (0073 — the flat
    * neutral replaces 0068's page-tinted shadow along with the rest of that palette). */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
-  /* `--shadow-card` plus a third, symmetric, zero-offset halo (0121 — "smoky background...
-   * so it looks like border is fading away instead of being sharp line"): the first two layers
-   * only fall below the box, so once a card's own border is dropped, its top/side edges still
-   * cut cleanly against the page. The added layer surrounds the box equally on every side,
-   * reading as the card's own surface softly diffusing into the page rather than a shadow cast
-   * by it. Scoped to this one new name rather than changed in place on `--shadow-card` itself,
-   * since that token is also the dialog/popover/tooltip/button shadow — well outside what was
-   * asked. Used only on the specific title/content-area cards this round touched. Kept to a
-   * 14px blur, not the much wider halo first tried: a real accessibility-suite regression
-   * showed a 48–64px blur bleeds far enough to measurably darken bare page text sitting just
-   * past a card's own `--space-5` (24px) gap — e.g. the Archive page's own description
-   * paragraph, which sits with no card of its own just above the archived-runs card below it.
-   * 14px stays well inside the smallest such gap on either page this round touched. */
-  --shadow-card-smoky:
-    0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05), 0 0 14px rgb(0 0 0 / 0.08);
 
   /*
    * Glass surface (docs/DECISIONS.md, 0089 — My reviews pilot only; re-tuned more transparent in
@@ -338,10 +323,6 @@
    * the tabs or search/filters bands around it. Same two-layer shape as --shadow-card (a tight
    * near shadow plus a looser far one), scaled up. */
   --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.1), 0 20px 56px rgb(0 0 0 / 0.18);
-  /* Same "smoky" treatment as `--shadow-card-smoky` above, scaled for the glass cards'
-   * deeper `--shadow-glass-lg` — same 14px-blur reasoning, same reason for staying that tight. */
-  --shadow-glass-smoky:
-    0 4px 12px rgb(0 0 0 / 0.1), 0 20px 56px rgb(0 0 0 / 0.18), 0 0 14px rgb(0 0 0 / 0.1);
   /* A glass surface that needs to carry a status tint through it and keep its own text's
    * contrast (0091 — the "N need your review" badge): a neutral `--color-glass` dilutes
    * `--status-waived-tint-fg` below 4.5:1 once blended with the page's gradient underneath, so
@@ -534,7 +515,6 @@
     --color-mark-declined: var(--mark-red-dark);
     --color-mark-approved: var(--mark-green-dark);
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-    --shadow-card-smoky: 0 1px 2px rgb(0 0 0 / 0.3), 0 0 14px rgb(0 0 0 / 0.35);
     --color-modal-scrim: rgb(0 0 0 / 0.6);
 
     --color-glass: color-mix(in srgb, var(--neutral-12) 51%, transparent);
@@ -546,8 +526,6 @@
     --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
-    --shadow-glass-smoky:
-      0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5), 0 0 14px rgb(0 0 0 / 0.4);
     --page-gradient: var(--page-gradient-dark);
     --page-photo: url('/textures/page-glass-dark.webp');
   }
@@ -598,7 +576,6 @@
   --color-mark-declined: var(--mark-red-dark);
   --color-mark-approved: var(--mark-green-dark);
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-  --shadow-card-smoky: 0 1px 2px rgb(0 0 0 / 0.3), 0 0 14px rgb(0 0 0 / 0.35);
   --color-modal-scrim: rgb(0 0 0 / 0.6);
 
   --color-glass: color-mix(in srgb, var(--neutral-12) 51%, transparent);
@@ -610,8 +587,6 @@
   --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
-  --shadow-glass-smoky:
-    0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5), 0 0 14px rgb(0 0 0 / 0.4);
   --page-gradient: var(--page-gradient-dark);
   --page-photo: url('/textures/page-glass-dark.webp');
 }

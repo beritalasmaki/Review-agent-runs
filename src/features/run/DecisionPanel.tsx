@@ -156,7 +156,7 @@ export function DecisionPanel({
   return (
     <section
       aria-labelledby="decision-heading"
-      className="flex flex-col gap-[var(--space-6)] rounded-lg bg-surface shadow-card-smoky p-[var(--space-4)]"
+      className="dither-edge dither-edge--decision-panel -m-[16px] flex flex-col gap-[var(--space-6)] p-[16px]"
     >
       <div className="flex flex-col gap-[var(--space-4)]">
         <div className="flex flex-col gap-[var(--space-5)]">

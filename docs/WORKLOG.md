@@ -39,6 +39,149 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-10-31 · The smoky halo becomes a halftone dither edge, on every card
+
+**Goal**
+Follow up on 0121's smoky halo: "There's no padding around the content. Looks unneat" on the
+title card, then "the table and cards' edges should be in the same style as that title" — find a
+better edge treatment, fix the title's padding, and roll it out everywhere the halo had been.
+
+**What changed**
+- `src/styles/index.css` — replaced the `shadow-card-smoky`/`shadow-glass-smoky` box-shadow halo
+  with a `.dither-edge` utility: a same-size `::before` masked by a generated SVG (`mask-mode:
+  alpha`), painted with `--color-glass`, one `.dither-edge--<card>` modifier per card for its own
+  mask image; a uniform 16px bleed everywhere (see "Why it was done this way" for why a first,
+  larger size on three cards didn't survive); `pointer-events: none` on the card itself, `auto`
+  again on every direct child, so the bleed ring never intercepts a click meant for a neighbour.
+  See the doc comment above `.dither-edge` for the full mechanism.
+- `public/textures/dither-*.svg` (13 generated files, one per card) replace the old
+  `halftone-edge.svg`; each is the real card's measured tight content size (padding excluded)
+  plus the 16px bleed.
+- `tokens.css` — removed `--shadow-card-smoky`/`--shadow-glass-smoky` and their doc comments,
+  now unused; `--shadow-card`/`--shadow-glass`/`--shadow-glass-lg` themselves untouched.
+- `MyReviews.tsx`, `RunReviewPage.tsx`, `RunOverview.tsx`, `DecisionPanel.tsx`,
+  `UnverifiedList.tsx`, `RunDetails.tsx`, `UndoBox.tsx`, `InProgressBox.tsx`, `RunShape.tsx`,
+  `EvidenceTab.tsx`, `StepsTab.tsx` — swapped `shadow-card-smoky`/`shadow-glass-smoky` for
+  `dither-edge dither-edge--<card>` plus `-m-[16px] p-[16px]`; widened every gap between a
+  dither-edge card and whatever it stacks against to `gap-[var(--space-7)]` (48px) —
+  `RunReviewPage.tsx`'s main grid gap and `aside` stacking gap, `EvidenceTab.tsx`'s outer section
+  gap, and My reviews' own top-level page gap (was `space-3`, 12px).
+- `MyReviews.tsx` — removed a redundant `<div className="p-[var(--space-6)]">` that used to wrap
+  only the title card, insetting it relative to the "Runs"/"Archived runs" cards below; raised
+  the page's own top padding from `pt-[var(--space-6)]` to `pt-[var(--space-7)]` so the title's
+  bleed still clears the viewport's top edge now that the extra wrapper isn't absorbing it.
+
+**Steps, in order**
+1. Iterated the edge treatment itself against screenshots: a wider box-shadow halo (too generic
+   a glow), a hand-drawn ink-scribble path (too heavy crossing real text), before a supplied
+   reference settled on the halftone dither-dot fade.
+2. Measured each target card's real rendered box with Playwright (`getBoundingClientRect()`),
+   both via `aria-label`/`aria-labelledby` selectors and a `.shadow-card-smoky`/
+   `.shadow-glass-smoky` sweep, across `run-messy-pending` (pending), `run-messy` (decided) and
+   My reviews.
+3. Wrote one generator script (scratch, not checked in) with a seeded PRNG (`mulberry32`): a
+   solid rounded-rect zone (signed-distance-field formula) surrounded by a jittered circle grid
+   whose radius follows distance from that zone's edge; ran it once per card with each card's
+   measured size, 16px bleed for the run page's packed cards, a larger 40px bleed tried first for
+   the title and the two My reviews table cards (reverted later — see below).
+4. Swapped every targeted component's className from the old shadow utility to `dither-edge
+   dither-edge--<card>` plus the bleed classes; `npx prettier --write`.
+5. First screenshot pass showed real-looking text clipping on several run-page cards. Ruled out
+   a grid-collision theory (reducing bleed alone didn't fix it); confirmed via
+   `getBoundingClientRect()` on the live page that the DOM text was never actually clipped — the
+   generated mask's solid zone was undersized because each card's *already-padded* old measured
+   box had been fed in as if it were tight content. Recomputed true tight sizes (old measurement
+   minus the component's own old padding) for every affected card and regenerated.
+6. "Make sure the content stays inside the boxes... Add padding enough": widened
+   `RunReviewPage.tsx`'s grid/aside gaps and `EvidenceTab.tsx`'s section gap to
+   `gap-[var(--space-7)]`, added `pt-[var(--space-7)]` to the tabbed-view's inner content wrapper
+   (previously zero), bumped the run page's cards from 10px to 16px bleed, regenerated the
+   affected assets, re-verified with screenshots in both themes, both run states, and the
+   Evidence/All steps tabs.
+7. "Make sure the title and the table are the same width and aligned the same": measured both
+   boxes' `boundingClientRect()`s, found the title 48px narrower due to its own extra wrapper
+   `<div>`; removed the wrapper, raised the page's top padding to compensate for the bleed no
+   longer being absorbed by it, regenerated `dither-title.svg` at the corrected real size, and
+   re-measured both boxes to confirm identical `x`/`width`.
+8. Ran the full accessibility suite clean for the first time all round (earlier passes had only
+   been screenshot-checked): 46 of 68 scenarios failed. The first failures were a `locator.click`
+   timeout on My reviews' "Archive" button — not a contrast issue at all, traced to the "Runs"
+   card's own bled box (40px bleed, only a 12px flex gap above it) painting over the title's
+   button and silently eating its click. Added `pointer-events: none` to `.dither-edge` and
+   `auto` back on its direct children. Re-ran: the click timeout was gone, but a genuine axe
+   `color-contrast` "overlapped by another element" finding remained on the Archive page's bare
+   description paragraph, for the same underlying reason (a real, measurable DOM overlap, not
+   just an invisible one) — dropped the title/"Runs"/"Archived runs" cards from the 40px bleed to
+   the same 16px every other card already used, and widened My reviews' own page-level gap to
+   `gap-[var(--space-7)]` to match. Re-measured all three cards live and regenerated their SVGs
+   at the new bleed. Updated this entry and docs/DECISIONS.md 0122 to match, since both had been
+   drafted around the now-reverted 40px/"spacious preset" version.
+9. Removed the now-dead `--shadow-card-smoky`/`--shadow-glass-smoky` tokens and the old
+   `halftone-edge.svg`.
+
+**Why it was done this way**
+One SVG per card rather than one shared asset, because `mask-size: 100% 100%` stretches
+non-uniformly to fit whatever box it's on, and these cards' aspect ratios are wildly different —
+a single asset would distort on most of them. `--color-glass` reused as the paint color rather
+than a new token, since it's already contrast-verified everywhere else glass is used, and
+`mask-mode: alpha` means only the SVG's shape matters, not any color baked into it. A single
+16px bleed everywhere, not a larger one picked per card by eye: the 40px version tried first for
+three "spacious-looking" cards assumed sitting alone horizontally meant there was also vertical
+room, but My reviews only gave them a 12px flex gap, and two 40px bleeds facing each other
+reached ~68px into one another — genuine DOM overlap the accessibility suite caught as a real
+click-interception bug and a real contrast-indeterminate finding, not a cosmetic one. One bleed
+size paired with one generous gap (`space-7`, 48px) everywhere is also simply one fewer thing a
+future card has to get right. Every regeneration in this round came from a live measurement, not
+a number carried over from an earlier one, after the clipping bug showed what happens when a
+stale size is reused — and the bleed-size bug showed the same lesson applies to a *gap* a card is
+placed into, not only to the asset's own dimensions.
+
+**How to do this by hand**
+Measure the target element's real rendered box (devtools, or a one-off Playwright script) with
+its own padding temporarily set to the card's *content* padding only (no bleed yet), subtract
+nothing further — that's the tight size. Run the generator with that size and a 16px bleed, save
+the SVG to `public/textures/dither-<name>.svg`, add a `.dither-edge--<name>` rule in `index.css`
+pointing `mask-image` at it, and apply `dither-edge dither-edge--<name> -m-[16px] p-[16px]` on
+the component. Give it at least `gap-[var(--space-7)]` (48px) from whatever it's stacked next to
+— never less, whatever the layout looks like. Screenshot in both themes before and after, then
+run the real accessibility suite (not just a screenshot check) before calling it done.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check` (all touched
+files): clean. `npx vitest run`: 293/293. `node scripts/check-theme-bridge.mjs`
+(`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium`): ok, 70 colours across 3 themes.
+`npm run build`: clean. Screenshots from a production build (`vite preview`), both themes, My
+reviews and the run page in both the pending and decided states, plus the Evidence and All-steps
+tabs: no clipping, consistent padding, title and table cards measured pixel-identical in `x` and
+`width`. `npx playwright test e2e/accessibility.spec.ts`: first full run 46/68 failed (the two
+real bugs above); after the pointer-events and bleed-size fixes, both originally-failing
+scenarios pass individually, repeatedly.
+
+A second, unrelated kind of failure remained in a full-suite run (not reproducible running a
+single scenario alone): `measuredBackgroundContrast` (this file's own helper, used for every
+glass surface, not new to this round) returning `null` for a handful of `DecisionPanel`
+paragraphs, because `page.screenshot()` there is viewport-only (not `fullPage`) and
+`DecisionPanel`'s own content genuinely exceeds the test's 900px-tall viewport — specifically for
+"pending run, Story" (`<span>To approve, tick 3 more items…</span>`, measured `rect.y: 916` at a
+900px-tall viewport) and "clean run" (a different `DecisionPanel` paragraph, same cause). Checked
+against the commit immediately before any dither-edge work on this component (`3d9856b`, the
+0121 smoky-halo version, via a throwaway `git worktree`): the exact same paragraph already sat
+off-screen there too, at `rect.y: 950` — slightly *further* down than this round's version, not
+less. This is a pre-existing gap in `measuredBackgroundContrast` itself (it can only sample pixels
+actually inside the one screenshot it takes), not a regression from the dither edge or this
+round's padding/gap changes, and out of this round's scope to fix. Flagged here rather than
+silently worked around.
+
+**Open questions / next**
+Whether `measuredBackgroundContrast` should take a `fullPage` screenshot (or scroll the target
+into view first) so it can verify contrast for glass-surface text below a 900px viewport —
+pre-existing, not caused by this round, left for whoever picks it up next. This round's own
+dither-edge changes are confirmed clean: the click-interception and bleed-overlap bugs are
+fixed and verified (individually and in a full serial run), and every scenario that does not hit
+the pre-existing off-screen limitation above passes in both themes.
+
+---
+
 ## 2026-10-28 · Dropped card/table borders on My reviews and the run page; smoky halo instead
 
 **Goal**

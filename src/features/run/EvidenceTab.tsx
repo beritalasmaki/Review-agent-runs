@@ -32,7 +32,7 @@ export function EvidenceTab({ run, onOpenStep }: EvidenceTabProps) {
   return (
     <section
       aria-labelledby="evidence-heading"
-      className="flex min-w-0 flex-col gap-[var(--space-5)]"
+      className="flex min-w-0 flex-col gap-[var(--space-7)]"
     >
       <div className="flex flex-col gap-[var(--space-5)]">
         <SectionHeading id="evidence-heading" focusTarget>
@@ -54,7 +54,7 @@ export function EvidenceTab({ run, onOpenStep }: EvidenceTabProps) {
         <section
           key={group.id}
           aria-labelledby={`evidence-${group.id}`}
-          className="overflow-hidden rounded-lg bg-surface shadow-card-smoky"
+          className="dither-edge dither-edge--evidence-group -m-[16px] p-[16px]"
         >
           <div className="flex flex-wrap items-baseline justify-between gap-[var(--space-2)] bg-surface-raised px-[var(--space-4)] py-[var(--space-3)]">
             <h3

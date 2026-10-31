@@ -88,7 +88,7 @@ export function RunDetails({ run, className, tabIndex, ref }: RunDetailsProps) {
       tabIndex={tabIndex}
       aria-labelledby="run-details-heading"
       className={cn(
-        'flex flex-col gap-[var(--space-4)] rounded-lg bg-surface shadow-card-smoky p-[var(--space-4)]',
+        'dither-edge dither-edge--run-details -m-[16px] flex flex-col gap-[var(--space-4)] p-[16px]',
         className,
       )}
     >
