@@ -316,43 +316,57 @@
 }
 
 /*
- * The abstract "scribble" mark behind a title/content area's own edge (docs/DECISIONS.md,
- * 0122 — "se reuna jää sellaiseksi abstraktiksi", an abstract edge instead of a blurred one): a
- * hand-drawn ink mark (`public/textures/scribble.svg` — a supplied asset, not generated; an
- * earlier generated attempt read as too mechanical) stands in for the card's own flat fill and
- * border/shadow edge. One SVG works in both themes: `mask-mode: alpha` reads only the drawing's
- * alpha, never its baked-in fill colour, so `--color-scribble` (tokens.css — dark ink in light
- * theme, light ink in dark theme, the same "flip the ink" every glass token already does) is
- * free to paint it correctly per theme with no second file.
+ * A card whose edge dithers away instead of ending on a line (docs/DECISIONS.md, 0122 — three
+ * tries at "se reuna jää sellaiseksi abstraktiksi": a blurred box-shadow halo read as a generic
+ * glow, a hand-drawn ink mark read as too heavy once it sat where text does; a supplied
+ * reference finally asked for this directly — a solid content area, fading out through a
+ * shrinking halftone dot screen, the rest fully transparent). `public/textures/halftone-edge.svg`
+ * (generated) is exactly that alpha shape: one solid rounded rect in the middle, a band of
+ * circles around it whose radius shrinks with distance until they vanish. `mask-mode: alpha`
+ * reads only that shape, not any colour baked into the SVG, so `background-color: var(--color-
+ * glass)` — the same already-contrast-verified glass tone every other card uses — paints it:
+ * full strength where the mask is solid (exactly where the title/body text sits, so their
+ * contrast is the same proven number as any other glass card, not a fresh one to re-tune), down
+ * to nothing in the dithered band, with nothing to measure once it's fully transparent. Unlike
+ * the ink-mark attempt, there is no point where translucent art sits directly behind real text
+ * — the text's own area is the one place in the shape that is never partial.
  *
  * `::before` with `inset: 0` sized to its own parent's own box, never larger — the same shape
  * `glass-sheen` above already uses safely. Not a `background-image` on the element itself (the
- * mechanism `bg-page-glass` uses for the blobs): masking needs its own layer so the mark's alpha
- * can be read independently of whatever else the element's own background is doing. Confined to
- * the parent's own box on purpose, same reasoning as `glass-sheen`: three earlier attempts at a
- * `position: fixed`/`absolute` layer sized to *exceed* its own natural footprint (to bleed past
- * a box's edge) broke the accessibility suite — axe's color-contrast rule treats any
- * `position: fixed`/`absolute` box of real size as a potential floating layer over whatever text
- * its rect happens to overlap, and a bleeding layer's rect reaches into neighbouring content it
- * was never meant to cover. A same-size `::before`, like `glass-sheen`'s, has never hit that:
- * its rect never extends past content that already accounts for it.
+ * mechanism `bg-page-glass` uses for the blobs): masking needs its own layer so the shape's
+ * alpha can be read independently of whatever else the element's own background is doing.
+ * Confined to the parent's own box on purpose, same reasoning as `glass-sheen`: three earlier
+ * attempts at a `position: fixed`/`absolute` layer sized to *exceed* its own natural footprint
+ * (to bleed past a box's edge) broke the accessibility suite — axe's color-contrast rule treats
+ * any `position: fixed`/`absolute` box of real size as a potential floating layer over whatever
+ * text its rect happens to overlap, and a bleeding layer's rect reaches into neighbouring
+ * content it was never meant to cover. A same-size `::before`, like `glass-sheen`'s, has never
+ * hit that: its rect never extends past content that already accounts for it. The parent needs
+ * generous padding (and an equal negative margin, to cancel it back out of the surrounding
+ * layout) beyond its actual text, so the dithered band has room to render at all.
  */
-@utility scribble-mark {
+@utility dither-edge {
   position: relative;
+  /* Scopes the `::before`'s `z-index: -1` to this element alone (CSS stacking rules otherwise
+   * paint a `position: absolute`, `z-index: auto` box *above* ordinary static-flow content —
+   * without this, the title/body text painted behind it instead of on top of it). */
+  isolation: isolate;
 }
-.scribble-mark::before {
+.dither-edge::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-color: var(--color-scribble);
-  -webkit-mask-image: url('/textures/scribble.svg');
-  mask-image: url('/textures/scribble.svg');
+  z-index: -1;
+  background-color: var(--color-glass);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-mask-image: url('/textures/halftone-edge.svg');
+  mask-image: url('/textures/halftone-edge.svg');
   -webkit-mask-mode: alpha;
   mask-mode: alpha;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
-  -webkit-mask-size: 58rem 21.2rem;
-  mask-size: 58rem 21.2rem;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
   -webkit-mask-position: center;
   mask-position: center;
   pointer-events: none;
