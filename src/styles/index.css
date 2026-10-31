@@ -320,16 +320,16 @@
  * tries at "se reuna jää sellaiseksi abstraktiksi": a blurred box-shadow halo read as a generic
  * glow, a hand-drawn ink mark read as too heavy once it sat where text does; a supplied
  * reference finally asked for this directly — a solid content area, fading out through a
- * shrinking halftone dot screen, the rest fully transparent). `public/textures/halftone-edge.svg`
- * (generated) is exactly that alpha shape: one solid rounded rect in the middle, a band of
- * circles around it whose radius shrinks with distance until they vanish. `mask-mode: alpha`
+ * shrinking halftone dot screen, the rest fully transparent). Each `public/textures/dither-
+ * *.svg` (generated) is exactly that alpha shape: one solid rounded rect in the middle, a band
+ * of circles around it whose radius shrinks with distance until they vanish. `mask-mode: alpha`
  * reads only that shape, not any colour baked into the SVG, so `background-color: var(--color-
  * glass)` — the same already-contrast-verified glass tone every other card uses — paints it:
- * full strength where the mask is solid (exactly where the title/body text sits, so their
- * contrast is the same proven number as any other glass card, not a fresh one to re-tune), down
- * to nothing in the dithered band, with nothing to measure once it's fully transparent. Unlike
- * the ink-mark attempt, there is no point where translucent art sits directly behind real text
- * — the text's own area is the one place in the shape that is never partial.
+ * full strength where the mask is solid (exactly where a card's own text sits, so its contrast
+ * is the same proven number as any other glass card, not a fresh one to re-tune), down to
+ * nothing in the dithered band, with nothing to measure once it's fully transparent. Unlike the
+ * ink-mark attempt, there is no point where translucent art sits directly behind real text —
+ * the text's own area is the one place in the shape that is never partial.
  *
  * `::before` with `inset: 0` sized to its own parent's own box, never larger — the same shape
  * `glass-sheen` above already uses safely. Not a `background-image` on the element itself (the
@@ -344,13 +344,68 @@
  * hit that: its rect never extends past content that already accounts for it. The parent needs
  * generous padding (and an equal negative margin, to cancel it back out of the surrounding
  * layout) beyond its actual text, so the dithered band has room to render at all.
+ *
+ * One file per card, not one shared asset (0122, rolled out from the title to every other
+ * content-area card and the two tables): `mask-size: 100% 100%` stretches an SVG's own
+ * percentages onto whatever box it's applied to, so a single asset *would* stay proportionally
+ * consistent across differently-sized cards — but these cards' aspect ratios are wildly
+ * different (a 708×450 overview card next to a 340×1289 decision column), and this app's own
+ * design language is absolute, not relative: a picture-frame matting of one fixed width
+ * regardless of what sits inside it. Each `dither-*.svg` is generated with the real card's own
+ * measured *tight* content size (its box with that component's own old padding already
+ * subtracted back out — using an already-padded measurement as if it were tight undersizes the
+ * generated solid zone, which let the dithered band overlap real text; caught once, by
+ * `getBoundingClientRect()` on the live page proving the DOM text itself was never clipped, only
+ * the asset was wrong) plus a fixed bleed, so the stretch is 1:1 (no distortion) and the edge
+ * reads identically everywhere. Any later layout change to a card's own box — its padding, or a
+ * wrapper around it that changes its real rendered width or height — moves the asset out of sync
+ * with it the same way, with the same fix: remeasure the box live and regenerate.
+ *
+ * One bleed size everywhere, 16px, not a larger one — a first pass tried 40px for the title and
+ * the two My reviews table cards (reasoning that they sit alone, with no grid track to overflow
+ * the way the run page's packed 3-column cards do), but "alone" was about horizontal room, not
+ * vertical: My reviews stacks these three cards with only a `space-3` (12px) flex gap between
+ * them, so two 40px bleeds facing each other reached ~68px into one another — not merely a
+ * crowded-looking frame but a real DOM box overlapping real content, which `npx playwright test
+ * e2e/accessibility.spec.ts` caught immediately and correctly as true occlusion (axe's
+ * color-contrast check: "background color could not be determined because it is overlapped by
+ * another element"), not a contrast number to carve out like the glass-surface cases below. Every
+ * card in the app uses the same 16px bleed now, and every stack of dither-edge cards (or a
+ * dither-edge card next to bare page text) uses `gap-[var(--space-7)]` (48px) between them —
+ * comfortably more than the 32px two facing 16px bleeds can reach — rather than tuning the gap
+ * per pair of neighbours.
+ *
+ * Pointer events are the other place this box-bigger-than-it-looks trick needs its own
+ * accounting: `.dither-edge` sets `pointer-events: none` on itself and `auto` back on every
+ * direct child, so the bleed ring (padding with nothing in it, just the mask) never captures a
+ * click meant for whatever real content sits past its edge — caught by the same accessibility
+ * run, as a click on an "Archive" button silently swallowed by the next card's invisible ring
+ * sitting on top of it in paint order, timing out the test rather than failing a contrast check.
+ *
+ * `.dither-edge` itself carries every rule but `mask-image`; each `.dither-edge--<card>`
+ * modifier sets only that, so adding a card is one small rule, not a copy of the whole block.
  */
 @utility dither-edge {
   position: relative;
   /* Scopes the `::before`'s `z-index: -1` to this element alone (CSS stacking rules otherwise
    * paint a `position: absolute`, `z-index: auto` box *above* ordinary static-flow content —
-   * without this, the title/body text painted behind it instead of on top of it). */
+   * without this, a card's own text would paint behind it instead of on top of it). */
   isolation: isolate;
+  /* The bleed trick (see the comment on `::before` below) makes this element's own rendered box
+   * extend past its tight content on every side, into whatever the page's normal layout gap
+   * assumed was empty space — and a plain element, even with nothing painted in that extra
+   * ring, still captures pointer events across its whole box by default. Where that ring
+   * overlaps a neighbour (the real failure mode here: two bled cards only `space-3`/`space-4`
+   * apart, each other's edge intruding tens of pixels into the other), the later-painted one's
+   * invisible ring silently ate clicks meant for a button underneath it — caught by the
+   * accessibility suite's own "open" step timing out on a click that never landed, not by a
+   * contrast check. `pointer-events: none` here, undone on every direct child below, keeps the
+   * ring inert while leaving the actual content exactly as clickable as it always was.
+   */
+  pointer-events: none;
+}
+.dither-edge > * {
+  pointer-events: auto;
 }
 .dither-edge::before {
   content: '';
@@ -359,8 +414,6 @@
   z-index: -1;
   background-color: var(--color-glass);
   backdrop-filter: blur(var(--blur-glass));
-  -webkit-mask-image: url('/textures/halftone-edge.svg');
-  mask-image: url('/textures/halftone-edge.svg');
   -webkit-mask-mode: alpha;
   mask-mode: alpha;
   -webkit-mask-repeat: no-repeat;
@@ -370,4 +423,56 @@
   -webkit-mask-position: center;
   mask-position: center;
   pointer-events: none;
+}
+.dither-edge--title::before {
+  -webkit-mask-image: url('/textures/dither-title.svg');
+  mask-image: url('/textures/dither-title.svg');
+}
+.dither-edge--run-overview::before {
+  -webkit-mask-image: url('/textures/dither-run-overview.svg');
+  mask-image: url('/textures/dither-run-overview.svg');
+}
+.dither-edge--decision-panel::before {
+  -webkit-mask-image: url('/textures/dither-decision-panel.svg');
+  mask-image: url('/textures/dither-decision-panel.svg');
+}
+.dither-edge--unverified-list::before {
+  -webkit-mask-image: url('/textures/dither-unverified-list.svg');
+  mask-image: url('/textures/dither-unverified-list.svg');
+}
+.dither-edge--run-details::before {
+  -webkit-mask-image: url('/textures/dither-run-details.svg');
+  mask-image: url('/textures/dither-run-details.svg');
+}
+.dither-edge--tabbed-view::before {
+  -webkit-mask-image: url('/textures/dither-tabbed-view.svg');
+  mask-image: url('/textures/dither-tabbed-view.svg');
+}
+.dither-edge--undo-box::before {
+  -webkit-mask-image: url('/textures/dither-undo-box.svg');
+  mask-image: url('/textures/dither-undo-box.svg');
+}
+.dither-edge--in-progress-box::before {
+  -webkit-mask-image: url('/textures/dither-in-progress-box.svg');
+  mask-image: url('/textures/dither-in-progress-box.svg');
+}
+.dither-edge--run-shape::before {
+  -webkit-mask-image: url('/textures/dither-run-shape.svg');
+  mask-image: url('/textures/dither-run-shape.svg');
+}
+.dither-edge--evidence-group::before {
+  -webkit-mask-image: url('/textures/dither-evidence-group.svg');
+  mask-image: url('/textures/dither-evidence-group.svg');
+}
+.dither-edge--runs-card::before {
+  -webkit-mask-image: url('/textures/dither-runs-card.svg');
+  mask-image: url('/textures/dither-runs-card.svg');
+}
+.dither-edge--archived-card::before {
+  -webkit-mask-image: url('/textures/dither-archived-card.svg');
+  mask-image: url('/textures/dither-archived-card.svg');
+}
+.dither-edge--steps-table::before {
+  -webkit-mask-image: url('/textures/dither-steps-table.svg');
+  mask-image: url('/textures/dither-steps-table.svg');
 }

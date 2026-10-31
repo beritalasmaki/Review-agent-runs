@@ -404,40 +404,38 @@ function ReviewsBoard({
   )
 
   return (
-    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-3)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-7)] px-[var(--space-4)] pt-[var(--space-7)] pb-[var(--space-7)] md:px-[var(--space-6)]">
       {!onArchivePage ? (
-        <div className="p-[var(--space-4)]">
-          <div className="dither-edge -m-[1.75rem] flex flex-wrap items-end justify-between gap-[var(--space-5)] p-[1.75rem]">
-            <div className="flex flex-col gap-[var(--space-2)]">
-              <PageTitle headingRef={headingRef}>My reviews</PageTitle>
-              <p className="text-lead leading-relaxed text-text-secondary">
-                Agent runs assigned to you. Decide on pending runs, and find your past decisions.
-              </p>
-            </div>
-            <div className="flex items-center gap-[var(--space-3)]">
-              <Badge
-                variant="warning"
-                data-tour="needs-review-badge"
-                className="border-glass-chip-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
-              >
-                <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
-                {needsYou} need{needsYou === 1 ? 's' : ''} your review
+        <div className="dither-edge dither-edge--title -m-[16px] flex flex-wrap items-end justify-between gap-[var(--space-5)] p-[16px]">
+          <div className="flex flex-col gap-[var(--space-2)]">
+            <PageTitle headingRef={headingRef}>My reviews</PageTitle>
+            <p className="text-lead leading-relaxed text-text-secondary">
+              Agent runs assigned to you. Decide on pending runs, and find your past decisions.
+            </p>
+          </div>
+          <div className="flex items-center gap-[var(--space-3)]">
+            <Badge
+              variant="warning"
+              data-tour="needs-review-badge"
+              className="border-glass-chip-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
+            >
+              <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
+              {needsYou} need{needsYou === 1 ? 's' : ''} your review
+            </Badge>
+            <Button
+              variant="outline"
+              onClick={() => openView('archive')}
+              aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
+              data-tour="archive-button"
+              className="gap-[var(--space-2)]"
+            >
+              <Archive aria-hidden className="h-4 w-4" />
+              Archive
+              <Badge variant="muted" size="sm">
+                {archived.length}
               </Badge>
-              <Button
-                variant="outline"
-                onClick={() => openView('archive')}
-                aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
-                data-tour="archive-button"
-                className="gap-[var(--space-2)]"
-              >
-                <Archive aria-hidden className="h-4 w-4" />
-                Archive
-                <Badge variant="muted" size="sm">
-                  {archived.length}
-                </Badge>
-              </Button>
-              <ThemeToggle />
-            </div>
+            </Button>
+            <ThemeToggle />
           </div>
         </div>
       ) : (
@@ -468,7 +466,7 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="overflow-hidden rounded-lg bg-glass shadow-glass-smoky backdrop-blur-[var(--blur-glass)]"
+          className="dither-edge dither-edge--runs-card -m-[16px] p-[16px]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
@@ -613,7 +611,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="overflow-hidden rounded-lg bg-glass shadow-glass-smoky backdrop-blur-[var(--blur-glass)]"
+          className="dither-edge dither-edge--archived-card -m-[16px] p-[16px]"
         >
           {archiveTable()}
         </section>
@@ -622,7 +620,7 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="overflow-hidden rounded-lg bg-glass shadow-glass-smoky backdrop-blur-[var(--blur-glass)]"
+          className="dither-edge dither-edge--archived-card -m-[16px] p-[16px]"
         >
           <div>
             <ReviewsToolbar

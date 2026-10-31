@@ -6,6 +6,69 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0122 · The smoky halo becomes a halftone dither edge, rolled out to every card
+
+**Context.** 0121's smoky box-shadow halo didn't land: "There's no padding around the content.
+Looks unneat" on the title card, and later "the table and cards' edges should be in the same
+style as that title" — so the direction needed to change before the rest of the pages followed
+it, not just the title's padding. A blurred-shadow halo reads as a generic glow around any box
+shape; a hand-drawn ink-scribble edge (tried next) read as too heavy wherever it crossed over
+real text. A supplied reference finally asked for the effect directly: a solid content area
+fading out through a shrinking halftone dot screen, the rest of the box fully transparent — the
+mechanism documented in full at `.dither-edge` in `src/styles/index.css`.
+
+**Choice.** Every card `0121` had already stripped the border from — My reviews' title/hero and
+"Runs"/"Archived runs" cards, `RunOverview`/`RunDetails`/`DecisionPanel`/`UndoBox`/
+`InProgressBox`/`UnverifiedList`/`RunShape`/the tabbed-view card and each `EvidenceTab` group on
+the run page, plus `StepsTab`'s table — got the dither edge in place of `shadow-card-smoky`/
+`shadow-glass-smoky`, which are now unused and were removed from `tokens.css` along with their
+doc comments. Each card is a generated SVG alpha mask (`public/textures/dither-*.svg`, one per
+card — see `index.css` for why not one shared asset) painted with `--color-glass` via
+`mask-mode: alpha`, applied through a uniform `-m-[16px] p-[16px]` bleed trick so the mask has
+room to render a frame beyond the card's own tight content without needing true cross-box bleed
+(which masks can't do). Every stack of these cards (or a card next to bare page text) sits in a
+`gap-[var(--space-7)]` (48px) gap — `RunReviewPage.tsx`'s main grid and `aside` stacking gap,
+`EvidenceTab.tsx`'s outer section gap, and My reviews' own top-level page gap all widened to it —
+comfortably more than two facing 16px bleeds can reach into each other.
+
+**Two bugs, not one, both from trusting a size instead of measuring it.** The broad rollout first
+shipped with real-looking text clipping ("Reason for approving" → "eason for approving") on
+several run-page cards. The actual cause: the SVG generator was fed each card's *already-padded*
+measured box size as if it were tight content, undersizing the generated solid zone enough that
+the dithered band overlapped real text. `getBoundingClientRect()` on the live page proved the DOM
+text itself was never clipped — only the asset's safe zone was wrong — which is what redirected
+the fix from (wrongly) shrinking the bleed further to correctly resubtracting each card's own old
+padding before generating its mask.
+
+A second, more serious bug followed from trusting a *bleed size* instead of measuring whether the
+page had room for it. A first pass gave the title and the two My reviews table cards a larger
+40px bleed, reasoning that they sit alone with no grid track to overflow the way the run page's
+packed cards do — true horizontally, but My reviews stacks these three cards with only a
+`space-3` (12px) flex gap between them, so two 40px bleeds facing each other reached roughly 68px
+into one another. Screenshots alone never caught this, because the overlap is real DOM geometry,
+not a visible rendering glitch — the full accessibility suite (run clean, start to finish, for
+the first time all round) did: `click.locator: Test timeout of 30000ms exceeded` on an "Archive"
+button silently swallowed by the next card's invisible bleed ring sitting on top of it in paint
+order, then, once that was fixed, a direct axe `color-contrast` failure — "background color could
+not be determined because it is overlapped by another element" — on a bare paragraph the same
+ring reached into. Fixed two ways, both now permanent parts of `.dither-edge` itself (see
+`index.css`'s own comment there for the mechanism): `pointer-events: none` on the card, undone
+back to `auto` on every direct child, so an empty bleed ring never again eats a click regardless
+of how close a future neighbour sits; and the 40px bleed dropped to the same 16px every other
+card already used, with My reviews' own page gap widened to match — one bleed size, used
+everywhere, is also one fewer thing a future card has to get right. Any later layout change to a
+card's own box — its padding, a wrapper around it, the gap to its neighbour — needs the same
+remeasure-live-then-regenerate discipline this round learned the hard way twice; the generator
+script itself is scratch, not checked into the repo (there was nothing in it a human maintaining
+this app directly should need to run by hand, unlike the steps in `WORKLOG.md`).
+
+**Consequence.** A new card that wants this edge adds one `dither-edge--<name>` modifier rule in
+`index.css`, a matching generated SVG at the real tight size of its own live-measured content
+(16px bleed, same as every other card), and a `gap-[var(--space-7)]` or larger gap to whatever it
+stacks against — not a smaller gap tuned down "because this one looks like it has more room."
+
+---
+
 ## 0121 · Card/table borders dropped on My reviews and the run page; a "smoky" halo instead
 
 **Context.** "Let's remove the clear border lines from the title, content areas and table" —
