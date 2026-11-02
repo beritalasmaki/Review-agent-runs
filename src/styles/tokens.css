@@ -440,6 +440,11 @@
    * Replaces `--page-gradient` as `bg-page-glass`'s base layer. */
   --page-photo: url('/textures/page-glass-light.webp');
   --blur-glass: 20px;
+  /* `TopNav`'s own fixed height (docs/DECISIONS.md, 0124): a plain constant, not a measured one
+   * like `--run-bar-height` (`RunReviewPage.tsx`) — that bar's own breadcrumb text can wrap on a
+   * narrow screen, so its real height has to be read off the DOM; this one is a logo and nothing
+   * else, with no content that ever wraps, so there is nothing to measure. */
+  --top-nav-height: 56px;
   /* The page's own header zone (docs/DECISIONS.md, 0101): a translucent wash behind the title
    * and the top of the page's main card, tinting that zone without flattening it to a solid
    * colour — the vivid gradient underneath still shows through, same as every other glass

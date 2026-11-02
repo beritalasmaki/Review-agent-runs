@@ -45,7 +45,7 @@ function StatusPill({ status }: { status: RunStatus }) {
 
 export function RunOverview({ run }: RunOverviewProps) {
   return (
-    <header className="dither-edge -m-[16px] flex flex-col gap-[var(--space-5)] p-[16px]">
+    <header className="flex flex-col gap-[var(--space-5)] rounded-lg border border-glass-border bg-glass p-[var(--space-5)] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
       <div className="self-start">
         <StatusPill status={run.status} />
       </div>

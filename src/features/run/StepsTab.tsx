@@ -136,7 +136,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         </p>
       ) : (
         <Table
-          containerClassName="dither-edge -m-[16px] p-[16px]"
+          containerClassName="rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
           className="min-w-[40rem] table-fixed"
         >
           <colgroup>
@@ -146,7 +146,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
             <col />
             <col className="w-[7rem]" />
           </colgroup>
-          <TableHeader className="bg-surface-raised text-caption font-semibold font-heading text-text-secondary">
+          <TableHeader className="border-b border-border-subtle bg-surface-raised text-caption font-semibold font-heading text-text-secondary">
             <TableRow>
               <TableHead scope="col" className={CELL}>
                 #

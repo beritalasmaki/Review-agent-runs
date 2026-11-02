@@ -117,7 +117,7 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
     return <ReviewsBoard runs={state.runs} runHref={runHref} now={now} />
   }
   return (
-    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] py-[var(--space-6)] md:px-[var(--space-6)]">
+    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--top-nav-height)+var(--space-6))] pb-[var(--space-6)] md:px-[var(--space-6)]">
       <PageTitle>My reviews</PageTitle>
       {state.status === 'loading' ? (
         <LoadingState label="Loading reviews…" className="min-h-[40vh]" />
@@ -404,9 +404,9 @@ function ReviewsBoard({
   )
 
   return (
-    <div className="mx-auto flex max-w-[90rem] flex-col gap-[96px] px-[var(--space-4)] pt-[var(--space-7)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--top-nav-height)+var(--space-6))] pb-[var(--space-7)] md:px-[var(--space-6)]">
       {!onArchivePage ? (
-        <div className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] flex flex-wrap items-end justify-between gap-[var(--space-5)] pt-[40px] pr-[32px] pb-[40px] pl-[32px]">
+        <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
           <div className="flex flex-col gap-[var(--space-2)]">
             <PageTitle headingRef={headingRef}>My reviews</PageTitle>
             <p className="text-lead leading-relaxed text-text-secondary">
@@ -466,7 +466,7 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
+          className="overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
@@ -611,7 +611,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
+          className="overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           {archiveTable()}
         </section>
@@ -620,7 +620,7 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
+          className="overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
         >
           <div>
             <ReviewsToolbar

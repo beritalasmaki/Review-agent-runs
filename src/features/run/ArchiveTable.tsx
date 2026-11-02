@@ -62,7 +62,7 @@ export function ArchiveTable({
         <col className="w-48" />
         <col className="w-28" />
       </colgroup>
-      <TableHeader className="bg-surface-raised">
+      <TableHeader className="border-b border-border-subtle bg-surface-raised">
         <TableRow>
           <ColumnHeader label="Details" />
           <ColumnHeader
