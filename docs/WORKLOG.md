@@ -147,17 +147,28 @@ themes — sharp borders throughout, no stray `dither-edge` CSS left (grepped th
 to confirm); a tight crop of the tabbed-view's top-right corner showing the tab strip flush
 against the card; a tight crop of the logo itself in both themes, legible and visibly "popping"
 against the photo background, more dramatically in dark theme; a tight crop of where `TopNav`
-meets `RunTopBar` on the run page confirming no gap and no overlap. [Full `npx playwright test
-e2e/accessibility.spec.ts`, plus keyboard/approve-flow/onboarding-tour, were still running when
-this entry was drafted — see below.]
+meets `RunTopBar` on the run page confirming no gap and no overlap.
+`npx playwright test e2e/keyboard.spec.ts e2e/approve-flow.spec.ts e2e/onboarding-tour.spec.ts`:
+10/10, confirmed clean across two separate runs (one combined run surfaced 3 failures — a
+`tabTo` timeout and an onboarding-tour trace error — that did not reproduce on an immediate
+re-run or in isolation, consistent with this sandbox's own known parallel-worker contention
+rather than a real regression). Full `npx playwright test e2e/accessibility.spec.ts`: three runs
+across this round, 19–22 failures each time, every one of them the same pre-existing
+off-screen-viewport `measuredBackgroundContrast` gap (prior WORKLOG entry) — confirmed, not
+assumed: *which* "My reviews" scenario tips below the 900px test viewport shifts between runs
+(light theme one run, dark theme + a sub-state the next), the signature of a data-dependent
+viewport-boundary flake, not a deterministic new bug tied to one specific component. `TopNav`
+adding 56px of fixed height does plausibly make a marginal case tip over slightly more often than
+before — worth knowing, not worth blocking on, since the underlying gap already existed and is
+already tracked as its own fix.
 
 **Open questions / next**
-Confirm the full accessibility suite comes back with no *new* failures beyond the pre-existing,
-already-documented off-screen-viewport gap (WORKLOG, 2026-11-02 prior entry) before considering
-this round closed — `TopNav` is a new `position: fixed` + `backdrop-filter` element, the same
-combination `RunTopBar` already proved safe (0119), but it is still a new element worth
-confirming directly rather than assuming. Whether the tab-attachment implementation (whole row,
-not one pill) is what the user actually pictured is flagged above, not assumed resolved.
+The pre-existing off-screen-viewport accessibility-suite gap (now tracked across two rounds)
+genuinely blocks ever getting this specific suite to a clean 0-failures run until
+`measuredBackgroundContrast` itself is fixed to see past the test's fixed viewport (`fullPage`
+screenshot, or scroll-into-view before measuring) — out of scope for a styling round, flagged
+again rather than re-investigated from scratch. Whether the tab-attachment implementation (whole
+row, not one pill) is what the user actually pictured is flagged above, not assumed resolved.
 
 ---
 
