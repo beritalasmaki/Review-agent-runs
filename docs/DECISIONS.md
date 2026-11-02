@@ -6,6 +6,80 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0124 · Sharp borders return; tabs attach to their card; a new TopNav adds a logo, reversing 0042
+
+**Context.** Three asks in one round. First: "let's add sharp borders again. Realized the blurry
+border doesn't look neat" — the dither/glass-fade direction 0121–0123 chased, on the cards,
+My reviews' title, and the tables. Second: "make the first tab right top corner to attach with the
+right top corner of the content card behind the tab" — the run page's Story/Evidence/All-steps
+tab strip floated above its own content card with a gap around it, not read as one attached
+piece. Third: a new top navigation bar — a logo, transparent, showing the page's own background
+through its letterforms, with a translucent white layer behind it specifically to help it read
+against that background — on both My reviews and the run page, with a Figma moodboard supplied as
+a style reference. Asked before touching anything (per the user's own "ask questions first"): the
+Figma file turned out to be a rough moodboard (a cutout wordmark over a texture swatch, plus
+unrelated reference screenshots of other sites' nav bars), not a pixel spec, so the user's own
+words were the real spec. The third ask specifically reverses 0042 ("the page lives inside a host
+platform: no wordmark") — flagged directly before building anything, confirmed: proceed, with the
+user supplying the logo file directly rather than this round designing one.
+
+**Choice, border revert.** `.dither-edge` (0122/0123) is gone outright — deleted from
+`index.css`, every component it touched (`DecisionPanel`, `EvidenceTab`, `InProgressBox`,
+`MyReviews`'s title/"Runs"/"Archived runs", `RunDetails`, `RunOverview`, `RunReviewPage`'s
+tabbed-view card, `RunShape`, `StepsTab`, `UndoBox`, `UnverifiedList`) back to a real border:
+`rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]`
+— the exact glass-card pattern `RunTopBar` and the filters popover already used, reused rather
+than invented fresh. The row/header divider lines 0121 had removed from `ReviewsTable`,
+`ArchiveTable`, `StepsTab` and `EvidenceTab`'s per-group list came back too, at their original
+pre-0121 values. Every padding/gap value inflated purely to give the old fade room to bleed
+without overlapping a neighbour (My reviews' page gap, `RunReviewPage`'s grid and aside gaps,
+`EvidenceTab`'s section gap) went back to its original size — a sharp border has nothing to bleed,
+so the inflation no longer served a purpose. The one padding increase that came from an explicit,
+separate request (My reviews' title/table cards: 32px sides, 40px top/bottom) stayed, applied
+consistently across all three so the title and the table cards underneath it stay the same width
+and aligned — a fix from the round immediately before this one, which widening the cards'
+left/right bleed differently would have undone again.
+
+**Choice, tab attachment.** `RunReviewPage`'s tabbed-view wrapper no longer pads its own top or
+right edge; `RunViewTabs`' own `rounded-t-lg bg-surface` strip (already shaped to match the
+card's own corner radius) now sits flush against the card's top and right edges instead of
+floating with a gap around it — both the tab row and the content below it keep their own
+`px-[var(--space-5)]`, so nothing touches the box's true edge, only the gap between tab-row-box
+and card-box closes. This attaches the whole tab row, not literally one pill's own shape — a
+narrower, "just the active tab's own corner" version was considered and set aside: it would mean
+reshaping the sliding glass-capsule indicator in `components/Tabs.tsx`, a component shared with
+My reviews' own status tabs and already the subject of several rounds of real flakiness fixes
+(`docs/WORKLOG.md`, 2026-09-24) — not a change to make speculatively on an ambiguous instruction
+when the simpler, lower-risk version already reads as attached.
+
+**Choice, TopNav.** A new `components/TopNav.tsx`, rendered once in `App.tsx`'s `<main>`, above
+both pages — not duplicated per page, not folded into `MyReviews`'s own title row or
+`RunTopBar`. Glass, `position: fixed` (not `sticky`, the same reasoning `RunTopBar` already
+settled on, 0119: `sticky` plus `backdrop-filter` broke the accessibility suite's contrast check
+on unrelated page text; `fixed` never has). The logo is not an `<img>` sitting on the bar — it's a
+hole cut through the bar's own fill, the user's supplied SVG used as a `mask-image` (`mask-mode:
+alpha`, matching every other mask in this app) composited with `mask-composite: exclude` /
+`-webkit-mask-composite: xor` against a solid base layer, which reduces to "opaque everywhere
+except the wordmark's own letterforms." A second, plain element — a soft blurred white radial
+glow, sized to roughly the logo's own footprint — sits behind that hole in paint order, visible
+only through it, giving the "pop" the request asked for without tinting the rest of the bar.
+`RunTopBar` moved from `top-0` to `top-[var(--top-nav-height)]` to stack below the new bar instead
+of under it; every `--run-bar-height`-based offset in `RunReviewPage.tsx`, `RunViewTabs.tsx`,
+`SectionHeading.tsx`, `DecisionPanel.tsx`, `UndoBox.tsx` and `openItemTargets.ts` now adds
+`var(--top-nav-height)` too, so content, sticky positioning and scroll-margin targets all clear
+both fixed bars, not just one. `--top-nav-height` is a plain, static 56px constant in
+`tokens.css`, not a measured one like `--run-bar-height`: that bar's own breadcrumb text can wrap
+on a narrow screen, so its real height has to be read off the DOM on every render; `TopNav` is a
+logo and nothing else, with no content that ever wraps, so there is nothing to measure.
+
+**Consequence.** `RunTopBar`'s own doc comment, and `App.tsx`'s own — both said, explicitly, "no
+product logo, no app name, no main menu, the page lives inside a host platform" (0042/0076).
+Both rewritten to say what's now true: `TopNav` is the one piece of chrome this shell adds, and
+it's the only place "no wordmark" is no longer the rule. A future page added to this app gets
+`TopNav` for free from `App.tsx`; it does not need, and should not add, a logo of its own.
+
+---
+
 ## 0123 · The dither edge drops its per-card generated assets for a pure CSS fade
 
 **Context.** "The background of the cards have broken down in the single run page" — real,

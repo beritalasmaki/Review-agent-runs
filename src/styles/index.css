@@ -316,132 +316,77 @@
 }
 
 /*
- * A card whose edge fades away instead of ending on a line (docs/DECISIONS.md, 0123, replacing
- * 0122's per-card generated SVGs outright — not a tuning pass on them). 0122's masks were each a
- * halftone-dot shape generated once, at build time, for that one card's *measured* pixel size,
- * then stretched with `mask-size: 100% 100%` onto the real element. That is only correct if the
- * element renders at exactly the size it was measured at — and every one of these cards' real
- * height depends on the run's own data (how many checklist items, how many evidence rows, how
- * long the story is), so a different run than the one used to generate a given asset renders a
- * differently-shaped box, and the stretch distorts the dot grid into visible blotches (reported
- * live, on a short run far from the long one these assets were measured against — the fix is not
- * "regenerate for this run too", since the next run breaks it again the same way).
- *
- * This version has no asset and no per-instance size at all: two intersecting CSS gradients, one
- * per axis, each fully opaque from `--dither-band` in from that edge to `--dither-band` in from
- * the opposite edge, fading to transparent over that last `--dither-band` at each end. Gradient
- * stops defined in fixed pixels, not percentages, are correct at *any* element size by
- * construction — nothing is measured, nothing is generated, nothing can fall out of sync with a
- * box that changes size from one run's data to the next. `mask-composite: intersect` (the
- * standard syntax) / `-webkit-mask-composite: source-in` (the older syntax every WebKit/Chromium
- * mask property still needs, same as every other `mask-*` declaration below) combines the two
- * axes into one rectangular fade, softly rounded at the corners for free, since that's exactly
- * where both gradients are simultaneously mid-fade. `background-color: var(--color-glass)` —
- * the same already-contrast-verified glass tone every other card uses — paints it: full, flat
- * strength in the middle (exactly where a card's own text sits, so its contrast is the same
- * proven number as any other glass card), down to nothing at the true edge.
- *
- * No halftone dot texture any more: a discrete dot grid is exactly the part of 0122's shape that
- * could not be made size-independent this way (a tiled, fixed-size dot pattern composited in
- * only within the fade band, on top of this gradient fade, was prototyped and abandoned — getting
- * a *guaranteed-fully-opaque* core out of a sequential `mask-composite` fold, without the dots'
- * own gaps ever showing through where real text sits, turns out to need a boolean shape no
- * left-to-right composite chain can express; a version that skipped that guarantee risked the
- * same contrast assumption every glass surface in this app is built on). The plain fade still
- * answers the original ask this all started from (0121: a border "fading away instead of being a
- * sharp line") — it just does not reproduce the later reference image's specific dot-screen
- * texture. A dot texture could come back later as a genuinely size-independent technique (a
- * `ResizeObserver` regenerating a data URI at runtime, say) if that specific texture turns out to
- * matter enough to be worth the added moving part; nothing here forecloses it.
- *
- * `::before` with `inset: 0` sized to its own parent's own box, never larger — the same shape
- * `glass-sheen` above already uses safely. Not a `background-image` on the element itself (the
- * mechanism `bg-page-glass` uses for the blobs): masking needs its own layer so the shape's
- * alpha can be read independently of whatever else the element's own background is doing.
- * Confined to the parent's own box on purpose, same reasoning as `glass-sheen`: three earlier
- * attempts at a `position: fixed`/`absolute` layer sized to *exceed* its own natural footprint
- * (to bleed past a box's edge) broke the accessibility suite — axe's color-contrast rule treats
- * any `position: fixed`/`absolute` box of real size as a potential floating layer over whatever
- * text its rect happens to overlap, and a bleeding layer's rect reaches into neighbouring
- * content it was never meant to cover. A same-size `::before`, like `glass-sheen`'s, has never
- * hit that: its rect never extends past content that already accounts for it. The parent needs
- * padding (and an equal negative margin, to cancel it back out of the surrounding layout) beyond
- * its actual text, so the band has room to render at all — how much is each component's own
- * call now (nothing about the mask itself constrains it any more), so long as the gap to
- * whatever it's stacked next to stays comfortably wider than two bleeds facing each other can
- * reach (see 0122's own history: a 40px bleed once reached 68px into a 12px-gapped neighbour,
- * caught by the accessibility suite as real DOM occlusion, not a cosmetic crowding).
- *
- * Pointer events are the other place this box-bigger-than-it-looks trick needs its own
- * accounting: `.dither-edge` sets `pointer-events: none` on itself and `auto` back on every
- * direct child, so the bleed ring (padding with nothing in it, just the mask) never captures a
- * click meant for whatever real content sits past its edge — caught by the accessibility suite
- * that found 0122's bleed-overlap bug, as a click on an "Archive" button silently swallowed by
- * the next card's invisible ring sitting on top of it in paint order, timing out the test rather
- * than failing a contrast check.
- *
- * One rule now, not a base class plus one `.dither-edge--<card>` modifier per card: every card
- * shares the exact same mask (it no longer varies by card at all), so the modifier classes 0122
- * added are gone from every component along with the SVGs they pointed at.
+ * `.dither-edge` (0122/0123: a generated, then a pure-CSS, fading card edge) is gone
+ * (docs/DECISIONS.md, 0124 — "the blurry border doesn't look neat"). Every card it touched is
+ * back to a real border: `rounded-lg border border-glass-border bg-glass shadow-glass-lg
+ * backdrop-blur-[var(--blur-glass)]`, the same glass-card pattern `RunTopBar` and the filters
+ * popover already use elsewhere in the app — not a new pattern, reuse of an existing one.
  */
-@utility dither-edge {
-  position: relative;
-  /* Scopes the `::before`'s `z-index: -1` to this element alone (CSS stacking rules otherwise
-   * paint a `position: absolute`, `z-index: auto` box *above* ordinary static-flow content —
-   * without this, a card's own text would paint behind it instead of on top of it). */
-  isolation: isolate;
-  pointer-events: none;
+
+/*
+ * `TopNav`'s logo (docs/DECISIONS.md, 0124): "the logo is transparent and shows the background"
+ * — not a rendered graphic sitting on top of the bar, a hole cut through it. `mask-composite:
+ * exclude` (the standard syntax) / `-webkit-mask-composite: xor` (the equivalent legacy value)
+ * combines two mask layers — an opaque rect covering the whole bar, and the logo SVG — by XOR:
+ * wherever exactly one of the two is opaque, the result is opaque; wherever both are (inside a
+ * letterform) or neither is, it's transparent. Since the rect is opaque everywhere, that reduces
+ * to "opaque everywhere except the letters" — a hole in the bar's own fill shaped exactly like
+ * the wordmark, open straight through to whatever sits behind the fixed bar (`bg-page-glass`'s
+ * own photo, per `App.tsx`, through `backdrop-filter: blur()`'s own scope ending at this layer's
+ * edge — the hole itself is genuinely unblurred, which is what makes it read as a real opening
+ * rather than a lighter tint of the same blurred bar).
+ *
+ * `mask-mode: alpha` on both layers, same as `glass-sheen`/the former `.dither-edge` above: reads
+ * each layer's own alpha channel, not pixel luminance — matters for the logo specifically, whose
+ * source file is solid white fills, not a pre-built alpha shape; without it a white-on-nothing
+ * SVG risks being read as "fully opaque, uniformly bright" by a luminance mask instead of "opaque
+ * exactly where the paths are."
+ *
+ * A separate, plain `.topnav-logo-glow` sits *behind* this cutout layer in paint order (earlier
+ * in the DOM, inside the same `position: fixed` stacking context) — a soft, oversized, blurred
+ * white patch roughly the logo's own footprint, imitating a light source rather than a flat tint
+ * so the "pop" reads as genuine depth. Visible only through the hole the layer above cuts for it;
+ * elsewhere it sits fully hidden behind the bar's own opaque fill.
+ */
+@utility topnav {
+  /* Shared by both `topnav-logo-cutout` and `topnav-logo-glow` below, which sit on two
+   * different sibling elements inside this one — defined here, on their common ancestor, so
+   * normal CSS custom-property inheritance carries one set of numbers to both, instead of each
+   * repeating (and risking drifting out of sync with) its own copy. */
+  --topnav-logo-width: 245px;
+  --topnav-logo-height: 22px;
+  --topnav-logo-inset: var(--space-6);
 }
-.dither-edge > * {
-  pointer-events: auto;
-}
-.dither-edge::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-color: var(--color-glass);
-  backdrop-filter: blur(var(--blur-glass));
-  pointer-events: none;
-  --dither-band: 14px;
-  -webkit-mask-image:
-    linear-gradient(
-      to right,
-      transparent,
-      black var(--dither-band),
-      black calc(100% - var(--dither-band)),
-      transparent
-    ),
-    linear-gradient(
-      to bottom,
-      transparent,
-      black var(--dither-band),
-      black calc(100% - var(--dither-band)),
-      transparent
-    );
-  mask-image:
-    linear-gradient(
-      to right,
-      transparent,
-      black var(--dither-band),
-      black calc(100% - var(--dither-band)),
-      transparent
-    ),
-    linear-gradient(
-      to bottom,
-      transparent,
-      black var(--dither-band),
-      black calc(100% - var(--dither-band)),
-      transparent
-    );
+@utility topnav-logo-cutout {
+  -webkit-mask-image: linear-gradient(black, black), url('/textures/agent-run-logo.svg');
+  mask-image: linear-gradient(black, black), url('/textures/agent-run-logo.svg');
+  -webkit-mask-mode: alpha, alpha;
+  mask-mode: alpha, alpha;
   -webkit-mask-repeat: no-repeat, no-repeat;
   mask-repeat: no-repeat, no-repeat;
   -webkit-mask-size:
     100% 100%,
-    100% 100%;
+    var(--topnav-logo-width) var(--topnav-logo-height);
   mask-size:
     100% 100%,
-    100% 100%;
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+    var(--topnav-logo-width) var(--topnav-logo-height);
+  -webkit-mask-position:
+    0 0,
+    var(--topnav-logo-inset) center;
+  mask-position:
+    0 0,
+    var(--topnav-logo-inset) center;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+@utility topnav-logo-glow {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--topnav-logo-inset) - var(--space-4));
+  width: calc(var(--topnav-logo-width) + 2 * var(--space-4));
+  height: calc(var(--topnav-logo-height) + 2 * var(--space-3));
+  transform: translateY(-50%);
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0) 100%);
+  filter: blur(4px);
+  pointer-events: none;
 }

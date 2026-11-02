@@ -266,7 +266,7 @@ export function ReviewsTable({
         <col className="w-36" />
         <col className="w-28" />
       </colgroup>
-      <TableHeader className="bg-surface-raised">
+      <TableHeader className="border-b border-border-subtle bg-surface-raised">
         <TableRow>
           <ColumnHeader label="Details" />
           <ColumnHeader label="Select" hiddenLabel="Select" />

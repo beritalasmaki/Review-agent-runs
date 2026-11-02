@@ -5,19 +5,21 @@ import type { Run } from '../../lib/types'
 import { cn } from '../../lib/utils'
 
 /**
- * The page's own bar, directly under the host platform's navigation: a breadcrumb back to the
- * reviewer's list, and at its right end what is open before a decision (0053). No product logo,
- * no app name, no main menu — this page sits inside another platform that owns those
- * (docs/DECISIONS.md, 0042, 0076): the breadcrumb link is the only wayfinding this bar needs.
- * The three views of the run sit above the view they switch, in `RunViewTabs`
- * (docs/DECISIONS.md, 0052). A long initiative name truncates with the full name on hover; the
- * revision chip next to it never truncates, so two runs of the same initiative stay
- * distinguishable.
+ * The page's own bar, directly under `TopNav` (docs/DECISIONS.md, 0124 — before that, directly
+ * under the host platform's navigation, 0042/0076, which no longer applies): a breadcrumb back to
+ * the reviewer's list, and at its right end what is open before a decision (0053). No product
+ * logo, no app name, no main menu of its own here either — `TopNav` above it already carries the
+ * one the app now has; this bar's only job is still the breadcrumb. The three views of the run
+ * sit above the view they switch, in `RunViewTabs` (docs/DECISIONS.md, 0052). A long initiative
+ * name truncates with the full name on hover; the revision chip next to it never truncates, so
+ * two runs of the same initiative stay distinguishable.
  *
- * Fixed at the top of the viewport, not sticky (0119 — reversing 0117's revert): the way back is
- * always one click away (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so
- * `RunReviewPage` can pad its own content clear of it (a `position: fixed` bar takes no space in
- * flow, unlike `sticky`) and the view tabs and sticky side column still stick just below it.
+ * Fixed `var(--top-nav-height)` down from the viewport's own top, not sticky (0119 — reversing
+ * 0117's revert, before `TopNav` existed to sit above this bar at all): the way back is always
+ * one click away (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so
+ * `RunReviewPage` can pad its own content clear of both bars (a `position: fixed` bar takes no
+ * space in flow, unlike `sticky`) and the view tabs and sticky side column still stick just below
+ * them.
  *
  * Glass (0117 tried this on `position: sticky`, hit a real test failure, and reverted to opaque;
  * 0119 tries again on `fixed` instead, which is what actually fixed it). `position: sticky` +
@@ -44,7 +46,7 @@ export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
   return (
     <div
       ref={ref}
-      className="fixed inset-x-0 top-0 z-20 border-b border-glass-border bg-glass backdrop-blur-[var(--blur-glass)]"
+      className="fixed inset-x-0 top-[var(--top-nav-height)] z-20 border-b border-glass-border bg-glass backdrop-blur-[var(--blur-glass)]"
     >
       <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1 md:flex-none">

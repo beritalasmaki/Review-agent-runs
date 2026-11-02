@@ -18,7 +18,7 @@ export function InProgressBox({ run, reviewsHref }: InProgressBoxProps) {
       : 'The agent is still working on the change.'
 
   return (
-    <div className="dither-edge -m-[16px] flex w-full flex-col gap-[var(--space-5)] p-[16px]">
+    <div className="flex w-full flex-col gap-[var(--space-5)] rounded-lg border border-glass-border bg-glass p-[var(--space-4)] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
       <h2 className="flex items-center gap-[var(--space-2)] text-section-heading leading-none font-semibold font-heading text-text-primary">
         <Loader aria-hidden className="h-5 w-5 text-text-secondary" />
         Not ready for review yet

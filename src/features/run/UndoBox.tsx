@@ -90,11 +90,11 @@ export function UndoBox({
   }
 
   return (
-    <div className="dither-edge -m-[16px] flex w-full flex-col gap-[var(--space-3)] p-[16px]">
+    <div className="flex w-full flex-col gap-[var(--space-3)] rounded-lg border border-glass-border bg-glass p-[var(--space-4)] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
       <h2
         ref={headingRef}
         tabIndex={-1}
-        className="flex scroll-mt-[calc(var(--run-bar-height,4rem)+var(--space-4))] items-center gap-[var(--space-2)] text-section-heading leading-none font-semibold font-heading text-text-primary"
+        className="flex scroll-mt-[calc(var(--top-nav-height)+var(--run-bar-height,4rem)+var(--space-4))] items-center gap-[var(--space-2)] text-section-heading leading-none font-semibold font-heading text-text-primary"
       >
         {approved && <SuccessCheck animate={celebrate} />}
         <span
