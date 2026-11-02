@@ -136,7 +136,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         </p>
       ) : (
         <Table
-          containerClassName="dither-edge dither-edge--steps-table -m-[16px] p-[16px]"
+          containerClassName="dither-edge -m-[16px] p-[16px]"
           className="min-w-[40rem] table-fixed"
         >
           <colgroup>

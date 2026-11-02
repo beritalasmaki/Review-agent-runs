@@ -319,7 +319,7 @@ export function RunReviewPage({
 
           <div
             data-tour="run-tabs-view"
-            className="dither-edge dither-edge--tabbed-view -m-[16px] min-w-0 p-[16px] md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
+            className="dither-edge -m-[16px] min-w-0 p-[16px] md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
           >
             <RunViewTabs ref={tabsRef} run={run} />
             <div className="px-[var(--space-5)] pt-[var(--space-7)] pb-[var(--space-5)]">

@@ -404,9 +404,9 @@ function ReviewsBoard({
   )
 
   return (
-    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-7)] px-[var(--space-4)] pt-[var(--space-7)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+    <div className="mx-auto flex max-w-[90rem] flex-col gap-[96px] px-[var(--space-4)] pt-[var(--space-7)] pb-[var(--space-7)] md:px-[var(--space-6)]">
       {!onArchivePage ? (
-        <div className="dither-edge dither-edge--title -m-[16px] flex flex-wrap items-end justify-between gap-[var(--space-5)] p-[16px]">
+        <div className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] flex flex-wrap items-end justify-between gap-[var(--space-5)] pt-[40px] pr-[32px] pb-[40px] pl-[32px]">
           <div className="flex flex-col gap-[var(--space-2)]">
             <PageTitle headingRef={headingRef}>My reviews</PageTitle>
             <p className="text-lead leading-relaxed text-text-secondary">
@@ -466,7 +466,7 @@ function ReviewsBoard({
       {!onArchivePage && (
         <section
           aria-label="Runs"
-          className="dither-edge dither-edge--runs-card -m-[16px] p-[16px]"
+          className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
         >
           <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
             <div data-tour="run-tabs">
@@ -611,7 +611,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="dither-edge dither-edge--archived-card -m-[16px] p-[16px]"
+          className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
         >
           {archiveTable()}
         </section>
@@ -620,7 +620,7 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="dither-edge dither-edge--archived-card -m-[16px] p-[16px]"
+          className="dither-edge -mt-[40px] -mr-[32px] -mb-[40px] -ml-[32px] pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
         >
           <div>
             <ReviewsToolbar

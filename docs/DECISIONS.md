@@ -6,6 +6,53 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0123 · The dither edge drops its per-card generated assets for a pure CSS fade
+
+**Context.** "The background of the cards have broken down in the single run page" — real,
+reported against a run (`run-vat-estonia`, 40 minutes, 9 steps) far shorter than the run 0122's
+assets were generated against (`run-messy-pending`, 1h49, 200 steps). Confirmed directly: the
+tabbed-view card's real box on that run measured 692×1274, against a `dither-tabbed-view.svg`
+generated at 740×2132 — a completely different aspect ratio, and `mask-size: 100% 100%` stretches
+non-uniformly to fit, turning the halftone dot grid into exactly the blotchy mess reported. This
+was not a tuning miss on one card: every dither-edge card's real height depends on that run's own
+data (checklist items, evidence rows, story length), so *any* run other than the one each asset
+happened to be measured against renders a differently-shaped box, and breaks the same way. 0122's
+own fix for an earlier, narrower version of this exact bug ("remeasure the box live and
+regenerate") only ever fixed it for one run at a time; it was never going to hold for the next one.
+
+**Choice.** Replaced the generated-SVG-per-card mechanism outright with two intersecting CSS
+`linear-gradient`s (one per axis), each defined with fixed-pixel stops (`--dither-band: 14px`),
+composited with `mask-composite: intersect` / `-webkit-mask-composite: source-in`. A gradient
+with fixed-pixel stops is correct at any element size by construction — there is no "measured at
+build time" value to fall out of sync with a box that changes shape from one run to the next,
+because nothing is measured or generated at all any more. Every `dither-edge--<card>` modifier
+class and every `public/textures/dither-*.svg` file is gone; `.dither-edge` alone now carries the
+whole effect, identically, on every card.
+
+**What this drops.** The halftone dot texture itself. A dot grid is exactly the part of 0122's
+shape that cannot be made size-independent this way — tiling a small, fixed-size dot pattern
+*only* within the fade band, while guaranteeing the interior stays fully opaque regardless of the
+dots' own gaps (the same guarantee 0122's doc comment called out: "the text's own area is the one
+place in the shape that is never partial"), needs a boolean "(core) OR (dots AND fade)" shape that
+a sequential `mask-composite` chain cannot express — each layer can only intersect or add onto the
+single accumulated result of everything before it, not combine two independently-built shapes.
+Prototyping it without that guarantee would have meant text sitting on a surface whose exact
+opacity depends on dot-grid phase, for the one contrast number this whole mechanism exists to
+keep provably stable. Dropping the texture answers the original ask this started from (0121: a
+border "fading away instead of being a sharp line") without that risk; getting the texture back
+later, if it turns out to matter enough, would need a genuinely size-aware technique — a
+`ResizeObserver` regenerating a mask at runtime, say — not a bigger CSS trick.
+
+**Consequence.** No more generator script, no more "remeasure the box live and regenerate"
+discipline, no more per-run breakage: a new card gets `dither-edge` and whatever padding its own
+content needs, nothing else, and it is correct immediately, on every run's data, for its whole
+life — there is no asset to go stale. The one constant every card still needs to respect is the
+same one 0122 already established: the gap to whatever a card stacks next to has to stay
+comfortably wider than two bleeds facing each other can reach, or the accessibility suite finds
+real DOM occlusion again, same as before.
+
+---
+
 ## 0122 · The smoky halo becomes a halftone dither edge, rolled out to every card
 
 **Context.** 0121's smoky box-shadow halo didn't land: "There's no padding around the content.

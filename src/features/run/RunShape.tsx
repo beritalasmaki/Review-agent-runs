@@ -25,7 +25,7 @@ export function RunShape({ run }: RunShapeProps) {
   return (
     <section
       aria-labelledby="run-shape-heading"
-      className="dither-edge dither-edge--run-shape -m-[16px] flex flex-col gap-[var(--space-2)] p-[16px]"
+      className="dither-edge -m-[16px] flex flex-col gap-[var(--space-2)] p-[16px]"
     >
       <h2
         id="run-shape-heading"

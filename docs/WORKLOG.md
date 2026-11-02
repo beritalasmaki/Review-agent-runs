@@ -39,6 +39,101 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-02 · Dither edge rebuilt as a pure CSS fade; My reviews padding widened
+
+**Goal**
+"The background of the cards have broken down in the single run page" (a real run, far shorter
+than the one 0122's assets were generated against) and "the main title and the description text
+content area would need more padding around. Left, top and bottom side 32px minimum. Even more
+to the top and bottom" (My reviews) — fix the breakage, and the padding, on the same pass.
+
+**What changed**
+- `src/styles/index.css` — `.dither-edge::before` no longer points at a generated SVG per card;
+  it is two intersecting CSS `linear-gradient`s (fixed-pixel stops, `--dither-band: 14px`),
+  composited with `mask-composite: intersect`/`-webkit-mask-composite: source-in`. Every
+  `.dither-edge--<card>` modifier rule is gone — one rule now covers every card, unconditionally.
+- `public/textures/dither-*.svg` (13 files) deleted; nothing generates or reads them any more.
+- Every component that had a `dither-edge--<card>` class (`DecisionPanel`, `EvidenceTab`,
+  `InProgressBox`, `MyReviews`, `RunDetails`, `RunOverview`, `RunReviewPage`, `RunShape`,
+  `StepsTab`, `UndoBox`, `UnverifiedList`) had it removed — `dither-edge` alone is enough now.
+- `MyReviews.tsx` — the title, "Runs", "Also found in the archive" and "Archived runs" cards'
+  bleed went from a uniform `-m-[16px] p-[16px]` to `pl-[32px] pr-[32px] pt-[40px] pb-[40px]`
+  (and the matching negative margins), applied to all four (not just the title) so the title
+  stays aligned with the table cards below it (0122's own earlier fix). The page's own stacking
+  gap widened from `gap-[var(--space-7)]` (48px) to `gap-[96px]`, since two 40px top/bottom
+  bleeds facing each other now reach 80px into one another — the old 48px gap would have
+  reopened 0122's own click-interception/occlusion bug at the new, larger bleed.
+
+**Steps, in order**
+1. Reproduced the reported breakage: loaded `run-vat-estonia` and screenshotted the run page,
+   confirmed the tabbed-view card's background read as a blotchy, broken texture rather than a
+   clean fade.
+2. Measured its real box with Playwright (`getBoundingClientRect()`): 692×1274. Compared against
+   `dither-tabbed-view.svg`'s own `viewBox`: 740×2132 — generated against a different run's much
+   taller content. Confirmed this as the root cause, not a one-off: every dither-edge card's
+   height is run-data-dependent, so this could recur on any future run against any card.
+3. Prototyped keeping the halftone dot texture via a multi-layer `mask-composite` (dot tile +
+   edge fade, aiming for a guaranteed-opaque core so dots never show through where real text
+   sits). Worked out on paper that the needed shape — "(solid core) OR (dots AND fade)" — cannot
+   be expressed as a single left-to-right `mask-composite` chain (each layer only composites onto
+   the one accumulated result of everything before it, so a boolean OR of two independently-built
+   shapes isn't reachable). Dropped the dot texture rather than ship a version that couldn't
+   guarantee full opacity where text sits.
+4. Rewrote `.dither-edge::before` as the two-gradient intersect, deleted the per-card modifier
+   rules and the 13 generated SVGs, and removed the now-dead `dither-edge--<card>` class from
+   every component (`sed -E 's/dither-edge--[a-z-]+ //g'` across the touched files).
+5. Rebuilt and re-screenshotted `run-vat-estonia` (the short run that broke) and
+   `run-messy-pending`/`run-messy` (the long run 0122's assets were generated against) in both
+   themes: both clean now, no distortion, no texture artefacts.
+6. Widened My reviews' title card's padding per the new request; realised this would break
+   0122's own title/table-card width alignment (table cards still at 16px bleed) unless applied
+   consistently, so widened "Runs"/"Archived runs" to match; widened the page's own stacking gap
+   to clear the larger bleed's combined reach, confirmed via `getBoundingClientRect()` on the
+   `.dither-edge` elements that no two cards' rendered boxes overlap.
+7. Re-ran the exact accessibility scenario that caught 0122's click-interception bug ("My
+   reviews, archive with a run in it, and the toast") to confirm the larger bleed didn't reopen
+   it; ran the full accessibility suite.
+8. Investigated "the mobile also broke down totally": reproduced (390px viewport,
+   `document.body.scrollWidth` 702px, real horizontal overflow). Checked against a throwaway
+   `git worktree` at the commit this round started from (`origin/main`, before any of today's
+   changes) — identical overflow, byte-for-byte the same 702px, confirming this predates today's
+   work entirely. `docs/spec-review-screen.md` already names this directly: "The page shell and
+   navigation are responsive … A full per-region mobile design pass (density, touch targets) is
+   not: that's still a real gap, not something this line is quietly claiming is done." Left
+   unfixed this round — a real mobile pass for a dense table and a 3-column run page is its own
+   scoped piece of work, not a side effect of a card-background fix.
+
+**Why it was done this way**
+A per-run-generated asset can only ever be correct for the run it was generated against; the
+right fix was removing the dependency on measurement entirely, not improving how the measurement
+was taken. CSS gradients with fixed-pixel stops have no "wrong size" state to fall into — they are
+correct by construction for whatever box they're applied to, which is the property this mechanism
+actually needed from the start. Losing the halftone texture is a real, visible change from what
+0122 shipped, not a free simplification; it's recorded as a trade-off in `DECISIONS.md` 0123
+rather than folded in silently.
+
+**Verification**
+`npx tsc --noEmit`, `npx eslint src --max-warnings 0`, `npx prettier --check` (all touched
+files): clean. `npx vitest run`: 293/293. `node scripts/check-theme-bridge.mjs`
+(`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium`): ok, 70 colours across 3 themes.
+`npm run build`: clean. Screenshots: `run-vat-estonia` and `run-messy-pending`/`run-messy`, both
+themes — no distortion on either, confirming the fix generalises rather than just moving the bug
+to a different run. My reviews title/Runs/Archived cards measured via `boundingClientRect()`:
+identical `x`/`width` (alignment preserved), bleeds confirmed non-overlapping. `npx playwright
+test e2e/accessibility.spec.ts -g "archive with a run in it"`: 2/2, confirming the larger bleed
+didn't reopen 0122's click-interception bug. Full `npx playwright test e2e/accessibility.spec.ts`
+run in progress when this entry was drafted — see below.
+
+**Open questions / next**
+The mobile overflow reported alongside this round's two real bugs is confirmed pre-existing (not
+caused by today's changes, not caused by 0122 either) and already named as a known gap in
+`docs/spec-review-screen.md`. Flagged to the user as its own, separately-scoped piece of work
+rather than attempted here. Full accessibility suite result for this round still pending at
+entry-drafting time; confirm clean (same pre-existing off-screen-viewport gap as 0122 aside)
+before considering this round closed.
+
+---
+
 ## 2026-10-31 · The smoky halo becomes a halftone dither edge, on every card
 
 **Goal**
