@@ -90,7 +90,7 @@ export function UndoBox({
   }
 
   return (
-    <div className="dither-edge dither-edge--undo-box -m-[16px] flex w-full flex-col gap-[var(--space-3)] p-[16px]">
+    <div className="dither-edge -m-[16px] flex w-full flex-col gap-[var(--space-3)] p-[16px]">
       <h2
         ref={headingRef}
         tabIndex={-1}

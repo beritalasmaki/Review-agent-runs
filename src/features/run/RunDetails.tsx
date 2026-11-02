@@ -87,10 +87,7 @@ export function RunDetails({ run, className, tabIndex, ref }: RunDetailsProps) {
       ref={ref}
       tabIndex={tabIndex}
       aria-labelledby="run-details-heading"
-      className={cn(
-        'dither-edge dither-edge--run-details -m-[16px] flex flex-col gap-[var(--space-4)] p-[16px]',
-        className,
-      )}
+      className={cn('dither-edge -m-[16px] flex flex-col gap-[var(--space-4)] p-[16px]', className)}
     >
       <h2
         id="run-details-heading"
