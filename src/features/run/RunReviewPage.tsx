@@ -255,12 +255,12 @@ export function RunReviewPage({
          * of a long page. The last row takes any spare height, so a short view never pushes a
          * gap in under the overview.
          *
-         * `pt-[calc(var(--top-nav-height)+var(--run-bar-height)+var(--space-5))]` (0119, extended
-         * by 0124 for `TopNav`): both `TopNav` and `RunTopBar` are `position: fixed`, so neither
-         * reserves its own space in normal flow — this padding is that reserved space for both,
-         * put back by hand, plus the same `--space-5` top padding this grid always had.
+         * `pt-[calc(var(--run-bar-height)+var(--space-5))]` (0119): `RunTopBar` is `position:
+         * fixed`, so it reserves no space of its own in normal flow — this padding is that
+         * reserved space, put back by hand, plus the same `--space-5` top padding this grid
+         * always had.
          */}
-        <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-start gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--top-nav-height)+var(--run-bar-height,4rem)+var(--space-5))] pb-[var(--space-7)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] md:px-[var(--space-6)] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
+        <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-start gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--run-bar-height,4rem)+var(--space-5))] pb-[var(--space-7)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] md:px-[var(--space-6)] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
           <div
             className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
             data-tour="run-overview"
@@ -308,12 +308,12 @@ export function RunReviewPage({
             )}
           </aside>
 
-          <div className="min-w-0 md:col-start-1 md:row-start-2 xl:sticky xl:top-[calc(var(--top-nav-height)+var(--run-bar-height,4rem)+var(--space-4))] xl:row-span-2 xl:row-start-1">
+          <div className="min-w-0 md:col-start-1 md:row-start-2 xl:sticky xl:top-[calc(var(--run-bar-height,4rem)+var(--space-4))] xl:row-span-2 xl:row-start-1">
             <RunDetails
               ref={detailsRef}
               run={run}
               tabIndex={detailsScroll ? 0 : undefined}
-              className="xl:max-h-[calc(100dvh-var(--top-nav-height)-var(--run-bar-height,4rem)-2*var(--space-4))] xl:scrollbar-none xl:overflow-y-auto xl:overscroll-contain"
+              className="xl:max-h-[calc(100dvh-var(--run-bar-height,4rem)-2*var(--space-4))] xl:scrollbar-none xl:overflow-y-auto xl:overscroll-contain"
             />
           </div>
 

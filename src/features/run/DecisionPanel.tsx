@@ -178,7 +178,7 @@ export function DecisionPanel({
 
       <fieldset
         id="open-items"
-        className="t-spotlight flex scroll-mt-[calc(var(--top-nav-height)+var(--run-bar-height,4rem)+var(--space-5))] flex-col gap-[var(--space-2)]"
+        className="t-spotlight flex scroll-mt-[calc(var(--run-bar-height,4rem)+var(--space-5))] flex-col gap-[var(--space-2)]"
       >
         <legend className="mb-[var(--space-2)] flex w-full items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
           <StepNumber>1</StepNumber>

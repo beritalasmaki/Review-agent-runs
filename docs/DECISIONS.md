@@ -6,6 +6,91 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0126 · The logo's cutout stops being a second box
+
+**Context.** Immediately after 0125 shipped visually (below): "what is that box that the logo is
+surrounded with? Remove that box." 0125 cut the hole through a small chip of its own
+(`topnav-logo-chip`: its own `bg-glass` + `backdrop-blur` + `border`) dropped inside `RunTopBar`'s
+row or `LogoPanel`. That is what drew the complaint: two translucent glass layers stacked on top
+of each other compose to something more opaque than either alone, each with its own
+`backdrop-blur` sampling independently — which reads as a visible seam even with no explicit
+border drawn, i.e. still a box, just a quieter one.
+
+**Choice.** Move the fill itself off the chip and onto a `::before` pseudo-element of the surface
+that's already there (`RunTopBar`'s own row, `LogoPanel` itself) — `.topnav-logo-cutout::before`
+in `index.css`, the same `::before`-carries-the-fill shape `.glass-sheen::before` already uses
+elsewhere in this file. `bg-glass`/`backdrop-blur`/`border-glass-border` come off the host
+element's own `className` and onto that pseudo; the mask is cut through *that* fill, which is the
+only fill there now — one glass layer, with a hole in it, not two stacked. Real content inside a
+masked host needs `relative z-[1]` to stay stacked above the pseudo's `z-index: 0`, since an
+absolutely positioned `z-index: 0` layer would otherwise out-rank a plain, non-positioned sibling
+under the normal CSS stacking order — spelled out in `index.css`'s own comment, since it isn't
+obvious from the rule alone. The glow moved too, now `z-index: -1` on a sibling rather than
+relying on DOM order alone, for the same reason: it has to lose to the masked fill specifically,
+not just come earlier in the tree. `LogoMark.tsx` (0124/0125) is gone; what's left,
+`components/LogoLabel.tsx`, is a visually hidden `role="img"` span carrying the accessible name —
+the hole itself has no DOM element of its own to label, since it is purely a background effect on
+an existing element now, not a rendered graphic.
+
+**Consequence.** `topnav-logo-chip` no longer exists; `topnav` + `topnav-logo-cutout` +
+`topnav-logo-start`/`topnav-logo-center` go directly on whatever existing glass surface the logo
+is joining. A future third placement needs the same lines on its own surface, not a new chip
+component.
+
+---
+
+## 0125 · The logo moves into each page's own bar; dark glass borders dim; it reads in light theme
+
+**Context.** Four pieces of feedback on 0124's `TopNav`, in one message, after seeing it running
+for real rather than as a moodboard: "The top navigation doesn't look like that I designed"; on
+the run page specifically, "looks unorganized, the logo should be in the same row with the other
+elements"; "in light mode the logo doesn't show at all, it just disappears into the background";
+"dark mode has too visible border lines, should not be like that"; and on My reviews, "the logo
+navigation area could be close to the main title and be same width as the rest of the content
+areas, center the logo in the panel."
+
+**Choice, one bar instead of two.** `TopNav` (0124) is deleted outright, along with
+`--top-nav-height` and every offset that threaded it through `RunReviewPage.tsx`,
+`RunViewTabs.tsx`, `SectionHeading.tsx`, `DecisionPanel.tsx`, `UndoBox.tsx` and
+`openItemTargets.ts` — all reverted to the single-bar form they had before 0124. The wordmark
+itself moves: on the run page, into `RunTopBar`'s own row, first in the flex order (a reserved
+spacer keeps the breadcrumb from rendering into the same space the cutout occupies), so it reads
+as the bar's own brand mark rather than a second navigation layer stacked above the "real" one —
+directly answering "same row with the other elements." `RunTopBar` goes back to `top-0`. On My
+reviews, a new `LogoPanel` (`MyReviews.tsx`) sits inside the page's own `mx-auto max-w-[90rem]
+px-...` content column, right above the title card, so it matches that column's width and sits
+close to the title — not a full-viewport bar floating above the page's real layout grid, which is
+what "doesn't look like I designed" and "same width as the rest of the content areas" both came
+down to once the Figma reference (a moodboard, 0124) was re-read: the moodboard's own logo sat
+inline with other content, not detached above it in a bar of its own.
+
+**Choice, light-mode visibility.** The cutout's hole reveals whatever is actually behind it —
+previously a fixed white glow (`topnav-logo-glow`). Against the light theme's own light glass fill
+and light photo backdrop, white-through-white is white: there was never an edge for the wordmark
+to read against. A new token, `--color-topnav-logo-glow` (`tokens.css`), gives the glow its own
+per-theme value — dark in light theme, white in dark theme — the same polarity-flip `--color-glass`
+itself already uses. This is a deliberate departure from the user's own original wording ("the
+logo is transparent and shows the background... one more layer that is transparent white"): white
+was the literal ask, but it's provably what broke light mode, and "visible in both themes" has to
+win over "stayed literally white" once the two are in conflict.
+
+**Choice, dark-mode border visibility.** `--color-glass-border` (`rgb(255 255 255 / 0.3)`) was one
+value in both themes. The same literal colour and opacity reads as a much bolder edge against the
+dark theme's own dark glass fill than against light glass — nothing about the token was "wrong,"
+but it had never been tuned for how it would look once 0124 put a border on every card that used
+to have none (the dither-edge cards, reverted to real borders that same round). Dark theme now
+overrides it to `rgb(255 255 255 / 0.14)`, in both the `prefers-color-scheme` block and the
+explicit `[data-theme="dark"]` block; light theme is untouched.
+
+**Consequence.** `RunTopBar` and `LogoPanel` (`MyReviews.tsx`) are now the only places the logo's
+cutout lives — see 0126, immediately above, for the follow-up that changed how the cutout itself
+is built. Mobile remains the known, already-documented gap from the round before 0124 — the
+reserved spacer in `RunTopBar`'s row does not fit a narrow viewport beside the breadcrumb, and the
+wordmark currently overflows there; unchanged in scope from that earlier finding, not newly
+introduced or newly fixed by this round.
+
+---
+
 ## 0124 · Sharp borders return; tabs attach to their card; a new TopNav adds a logo, reversing 0042
 
 **Context.** Three asks in one round. First: "let's add sharp borders again. Realized the blurry

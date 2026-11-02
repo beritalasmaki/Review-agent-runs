@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { OnboardingTour } from '../components/OnboardingTour'
-import { TopNav } from '../components/TopNav'
 import { MyReviews } from '../features/run/MyReviews'
 import { RunReviewPage } from '../features/run/RunReviewPage'
 import { LIST_TOUR_STEPS, RUN_TOUR_STEPS } from '../features/run/tourSteps'
@@ -10,10 +9,12 @@ import { WelcomeIntro } from './WelcomeIntro'
 import { WelcomeModal } from './WelcomeModal'
 
 /*
- * Application shell. `TopNav` (docs/DECISIONS.md, 0124, reversing 0042's "no wordmark, the page
- * lives inside a host platform") is the one piece of chrome this shell adds, above every page;
- * everything else about a page's own top bar (`RunTopBar`'s breadcrumb, My reviews' own title
- * row) is unchanged and sits below it. There is no router yet (AGENTS.md, Out of scope): the
+ * Application shell. The app's wordmark (docs/DECISIONS.md, 0124, reversing 0042's "no wordmark,
+ * the page lives inside a host platform") lives inside each page's own top bar now (0125 —
+ * `RunTopBar`'s row on a run, a panel of its own close above the title on My reviews), not in a
+ * bar of its own above every page: a separate full-width bar read as unorganised, stacked above
+ * the page's real navigation rather than part of it. This shell itself adds no chrome. There is
+ * no router yet (AGENTS.md, Out of scope): the
  * home page — no `?run=` given
  * — is "My reviews", the list a reviewer lands on first; `?run=<id>` opens that one run's
  * review, reached by clicking a row or a direct link. `?run=run-does-not-exist` reaches the
@@ -74,7 +75,6 @@ export default function App() {
           (0116, rebuilt in 0117) is part of `bg-page-glass` itself now — more `radial-gradient()`
           layers on the same utility, not a separate positioned element. */}
       <main className="min-h-screen bg-page-glass">
-        <TopNav />
         {runId ? (
           <RunReviewPage runId={runId} getRunOptions={delayMs ? { delayMs } : undefined} />
         ) : (

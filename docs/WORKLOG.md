@@ -39,6 +39,109 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-02 · TopNav's logo moves into each page's own bar; the cutout stops being a second box
+
+**Goal**
+Five pieces of feedback on the just-shipped `TopNav` (previous entry, below), all from seeing it
+rendered for real: it didn't match the Figma reference; on the run page it looked unorganised,
+with the logo on its own bar stacked above the real navigation instead of sharing a row with it;
+in light theme the logo was invisible; dark theme's card borders read as too strong; and on My
+reviews, the logo's own area should sit close to the title and match the content column's width,
+not span the full viewport. A follow-up message, once the first fix was visible — "what is that
+box that the logo is surrounded with? Remove that box" — turned out to need a second pass.
+
+**What changed**
+- `src/components/TopNav.tsx`/`.stories.tsx`/`.test.tsx` — deleted.
+- `src/components/LogoLabel.tsx`/`.test.tsx` — added: a visually hidden `role="img"` span, the
+  wordmark's accessible name now that the wordmark itself is a background effect on an existing
+  element, not its own component.
+- `src/styles/index.css` — `topnav-logo-chip`/`topnav-logo-cutout`/`topnav-logo-glow` reworked
+  twice: first into a small standalone "chip" usable inside any row; then, after "remove that
+  box," into `.topnav-logo-cutout::before` (the fill moves onto a pseudo-element of the host
+  surface itself, `.glass-sheen::before`'s own pattern) plus `topnav-logo-start`/
+  `topnav-logo-center` position modifiers — no chip, no second glass layer anywhere.
+- `src/styles/tokens.css` — `--top-nav-height` removed (no longer needed, one bar again);
+  `--color-topnav-logo-glow` added, per-theme (dark in light theme, white in dark theme);
+  `--color-glass-border` given a dark-theme-only override, `rgb(255 255 255 / 0.14)` down from
+  the shared `rgb(255 255 255 / 0.3)`.
+- `src/features/run/RunTopBar.tsx` — back to `top-0`; `LogoLabel` + the cutout/glow now live on
+  this bar's own row (first in flex order, a reserved spacer before the breadcrumb), using
+  `topnav-logo-start`; real content given `relative z-[1]` to stay above the masked `::before`.
+- `src/features/run/MyReviews.tsx` — new `LogoPanel`, inside the page's own `max-w-[90rem]`
+  content column, right above the title card, logo centred (`topnav-logo-center`); both success-
+  and loading/error-state wrappers' padding reverted (no more separate fixed bar to clear).
+- `src/app/App.tsx` — `<TopNav />` removed; doc comment rewritten.
+- `RunReviewPage.tsx`, `RunViewTabs.tsx`, `SectionHeading.tsx`, `DecisionPanel.tsx`,
+  `UndoBox.tsx`, `openItemTargets.ts` — every `--top-nav-height` offset reverted to the
+  single-bar form from before the previous round.
+- `docs/DECISIONS.md` — 0125, 0126.
+
+**Steps, in order**
+1. Read the current `TopNav.tsx`, `RunTopBar.tsx`, `MyReviews.tsx` and `tokens.css` to see
+   exactly what 0124 had built, rather than guessing from the feedback alone.
+2. Reworked the CSS utilities, the two components, and reverted the offset threading; `npx tsc
+   --noEmit`, `npx vitest run`, `npx eslint src` after each major step.
+3. Started the Vite dev server, used Playwright directly (not the test runner) to screenshot both
+   pages in both themes and at a 390px mobile width, with `sessionStorage` pre-seeded to skip the
+   welcome intro/tour overlays — confirmed the logo now reads in light theme, the dark-theme
+   borders are visibly softer, the run-page logo shares `RunTopBar`'s row, and the My reviews
+   panel matches the content column's width.
+4. User flagged a visible box around the logo mid-session, from those same screenshots. Reworked
+   the CSS again onto the `::before` pattern described above; re-screenshotted to confirm the box
+   was gone on both placements and real content still rendered above the masked fill correctly.
+5. Re-ran `npx tsc --noEmit`, `npx vitest run`, `npx eslint src` (all clean) and the Playwright
+   e2e suite (`e2e/accessibility.spec.ts`, `--workers=1`, plus a baseline run of the same suite
+   against the pre-round commit for comparison — see Verification).
+
+**Why it was done this way**
+Merging the logo into `RunTopBar`'s own row, rather than keeping a bar of its own, was a direct
+reversal of 0124's own choice ("New bar on top") — but that choice was made from a moodboard,
+before anyone had seen it running; "looks unorganised" from seeing the real thing outranks a
+Figma guess. The light-mode glow fix keeps the cutout technique but makes its colour theme-aware
+rather than switching techniques entirely — the structure the user asked for (a hole, not a
+rendered image) was sound; only the fixed white value was the bug. The "remove that box" fix
+specifically avoids stacking two `bg-glass` layers: the first version's small chip looked
+reasonable in isolation but, placed on an already-glass surface, the two translucent fills
+composited into something visibly more opaque than either alone — moving the single fill onto a
+`::before` of the host surface removes the second layer rather than trying to make it less
+visible.
+
+**How to do this by hand**
+In Figma, re-check how the reference actually treats a logo inline in a toolbar (same row as
+other nav items) versus a separate bar — note anywhere a static reference is being read as more
+literal than it is. In code: identify the single existing glass surface the logo should sit on,
+add a `::before` fill + mask to it rather than a nested element, and verify in a real browser (not
+just by reading the CSS) that real content still paints above the masked layer — the stacking
+order between an absolutely positioned `z-index: 0` pseudo and ordinary sibling content is not
+obvious from the rules alone, confirmed in these notes by trial rather than spec-reading alone.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean. Playwright
+screenshots (light/dark/mobile, both pages) — logo legible in both themes, no second box, dark
+borders visibly softer, run-page logo in `RunTopBar`'s row, My reviews panel width-matched and
+centred. `e2e/accessibility.spec.ts` via `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium
+npx playwright test --project=chromium`: 24/44 passed with default parallelism (20 failures, all
+the same pre-existing `measuredBackgroundContrast` → `ratio === null` pattern this suite already
+has documented — `page.screenshot()` only captures the viewport, so an element below the 900px
+test fold can't be measured); a serial re-run (`--workers=1`) still showed 21 failures of the same
+kind, a notably higher count than earlier sessions' intermittent few. A baseline run of the same
+suite against the pre-round commit (`e400395`), serially, was started for direct comparison but
+had not finished by the time this round shipped — see "Open questions / next".
+
+**Open questions / next**
+Whether this round changed the `measuredBackgroundContrast` failure rate, or whether the higher
+count this time is itself just this flake's own run-to-run variance (it's driven by real page
+content height relative to a fixed test viewport, which several things in this round moved), is
+still open — the baseline comparison against `e400395` didn't finish before this round shipped.
+Every failure seen is the same already-documented `ratio === null` pattern, not a new error shape,
+and `npm run check`'s own suites (type check, unit tests, lint) are all clean, so this was not
+treated as a blocker — but it should be checked, not assumed settled, before the next round
+touches layout on these same pages. Mobile (`RunTopBar`'s row at narrow widths) remains the known,
+previously documented gap: the reserved spacer for the logo doesn't fit beside the breadcrumb
+under ~430px, and the wordmark now visibly overflows there rather than just being
+present-but-cramped. Out of scope for this round's asks (none mentioned mobile), not newly broken
+by it, but worth a dedicated pass.
+
 ## 2026-11-02 · Sharp borders return, tabs attach to their card, TopNav adds a logo
 
 **Goal**
