@@ -39,6 +39,65 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-02 · The logo's backing goes flat, not radial; a stacking-context bug fixed on My reviews
+
+**Goal**
+"The logo is still quite invisible. It doesn't show at all. Fix it. Add darker colour behind the
+logo so it would pop better. Same thing with the dark mode" — the previous round's shadow/opacity
+bump (below) still hadn't made the wordmark legible.
+
+**What changed**
+- A first attempt replaced the whole hole-in-glass technique with an always-dark, fully opaque
+  badge (`LogoMark.tsx`, a `topnav-logo-badge`/`topnav-logo-mark` pair). Reverted in the same
+  session — "don't ruin the design that way" — before it was committed.
+- `src/styles/index.css` — `topnav-logo-glow` changed from a `radial-gradient(closest-side, ...)`
+  fade to a flat `background-color`, sized snugly to the lettering (not a large halo), with a
+  small `blur(2px)` on its own edges only; `topnav-logo-cutout` gained `isolation: isolate`.
+- `src/styles/tokens.css` — `--color-topnav-logo-glow` raised to 0.9 opacity, both themes.
+- `docs/DECISIONS.md` — 0128.
+
+**Steps, in order**
+1. Debugged computed styles directly (`getComputedStyle` via Playwright) on both `RunTopBar` and
+   `MyReviews`' `LogoPanel` in both themes, rather than guessing from screenshots alone — confirmed
+   every mask/colour/z-index value was already exactly as intended.
+2. Tried the opaque-badge rewrite first; user rejected it immediately, before it was committed —
+   reverted the working tree with `git checkout --` back to the last merged state.
+3. Diagnosed the real defect: a `radial-gradient(closest-side, ...)` already fades to transparent
+   at its own box edge, which is where a wordmark's thin strokes and serifs actually sit — not the
+   centre. Replaced it with a flat fill; `npx tsc --noEmit` clean.
+4. Screenshotted close-up crops of the logo on both pages, both themes: the run page was now
+   crisp, but `MyReviews`' panel was still just as invisible as before, with identical computed
+   CSS — pointed at a real rendering difference, not a styling one.
+5. Compared the two hosts: `RunTopBar` is `position: fixed` (always its own compositing layer);
+   `LogoPanel` is a plain `position: relative` block (not necessarily its own layer). Added
+   `isolation: isolate` to force one explicitly. Re-screenshotted — fixed on both pages, both
+   themes, confirmed by the image, not just by removing a plausible-sounding culprit.
+6. `npx tsc --noEmit`, `npx vitest run` (294/294), `npx eslint src` — all clean.
+
+**Why it was done this way**
+The opaque-badge rewrite was the wrong fix even though it reliably worked: it solved "the logo is
+invisible" by deleting the actual thing that had to stay true, "the logo is transparent and shows
+the background" (0124's own original ask). Once reverted, the fix had to stay inside the
+hole-in-glass technique — which meant actually finding why the glow was weak (the gradient's own
+shape, not just its opacity) rather than turning the same opacity dial a third time. The
+stacking-context difference between the two placements was confirmed empirically (screenshot
+before and after `isolation: isolate`), not purely reasoned through from the CSS spec — Playwright
+screenshots at zoomed-in crops were what actually caught both the real defect and the real fix.
+
+**How to do this by hand**
+For any future "a mask + negative-z-index sibling doesn't read correctly" bug: check whether the
+masked host has `position: fixed` (own compositing layer, works) or something else (may not —
+add `isolation: isolate` to force one) before assuming the mask or colours themselves are wrong.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean. Playwright
+close-up screenshots, both pages, both themes — the wordmark is crisp and clearly legible in all
+four, where the previous round's screenshots at the same crop showed a faint, uneven ghost.
+
+**Open questions / next**
+None outstanding on the logo specifically. The broader `measuredBackgroundContrast` flake rate
+(two entries below) is still unexamined in full.
+
 ## 2026-11-02 · Logo shadow, bar elevation, a tighter run-page lockup, redesigned link hover, My reviews attaches to its table
 
 **Goal**

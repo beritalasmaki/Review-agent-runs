@@ -369,6 +369,20 @@
  * silhouette against the light bar), light in dark theme (reads as a bright one against the dark
  * bar) — rather than literally staying white as first asked for, because a fixed white never gave
  * light mode anything to contrast against.
+ *
+ * A flat, solid fill now (0128), not the `radial-gradient(closest-side, ...)` fade 0125–0127 used
+ * ("the logo is still quite invisible... add darker/lighter colour behind it so it would pop"): a
+ * centre-weighted radial fade is already fading out exactly where a wordmark's own thin strokes
+ * and serifs sit — near the edges of its bounding box, not the dead centre — so even a strong
+ * colour at full opacity read as a faint, uneven ghost rather than a crisp mark. A flat rounded
+ * rect, snugly sized to the lettering plus a small margin (`var(--space-4)`, not the much larger
+ * halo the gradient version needed to fade through), backs every pixel of every letterform with
+ * the *same* strength, edges included — `filter: blur(2px)` only softens the rectangle's own
+ * corners, not the colour's intensity. A reminder tried going fully opaque and theme-fixed instead
+ * (a solid badge, abandoning the hole entirely) — reverted immediately ("don't ruin the design
+ * that way") for breaking the one thing 0124 actually asked for, "the logo is transparent and
+ * shows the background": this keeps that, a flat fill is still only ever visible *through* the
+ * hole, never as a shape of its own.
  */
 @utility topnav {
   --topnav-logo-width: 245px;
@@ -394,6 +408,7 @@
 }
 @utility topnav-logo-cutout {
   position: relative;
+  isolation: isolate;
 }
 .topnav-logo-cutout::before {
   content: '';
@@ -436,10 +451,11 @@
   top: 50%;
   left: var(--topnav-logo-glow-left, 50%);
   z-index: -1;
-  width: calc(var(--topnav-logo-width) + 2 * var(--space-5));
-  height: calc(var(--topnav-logo-height) + 2 * var(--space-4));
+  width: calc(var(--topnav-logo-width) + var(--space-4));
+  height: calc(var(--topnav-logo-height) + var(--space-4));
   transform: translate(var(--topnav-logo-glow-translate-x, -50%), -50%);
-  background: radial-gradient(closest-side, var(--color-topnav-logo-glow), transparent 100%);
-  filter: blur(6px);
+  background: var(--color-topnav-logo-glow);
+  border-radius: var(--radius-xs);
+  filter: blur(2px);
   pointer-events: none;
 }
