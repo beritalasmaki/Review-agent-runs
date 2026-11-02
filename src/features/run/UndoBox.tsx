@@ -94,7 +94,7 @@ export function UndoBox({
       <h2
         ref={headingRef}
         tabIndex={-1}
-        className="flex scroll-mt-[calc(var(--top-nav-height)+var(--run-bar-height,4rem)+var(--space-4))] items-center gap-[var(--space-2)] text-section-heading leading-none font-semibold font-heading text-text-primary"
+        className="flex scroll-mt-[calc(var(--run-bar-height,4rem)+var(--space-4))] items-center gap-[var(--space-2)] text-section-heading leading-none font-semibold font-heading text-text-primary"
       >
         {approved && <SuccessCheck animate={celebrate} />}
         <span

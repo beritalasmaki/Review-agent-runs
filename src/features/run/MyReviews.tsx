@@ -15,6 +15,7 @@ import { MorphIcon } from '../../components/MorphIcon'
 import { useEffect, useRef, useState } from 'react'
 import type { ComponentType } from 'react'
 import { LoadingState } from '../../components/LoadingState'
+import { LogoLabel } from '../../components/LogoLabel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/Tabs'
 import { Button } from '../../components/ui/button'
 import {
@@ -117,7 +118,8 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
     return <ReviewsBoard runs={state.runs} runHref={runHref} now={now} />
   }
   return (
-    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--top-nav-height)+var(--space-6))] pb-[var(--space-6)] md:px-[var(--space-6)]">
+    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-6)] md:px-[var(--space-6)]">
+      <LogoPanel />
       <PageTitle>My reviews</PageTitle>
       {state.status === 'loading' ? (
         <LoadingState label="Loading reviews…" className="min-h-[40vh]" />
@@ -137,6 +139,24 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
           </Button>
         </p>
       )}
+    </div>
+  )
+}
+
+/**
+ * The app's wordmark on My reviews (docs/DECISIONS.md, 0125, replacing 0124's separate full-width
+ * `TopNav` bar): a panel the same width as the rest of the page's content, sitting close above the
+ * title card rather than spanning the full viewport above everything — "the logo navigation area
+ * could be close to the main title and be same width as the rest of the content areas." The logo
+ * is a hole cut through this panel's own glass fill (`topnav-logo-cutout`, `topnav-logo-center`,
+ * `src/styles/index.css`), centred in it, not a second glass layer boxed inside the panel (0126 —
+ * "what is that box... remove it").
+ */
+function LogoPanel() {
+  return (
+    <div className="topnav topnav-logo-cutout topnav-logo-center h-[calc(var(--topnav-logo-height)+2*var(--space-4))] rounded-lg border border-glass-border">
+      <LogoLabel />
+      <span aria-hidden className="topnav-logo-glow" />
     </div>
   )
 }
@@ -404,7 +424,8 @@ function ReviewsBoard({
   )
 
   return (
-    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--top-nav-height)+var(--space-6))] pb-[var(--space-7)] md:px-[var(--space-6)]">
+    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+      <LogoPanel />
       {!onArchivePage ? (
         <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
           <div className="flex flex-col gap-[var(--space-2)]">

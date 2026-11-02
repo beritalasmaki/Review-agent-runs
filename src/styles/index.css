@@ -324,40 +324,78 @@
  */
 
 /*
- * `TopNav`'s logo (docs/DECISIONS.md, 0124): "the logo is transparent and shows the background"
- * — not a rendered graphic sitting on top of the bar, a hole cut through it. `mask-composite:
+ * `LogoMark` (docs/DECISIONS.md, 0125, replacing 0124's full-width `TopNav` bar; 0126 removed a
+ * second visible box around it — see below): "the logo is transparent and shows the background"
+ * — not a rendered graphic sitting on top of a surface, a hole cut through one. `mask-composite:
  * exclude` (the standard syntax) / `-webkit-mask-composite: xor` (the equivalent legacy value)
- * combines two mask layers — an opaque rect covering the whole bar, and the logo SVG — by XOR:
- * wherever exactly one of the two is opaque, the result is opaque; wherever both are (inside a
- * letterform) or neither is, it's transparent. Since the rect is opaque everywhere, that reduces
- * to "opaque everywhere except the letters" — a hole in the bar's own fill shaped exactly like
- * the wordmark, open straight through to whatever sits behind the fixed bar (`bg-page-glass`'s
- * own photo, per `App.tsx`, through `backdrop-filter: blur()`'s own scope ending at this layer's
- * edge — the hole itself is genuinely unblurred, which is what makes it read as a real opening
- * rather than a lighter tint of the same blurred bar).
+ * combines two mask layers — an opaque rect covering the whole surface, and the logo SVG — by
+ * XOR: wherever exactly one of the two is opaque, the result is opaque; wherever both are (inside
+ * a letterform) or neither is, it's transparent. Since the rect is opaque everywhere, that reduces
+ * to "opaque everywhere except the letters" — a hole shaped exactly like the wordmark.
  *
- * `mask-mode: alpha` on both layers, same as `glass-sheen`/the former `.dither-edge` above: reads
- * each layer's own alpha channel, not pixel luminance — matters for the logo specifically, whose
- * source file is solid white fills, not a pre-built alpha shape; without it a white-on-nothing
- * SVG risks being read as "fully opaque, uniformly bright" by a luminance mask instead of "opaque
- * exactly where the paths are."
+ * 0125 first cut this hole through a small chip of its own (its own `bg-glass` + `backdrop-blur` +
+ * `border`) sitting *inside* an existing bar's row or panel, rather than needing a full-width bar
+ * of its own — "the logo should be in the same row with the other elements" (`RunTopBar`), or
+ * centred in a panel on My reviews. 0126 ("what is that box... remove it") found the problem with
+ * that: a second `bg-glass` layer stacked on top of the surface it sat on doesn't read as "no
+ * box" — two translucent layers compose to something visibly more opaque than either alone, with
+ * its own blur sampled separately, which is exactly a box, just one without an explicit border.
+ * The fix is `.topnav-logo-cutout::before`: the hole is cut through the *same* fill the bar or
+ * panel already has — one glass layer, not two — by moving that single fill onto a `::before` (so
+ * it paints behind the element's real content, same ordering `.glass-sheen::before` above already
+ * relies on) and masking the pseudo-element itself, rather than adding any fill of its own on the
+ * element doing the masking. `topnav-logo-cutout` goes directly on the bar/panel that already
+ * carries `bg-glass`/`backdrop-blur`/`border-glass-border` — those utilities come off that element
+ * and onto the pseudo instead; nothing else about its markup changes.
  *
- * A separate, plain `.topnav-logo-glow` sits *behind* this cutout layer in paint order (earlier
- * in the DOM, inside the same `position: fixed` stacking context) — a soft, oversized, blurred
- * white patch roughly the logo's own footprint, imitating a light source rather than a flat tint
- * so the "pop" reads as genuine depth. Visible only through the hole the layer above cuts for it;
- * elsewhere it sits fully hidden behind the bar's own opaque fill.
+ * `mask-mode: alpha` on both layers, same as `glass-sheen` above: reads each layer's own alpha
+ * channel, not pixel luminance — matters for the logo specifically, whose source file is solid
+ * white fills, not a pre-built alpha shape; without it a white-on-nothing SVG risks being read as
+ * "fully opaque, uniformly bright" by a luminance mask instead of "opaque exactly where the paths
+ * are."
+ *
+ * `--topnav-logo-position` picks where the hole sits: inset from the left, vertically centred
+ * (`topnav-logo-start`, `RunTopBar`'s own row) or dead centre (`topnav-logo-center`, the panel on
+ * My reviews) — set with `@utility`'s plain custom-property assignment rather than two full copies
+ * of the mask declaration.
+ *
+ * `.topnav-logo-glow` sits behind the cutout pseudo in paint order (it's a plain child, earlier in
+ * the DOM than the pseudo... no — see its own rule below for how that ordering is actually forced,
+ * not assumed), visible only through the hole. Its colour is `--color-topnav-logo-glow`, not a
+ * fixed white (0125 — "in light mode the logo doesn't show at all, it just disappears into the
+ * background"): a white glow has no edge against the light theme's own light glass fill and light
+ * photo backdrop, so the cutout had nothing to contrast against. The token flips polarity per
+ * theme, the same way `--color-glass` itself does — dark in light theme (reads as a dark
+ * silhouette against the light bar), light in dark theme (reads as a bright one against the dark
+ * bar) — rather than literally staying white as first asked for, because a fixed white never gave
+ * light mode anything to contrast against.
  */
 @utility topnav {
-  /* Shared by both `topnav-logo-cutout` and `topnav-logo-glow` below, which sit on two
-   * different sibling elements inside this one — defined here, on their common ancestor, so
-   * normal CSS custom-property inheritance carries one set of numbers to both, instead of each
-   * repeating (and risking drifting out of sync with) its own copy. */
   --topnav-logo-width: 245px;
   --topnav-logo-height: 22px;
-  --topnav-logo-inset: var(--space-6);
+}
+@utility topnav-logo-start {
+  --topnav-logo-position: var(--space-5) center;
+  --topnav-logo-glow-left: var(--space-5);
+  --topnav-logo-glow-translate-x: 0%;
+}
+@utility topnav-logo-center {
+  --topnav-logo-position: center;
+  --topnav-logo-glow-left: 50%;
+  --topnav-logo-glow-translate-x: -50%;
 }
 @utility topnav-logo-cutout {
+  position: relative;
+}
+.topnav-logo-cutout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-color: var(--color-glass);
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  backdrop-filter: blur(var(--blur-glass));
   -webkit-mask-image: linear-gradient(black, black), url('/textures/agent-run-logo.svg');
   mask-image: linear-gradient(black, black), url('/textures/agent-run-logo.svg');
   -webkit-mask-mode: alpha, alpha;
@@ -372,21 +410,28 @@
     var(--topnav-logo-width) var(--topnav-logo-height);
   -webkit-mask-position:
     0 0,
-    var(--topnav-logo-inset) center;
+    var(--topnav-logo-position, center);
   mask-position:
     0 0,
-    var(--topnav-logo-inset) center;
+    var(--topnav-logo-position, center);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
+/* A real child needs `relative z-[1]` (applied where `topnav-logo-cutout` is used, not blanket
+ * here — the glow below is a child too, and needs the opposite order) to out-rank the cutout
+ * pseudo above (`z-index: 0`) and actually sit on top of it, the way it visually did before 0126
+ * moved the bar/panel's own fill onto that pseudo: a non-positioned, `z-index: auto` child would
+ * otherwise paint *before* an absolutely positioned `z-index: 0` sibling layer under the normal
+ * stacking rules, not after. */
 @utility topnav-logo-glow {
   position: absolute;
   top: 50%;
-  left: calc(var(--topnav-logo-inset) - var(--space-4));
+  left: var(--topnav-logo-glow-left, 50%);
+  z-index: -1;
   width: calc(var(--topnav-logo-width) + 2 * var(--space-4));
   height: calc(var(--topnav-logo-height) + 2 * var(--space-3));
-  transform: translateY(-50%);
-  background: radial-gradient(closest-side, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0) 100%);
+  transform: translate(var(--topnav-logo-glow-translate-x, -50%), -50%);
+  background: radial-gradient(closest-side, var(--color-topnav-logo-glow), transparent 100%);
   filter: blur(4px);
   pointer-events: none;
 }

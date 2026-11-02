@@ -25,7 +25,7 @@ export function RunViewTabs({ run, ref }: RunViewTabsProps) {
   return (
     <div
       ref={ref}
-      className="sticky top-[calc(var(--top-nav-height)+var(--run-bar-height,3rem))] z-10 rounded-t-lg bg-surface px-[var(--space-5)] py-[var(--space-3)]"
+      className="sticky top-[var(--run-bar-height,3rem)] z-10 rounded-t-lg bg-surface px-[var(--space-5)] py-[var(--space-3)]"
     >
       <TabsList variant="pill" label="Views of this run">
         <TabsTrigger

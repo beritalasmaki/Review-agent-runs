@@ -1,25 +1,32 @@
 import { ChevronLeft } from 'lucide-react'
 import type { ReactNode, Ref } from 'react'
+import { LogoLabel } from '../../components/LogoLabel'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import type { Run } from '../../lib/types'
 import { cn } from '../../lib/utils'
 
 /**
- * The page's own bar, directly under `TopNav` (docs/DECISIONS.md, 0124 — before that, directly
- * under the host platform's navigation, 0042/0076, which no longer applies): a breadcrumb back to
- * the reviewer's list, and at its right end what is open before a decision (0053). No product
- * logo, no app name, no main menu of its own here either — `TopNav` above it already carries the
- * one the app now has; this bar's only job is still the breadcrumb. The three views of the run
- * sit above the view they switch, in `RunViewTabs` (docs/DECISIONS.md, 0052). A long initiative
- * name truncates with the full name on hover; the revision chip next to it never truncates, so
- * two runs of the same initiative stay distinguishable.
+ * The page's own bar, directly under the host platform's navigation (docs/DECISIONS.md, 0042/
+ * 0076, which no longer applies): the app's own wordmark, cut as a hole through this bar's own
+ * glass fill (`topnav-logo-cutout`, 0125/0126), a breadcrumb back to the reviewer's list, and at
+ * its right end what is open before a decision (0053) — all one row (0125, replacing 0124's
+ * separate `TopNav` bar above this one: a logo stacked in a bar of its own, apart from the rest of
+ * this page's own navigation, read as unorganised rather than part of it). The three views of the
+ * run sit above the view they switch, in `RunViewTabs` (docs/DECISIONS.md, 0052). A long
+ * initiative name truncates with the full name on hover; the revision chip next to it never
+ * truncates, so two runs of the same initiative stay distinguishable.
  *
- * Fixed `var(--top-nav-height)` down from the viewport's own top, not sticky (0119 — reversing
- * 0117's revert, before `TopNav` existed to sit above this bar at all): the way back is always
- * one click away (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so
- * `RunReviewPage` can pad its own content clear of both bars (a `position: fixed` bar takes no
- * space in flow, unlike `sticky`) and the view tabs and sticky side column still stick just below
- * them.
+ * `bg-glass`/`backdrop-blur`/`border-glass-border` moved off this bar's own `className` and onto
+ * `topnav-logo-cutout`'s `::before` (0126): the wordmark is a hole cut through *this bar's own*
+ * fill, not a second glass layer stacked on top of it reading as a box of its own — see
+ * `src/styles/index.css` for why that distinction matters. The row of real content below keeps
+ * `relative z-[1]` to stay stacked above that `::before` fill (`z-index: 0`), the same ordering it
+ * already had visually before this fill moved onto a pseudo-element.
+ *
+ * Fixed at the viewport's own top, not sticky (0119): the way back is always one click away
+ * (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so `RunReviewPage` can pad
+ * its own content clear of it (a `position: fixed` bar takes no space in flow, unlike `sticky`)
+ * and the view tabs and sticky side column still stick just below it.
  *
  * Glass (0117 tried this on `position: sticky`, hit a real test failure, and reverted to opaque;
  * 0119 tries again on `fixed` instead, which is what actually fixed it). `position: sticky` +
@@ -46,9 +53,15 @@ export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
   return (
     <div
       ref={ref}
-      className="fixed inset-x-0 top-[var(--top-nav-height)] z-20 border-b border-glass-border bg-glass backdrop-blur-[var(--blur-glass)]"
+      className="topnav topnav-logo-cutout topnav-logo-start fixed inset-x-0 top-0 z-20 border-b border-glass-border"
     >
-      <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
+      <LogoLabel />
+      <span aria-hidden className="topnav-logo-glow" />
+      <div className="relative z-[1] mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
+        <span
+          aria-hidden
+          className="h-px shrink-0 basis-[calc(var(--topnav-logo-width)+var(--space-5)+var(--space-4))]"
+        />
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1 md:flex-none">
           <ol className="flex min-w-0 items-center gap-[var(--space-2)] text-meta font-normal font-body text-text-secondary">
             <li className="shrink-0">

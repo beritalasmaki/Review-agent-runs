@@ -284,6 +284,12 @@
   --color-intro-scrim: rgb(255 255 255 / 0.8);
   --color-intro-ink: var(--neutral-13);
   --color-intro-muted: var(--neutral-8);
+  /* `LogoMark`'s glow, behind its cutout hole (docs/DECISIONS.md, 0125): dark in light theme, so
+   * the hole reads as a dark silhouette against the light glass chip and light page photo behind
+   * it — flipped from the dark-theme value below the same way `--color-glass` itself flips, not
+   * left as a fixed white (0124's first attempt), which gave light theme nothing to contrast
+   * against and made the wordmark disappear entirely. */
+  --color-topnav-logo-glow: rgb(23 27 37 / 0.6);
   /* The spotlight's dimmed surroundings, the same in both themes (docs/DECISIONS.md, 0056). */
   --color-spotlight-scrim: rgb(0 0 0 / 0.5);
   /* Behind a dialog: dims the page in both themes, never lightens it (0070). */
@@ -316,6 +322,10 @@
    * over the busier dark gradient.
    */
   --color-glass: color-mix(in srgb, var(--neutral-0) 62%, transparent);
+  /* Dimmer in dark theme (0125 — "dark mode has too visible border lines"): the same white-at-30%
+   * line reads as a much bolder edge against the dark theme's own dark glass fill than against
+   * light glass, even though the literal colour and opacity never changed — the dark override
+   * below tones it down for that surface specifically rather than changing this shared value. */
   --color-glass-border: rgb(255 255 255 / 0.3);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.12);
   /* A deeper version of the same shadow, for the one band in a stacked layout (0099) that
@@ -440,11 +450,6 @@
    * Replaces `--page-gradient` as `bg-page-glass`'s base layer. */
   --page-photo: url('/textures/page-glass-light.webp');
   --blur-glass: 20px;
-  /* `TopNav`'s own fixed height (docs/DECISIONS.md, 0124): a plain constant, not a measured one
-   * like `--run-bar-height` (`RunReviewPage.tsx`) — that bar's own breadcrumb text can wrap on a
-   * narrow screen, so its real height has to be read off the DOM; this one is a logo and nothing
-   * else, with no content that ever wraps, so there is nothing to measure. */
-  --top-nav-height: 56px;
   /* The page's own header zone (docs/DECISIONS.md, 0101): a translucent wash behind the title
    * and the top of the page's main card, tinting that zone without flattening it to a solid
    * colour — the vivid gradient underneath still shows through, same as every other glass
@@ -523,12 +528,14 @@
     --color-modal-scrim: rgb(0 0 0 / 0.6);
 
     --color-glass: color-mix(in srgb, var(--neutral-12) 51%, transparent);
+    --color-glass-border: rgb(255 255 255 / 0.14);
     --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
     --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
     --color-glass-chip-border: rgb(255 255 255 / 0.18);
     --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
     --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
     --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
+    --color-topnav-logo-glow: rgb(255 255 255 / 0.55);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
@@ -584,12 +591,14 @@
   --color-modal-scrim: rgb(0 0 0 / 0.6);
 
   --color-glass: color-mix(in srgb, var(--neutral-12) 51%, transparent);
+  --color-glass-border: rgb(255 255 255 / 0.14);
   --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
   --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
   --color-glass-chip-border: rgb(255 255 255 / 0.18);
   --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
   --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
   --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
+  --color-topnav-logo-glow: rgb(255 255 255 / 0.55);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);
