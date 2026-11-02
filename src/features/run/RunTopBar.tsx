@@ -21,7 +21,16 @@ import { cn } from '../../lib/utils'
  * fill, not a second glass layer stacked on top of it reading as a box of its own — see
  * `src/styles/index.css` for why that distinction matters. The row of real content below keeps
  * `relative z-[1]` to stay stacked above that `::before` fill (`z-index: 0`), the same ordering it
- * already had visually before this fill moved onto a pseudo-element.
+ * already had visually before this fill moved onto a pseudo-element. `shadow-glass-lg` sits on
+ * this host element, not the pseudo — independent of the mask, it gives the whole bar a cast
+ * shadow onto the page below it (0127 — "add some border shadow or something to make the top
+ * navigation pop out"), the same elevation every other glass card in the app already carries.
+ *
+ * `topnav-logo-sm` (0127, `src/styles/index.css`) shrinks the logo's own box for this placement
+ * specifically — sharing a row with the breadcrumb left much less room than the full-width bar
+ * 0124 first gave it, and the reserved spacer below is sized to this smaller box, bringing the
+ * breadcrumb markedly closer to the logo ("Back to review list link could be closer to the
+ * logo") without the two ever actually overlapping.
  *
  * Fixed at the viewport's own top, not sticky (0119): the way back is always one click away
  * (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so `RunReviewPage` can pad
@@ -53,21 +62,21 @@ export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
   return (
     <div
       ref={ref}
-      className="topnav topnav-logo-cutout topnav-logo-start fixed inset-x-0 top-0 z-20 border-b border-glass-border"
+      className="topnav topnav-logo-cutout topnav-logo-start topnav-logo-sm fixed inset-x-0 top-0 z-20 border-b border-glass-border shadow-glass-lg"
     >
       <LogoLabel />
       <span aria-hidden className="topnav-logo-glow" />
       <div className="relative z-[1] mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
         <span
           aria-hidden
-          className="h-px shrink-0 basis-[calc(var(--topnav-logo-width)+var(--space-5)+var(--space-4))]"
+          className="h-px shrink-0 basis-[calc(var(--topnav-logo-width)+var(--space-4)+var(--space-5))]"
         />
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1 md:flex-none">
           <ol className="flex min-w-0 items-center gap-[var(--space-2)] text-meta font-normal font-body text-text-secondary">
             <li className="shrink-0">
               <a
                 href={reviewsHref}
-                className="inline-flex translate-y-[2px] items-center gap-[var(--space-1)] whitespace-nowrap text-primary no-underline underline-offset-2 hover:underline"
+                className="-mx-[var(--space-2)] -my-[var(--space-1)] inline-flex translate-y-[2px] items-center gap-[var(--space-1)] rounded-xs px-[var(--space-2)] py-[var(--space-1)] whitespace-nowrap text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
               >
                 <ChevronLeft aria-hidden className="h-4 w-4" />
                 Back to the reviews list

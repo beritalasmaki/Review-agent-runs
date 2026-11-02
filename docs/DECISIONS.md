@@ -6,7 +6,72 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
-## 0126 · The logo's cutout stops being a second box
+## 0127 · Logo shadow, bar elevation, a tighter run-page lockup, link hover, My reviews attaches to its table
+
+**Context.** Five pieces of feedback in one message, after seeing 0125/0126 running for real:
+"add some dark shadow in light mode behind the logo and then light shadow behind the dark mode
+logo" (the cutout's glow already flipped polarity per theme in 0125, but read as too quiet to be a
+real shadow); "add some border shadow or something to make the top navigation pop out" (the bar/
+panel the logo sits in had no elevation of its own); on the run page, "organize the logo and the
+other elements better, back to review list link could be closer to the logo"; "we should overall
+design the link style better... now it looks plain and simple... background hover with fading
+animation, simple one"; and, in a later message, "My reviews title area should be attached to the
+table to be cohesive and neat."
+
+**Choice, logo shadow.** `--color-topnav-logo-glow` raised from 0.6/0.55 opacity to 0.78/0.72
+(light/dark, `tokens.css`); `topnav-logo-glow`'s own halo grew from `--space-4`/`--space-3` to
+`--space-5`/`--space-4` and its blur from 4px to 6px (`index.css`) — a visibly cast shadow, not
+just enough tint to clear a contrast check, which is what 0125's quieter value actually was.
+
+**Choice, bar elevation.** `shadow-glass-lg` added directly to `RunTopBar`'s own host element and
+to `MyReviews`' `LogoPanel` — the same box-shadow every other glass card in the app already
+carries, applied here for the first time. It sits on the host, not the `::before` that carries the
+mask (0126), so it's independent of the cutout entirely: a plain elevation cue, nothing to do with
+the hole.
+
+**Choice, run-page lockup.** A new `topnav-logo-sm` modifier (`index.css`) shrinks the logo's own
+box to 176×16px for `RunTopBar`'s row specifically (down from the shared `topnav` default of
+245×22px, which `MyReviews`' standalone panel keeps) — sharing a row with the breadcrumb leaves
+much less room than a bar of the logo's own. The reserved spacer before the breadcrumb shrank to
+match, and the logo's own inset off the bar's left edge came down from `--space-5` to `--space-4`.
+Together these bring the breadcrumb markedly closer without the two ever overlapping.
+
+**Choice, link style.** `Button`'s `link` variant (`components/ui/button.tsx`) drops its
+underline-based hover for a soft tinted background instead: `rounded-xs` +
+`transition-colors` + `hover:bg-primary-tint hover:text-primary-hover` — reusing the existing wash
+already used for a selected row or the active tab's own count badge, not a new colour. Kept to
+`:hover`/`:focus-visible` only (never a React-render-keyed transition), the same safety margin
+`outline`'s own hover fade already relies on against the keyboard-test regression `docs/WORKLOG.md`
+(2026-09-24) documents. `size: inline` (no box of its own, for a link inside running text) picked
+up a touch of padding offset by a matching negative margin, so the new background has room to show
+without nudging surrounding text. The same treatment — `rounded-xs`, the tint/hover-tint pair, the
+same padding/negative-margin trick where there was no padding to begin with — was applied directly
+to every raw link-style element outside the `Button` component too: `RunTopBar`'s breadcrumb,
+`InProgressBox`'s "Back to my reviews", `ScoreCard`'s "Why this score" `<summary>`, and
+`OpenItemsNotice`'s "Jump to the open items". `ReviewParts`' table-row title link was left alone —
+a deliberately different, subtle-until-hover pattern for a dense table row, not the same kind of
+plain navigational link the rest of these are.
+
+**Choice, My reviews attaches to its table.** The title card and the "Runs" section (tabs, search,
+table) were two separate `rounded-lg` cards with the page's own `gap-[var(--space-5)]` between
+them. Now they're wrapped in one `flex flex-col` with no gap of its own: the title card drops its
+bottom radius and bottom border (`rounded-t-lg`, `border-b-0`), the "Runs" section drops its top
+radius and top border (`rounded-b-lg`, `border-t-0`) — the same "flush, matching radii, no gap, no
+doubled border at the seam" attachment `RunViewTabs` already uses against its own card
+(docs/DECISIONS.md, 0124), one level up: two full cards fused into one continuous outline here,
+not a strip meeting a card's edge. Both keep their own `shadow-glass-lg` — adjacent box-shadows on
+touching edges don't visibly double up, so there was no reason to strip one.
+
+**Consequence.** `topnav-logo-chip` remains gone (0126); `topnav-logo-sm` is the only new sizing
+modifier, additive to the existing `topnav-logo-start`/`topnav-logo-center` position modifiers, so
+a future placement picks a size and a position independently. The link-hover change is
+intentionally broad (the `Button` variant plus four raw elements) rather than one-off, since the
+request was explicitly "overall" — a future plain-text link should reach for this same pattern
+(`rounded-xs` + `hover:bg-primary-tint hover:text-primary-hover` + the padding/negative-margin
+trick if it has no box of its own) rather than inventing a new one. `MyReviews`' archive view
+(a different, simpler header with no bordered title card) was left untouched — the request named
+the main view specifically, and the archive view has no second card beside its own table to attach
+to in the same way.
 
 **Context.** Immediately after 0125 shipped visually (below): "what is that box that the logo is
 surrounded with? Remove that box." 0125 cut the hole through a small chip of its own

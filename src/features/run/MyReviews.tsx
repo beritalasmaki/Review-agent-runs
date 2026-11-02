@@ -150,11 +150,13 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
  * could be close to the main title and be same width as the rest of the content areas." The logo
  * is a hole cut through this panel's own glass fill (`topnav-logo-cutout`, `topnav-logo-center`,
  * `src/styles/index.css`), centred in it, not a second glass layer boxed inside the panel (0126 —
- * "what is that box... remove it").
+ * "what is that box... remove it"). `shadow-glass-lg` gives the panel the same cast-shadow
+ * elevation every other glass card on this page already has (0127 — "make the top navigation
+ * pop out").
  */
 function LogoPanel() {
   return (
-    <div className="topnav topnav-logo-cutout topnav-logo-center h-[calc(var(--topnav-logo-height)+2*var(--space-4))] rounded-lg border border-glass-border">
+    <div className="topnav topnav-logo-cutout topnav-logo-center h-[calc(var(--topnav-logo-height)+2*var(--space-4))] rounded-lg border border-glass-border shadow-glass-lg">
       <LogoLabel />
       <span aria-hidden className="topnav-logo-glow" />
     </div>
@@ -427,37 +429,164 @@ function ReviewsBoard({
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
       <LogoPanel />
       {!onArchivePage ? (
-        <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
-          <div className="flex flex-col gap-[var(--space-2)]">
-            <PageTitle headingRef={headingRef}>My reviews</PageTitle>
-            <p className="text-lead leading-relaxed text-text-secondary">
-              Agent runs assigned to you. Decide on pending runs, and find your past decisions.
-            </p>
-          </div>
-          <div className="flex items-center gap-[var(--space-3)]">
-            <Badge
-              variant="warning"
-              data-tour="needs-review-badge"
-              className="border-glass-chip-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
-            >
-              <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
-              {needsYou} need{needsYou === 1 ? 's' : ''} your review
-            </Badge>
-            <Button
-              variant="outline"
-              onClick={() => openView('archive')}
-              aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
-              data-tour="archive-button"
-              className="gap-[var(--space-2)]"
-            >
-              <Archive aria-hidden className="h-4 w-4" />
-              Archive
-              <Badge variant="muted" size="sm">
-                {archived.length}
+        <div className="flex flex-col">
+          {/*
+           * The title card and the "Runs" card below it (0127 — "title area should be attached
+           * to the table to be cohesive and neat"): `border-b-0`/`rounded-b-none` here,
+           * `border-t-0`/`rounded-t-none` on the "Runs" section below, zero gap between them
+           * (this wrapper, not the page's own `gap-[var(--space-5)]` stack) — the same "flush,
+           * matching radii, no gap" attachment `RunViewTabs` already uses against its own card
+           * (docs/DECISIONS.md, 0124), one level up: two cards here, not a tab strip and a card,
+           * fused into one continuous outline rather than a strip meeting a card's own edge.
+           */}
+          <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-t-lg rounded-b-none border border-b-0 border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
+            <div className="flex flex-col gap-[var(--space-2)]">
+              <PageTitle headingRef={headingRef}>My reviews</PageTitle>
+              <p className="text-lead leading-relaxed text-text-secondary">
+                Agent runs assigned to you. Decide on pending runs, and find your past decisions.
+              </p>
+            </div>
+            <div className="flex items-center gap-[var(--space-3)]">
+              <Badge
+                variant="warning"
+                data-tour="needs-review-badge"
+                className="border-glass-chip-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
+              >
+                <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
+                {needsYou} need{needsYou === 1 ? 's' : ''} your review
               </Badge>
-            </Button>
-            <ThemeToggle />
+              <Button
+                variant="outline"
+                onClick={() => openView('archive')}
+                aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
+                data-tour="archive-button"
+                className="gap-[var(--space-2)]"
+              >
+                <Archive aria-hidden className="h-4 w-4" />
+                Archive
+                <Badge variant="muted" size="sm">
+                  {archived.length}
+                </Badge>
+              </Button>
+              <ThemeToggle />
+            </div>
           </div>
+          <section
+            aria-label="Runs"
+            className="overflow-hidden rounded-t-none rounded-b-lg border border-t-0 border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          >
+            <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
+              <div data-tour="run-tabs">
+                <TabsList
+                  variant="pill"
+                  label="Run types"
+                  className="scrollbar-none w-full max-w-full justify-start overflow-x-auto rounded-lg border border-border-subtle bg-surface-raised p-[var(--space-2)]"
+                >
+                  {TABS.map(({ value, label, mark, icon: Icon }) => (
+                    <TabsTrigger key={value} variant="pill" value={value} className="group">
+                      {mark ? (
+                        <span
+                          aria-hidden
+                          className={cn(
+                            'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-surface-raised text-text-secondary transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] group-aria-selected:text-mark-glyph',
+                            mark,
+                          )}
+                        >
+                          <Icon className="h-3 w-3" />
+                        </span>
+                      ) : (
+                        <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
+                      )}
+                      {label}
+                      <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">
+                        {counts[value]}
+                      </Badge>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+              <TabsContent value={tab}>
+                <div data-tour="search-filters">
+                  <ReviewsToolbar
+                    searchLabel="Search runs"
+                    searchPlaceholder="Search runs, also in the archive"
+                    filters={filters}
+                    onFilters={patchFilters}
+                    open={filtersOpen}
+                    onToggleOpen={() => setFiltersOpen((open) => !open)}
+                    timeLabel="Time"
+                    timeOptions={MAIN_TIMES}
+                    type={{
+                      value: tab,
+                      counts: false,
+                      onChange: (value) => chooseTab(value as ReviewTab),
+                      options: [...TABS.filter((t) => t.value !== 'all'), TABS[4]].map((t) => ({
+                        value: t.value,
+                        label: t.value === 'all' ? 'All run types' : t.label,
+                      })),
+                    }}
+                    people={people}
+                    resultLabel={`Showing ${tableRuns.length} of ${plural(active.length, 'active run')}`}
+                    onClear={hasFilters ? clearFilters : undefined}
+                  />
+                </div>
+                {selectionBar(
+                  'You can select approved and declined runs, to make a report or to archive them.',
+                  true,
+                )}
+                <ReviewsTable
+                  ref={tableRef}
+                  runs={tableRuns}
+                  caption={`${TABS.find((t) => t.value === tab)?.label ?? ''} runs`}
+                  runHref={runHref}
+                  sort={sort}
+                  onSort={(key, dir) => setSort({ key, dir })}
+                  selectable={tab !== 'pending'}
+                  selected={selected}
+                  onToggle={toggle}
+                  manual={manual}
+                  now={now}
+                  onDetails={(id) => setDialog({ type: 'details', id })}
+                  onNewRun={(id) => setDialog({ type: 'newrun', id })}
+                  onArchive={(id) => setDialog({ type: 'archive', ids: [id] })}
+                />
+                {tableRuns.length === 0 && (
+                  <div className="flex flex-col items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-7)] text-center">
+                    {/* Nothing to decide here, but work is under way below: say that, not "no
+                        match", which would read as if the tab were empty. */}
+                    <p className="text-item-title font-semibold font-heading text-text-primary">
+                      {inProgress.length > 0 && !hasFilters
+                        ? 'Nothing here needs you yet'
+                        : 'No active runs match these filters'}
+                    </p>
+                    <p className="text-body text-text-secondary">
+                      {inProgress.length > 0 && !hasFilters
+                        ? 'The runs below are still in progress. They move up when they are ready for you.'
+                        : 'Try another tab, time range or requester.'}
+                    </p>
+                    {hasFilters && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={clearFilters}
+                        className="btn-glass glass-sheen mt-[var(--space-1)] px-[var(--space-4)]"
+                      >
+                        Clear filters
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {inProgress.length > 0 && (
+                  <InProgress
+                    runs={inProgress}
+                    open={progOpen}
+                    onToggle={() => setProgOpen((o) => !o)}
+                    now={now}
+                  />
+                )}
+              </TabsContent>
+            </Tabs>
+          </section>
         </div>
       ) : (
         <div className="flex flex-col gap-[var(--space-5)]">
@@ -482,125 +611,6 @@ function ReviewsBoard({
             </p>
           </div>
         </div>
-      )}
-
-      {!onArchivePage && (
-        <section
-          aria-label="Runs"
-          className="overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
-        >
-          <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
-            <div data-tour="run-tabs">
-              <TabsList
-                variant="pill"
-                label="Run types"
-                className="scrollbar-none w-full max-w-full justify-start overflow-x-auto rounded-lg border border-border-subtle bg-surface-raised p-[var(--space-2)]"
-              >
-                {TABS.map(({ value, label, mark, icon: Icon }) => (
-                  <TabsTrigger key={value} variant="pill" value={value} className="group">
-                    {mark ? (
-                      <span
-                        aria-hidden
-                        className={cn(
-                          'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-surface-raised text-text-secondary transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] group-aria-selected:text-mark-glyph',
-                          mark,
-                        )}
-                      >
-                        <Icon className="h-3 w-3" />
-                      </span>
-                    ) : (
-                      <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
-                    )}
-                    {label}
-                    <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">
-                      {counts[value]}
-                    </Badge>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-            <TabsContent value={tab}>
-              <div data-tour="search-filters">
-                <ReviewsToolbar
-                  searchLabel="Search runs"
-                  searchPlaceholder="Search runs, also in the archive"
-                  filters={filters}
-                  onFilters={patchFilters}
-                  open={filtersOpen}
-                  onToggleOpen={() => setFiltersOpen((open) => !open)}
-                  timeLabel="Time"
-                  timeOptions={MAIN_TIMES}
-                  type={{
-                    value: tab,
-                    counts: false,
-                    onChange: (value) => chooseTab(value as ReviewTab),
-                    options: [...TABS.filter((t) => t.value !== 'all'), TABS[4]].map((t) => ({
-                      value: t.value,
-                      label: t.value === 'all' ? 'All run types' : t.label,
-                    })),
-                  }}
-                  people={people}
-                  resultLabel={`Showing ${tableRuns.length} of ${plural(active.length, 'active run')}`}
-                  onClear={hasFilters ? clearFilters : undefined}
-                />
-              </div>
-              {selectionBar(
-                'You can select approved and declined runs, to make a report or to archive them.',
-                true,
-              )}
-              <ReviewsTable
-                ref={tableRef}
-                runs={tableRuns}
-                caption={`${TABS.find((t) => t.value === tab)?.label ?? ''} runs`}
-                runHref={runHref}
-                sort={sort}
-                onSort={(key, dir) => setSort({ key, dir })}
-                selectable={tab !== 'pending'}
-                selected={selected}
-                onToggle={toggle}
-                manual={manual}
-                now={now}
-                onDetails={(id) => setDialog({ type: 'details', id })}
-                onNewRun={(id) => setDialog({ type: 'newrun', id })}
-                onArchive={(id) => setDialog({ type: 'archive', ids: [id] })}
-              />
-              {tableRuns.length === 0 && (
-                <div className="flex flex-col items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-7)] text-center">
-                  {/* Nothing to decide here, but work is under way below: say that, not "no
-                      match", which would read as if the tab were empty. */}
-                  <p className="text-item-title font-semibold font-heading text-text-primary">
-                    {inProgress.length > 0 && !hasFilters
-                      ? 'Nothing here needs you yet'
-                      : 'No active runs match these filters'}
-                  </p>
-                  <p className="text-body text-text-secondary">
-                    {inProgress.length > 0 && !hasFilters
-                      ? 'The runs below are still in progress. They move up when they are ready for you.'
-                      : 'Try another tab, time range or requester.'}
-                  </p>
-                  {hasFilters && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={clearFilters}
-                      className="btn-glass glass-sheen mt-[var(--space-1)] px-[var(--space-4)]"
-                    >
-                      Clear filters
-                    </Button>
-                  )}
-                </div>
-              )}
-              {inProgress.length > 0 && (
-                <InProgress
-                  runs={inProgress}
-                  open={progOpen}
-                  onToggle={() => setProgOpen((o) => !o)}
-                  now={now}
-                />
-              )}
-            </TabsContent>
-          </Tabs>
-        </section>
       )}
 
       {inlineArchive && (

@@ -97,7 +97,7 @@ export function ScoreCard({ area, decided = false }: ScoreCardProps) {
           )}
         </p>
         <details className="group text-meta font-body text-text-secondary">
-          <summary className="w-fit cursor-pointer font-medium text-primary underline-offset-2 hover:underline">
+          <summary className="-mx-[var(--space-2)] -my-[var(--space-1)] w-fit cursor-pointer rounded-xs px-[var(--space-2)] py-[var(--space-1)] font-medium text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover">
             Why this score
           </summary>
           <p className="pt-[var(--space-1)]">{area.rationale}</p>

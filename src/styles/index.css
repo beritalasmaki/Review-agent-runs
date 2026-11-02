@@ -374,9 +374,17 @@
   --topnav-logo-width: 245px;
   --topnav-logo-height: 22px;
 }
+/* A smaller lockup (0127) for `RunTopBar`'s own row specifically, where the logo now shares
+ * space with the breadcrumb instead of having a whole bar to itself — brings the breadcrumb
+ * noticeably closer without the two ever overlapping. `MyReviews`' standalone panel keeps the
+ * full `topnav` size, where there's room for it. */
+@utility topnav-logo-sm {
+  --topnav-logo-width: 176px;
+  --topnav-logo-height: 16px;
+}
 @utility topnav-logo-start {
-  --topnav-logo-position: var(--space-5) center;
-  --topnav-logo-glow-left: var(--space-5);
+  --topnav-logo-position: var(--space-4) center;
+  --topnav-logo-glow-left: var(--space-4);
   --topnav-logo-glow-translate-x: 0%;
 }
 @utility topnav-logo-center {
@@ -428,10 +436,10 @@
   top: 50%;
   left: var(--topnav-logo-glow-left, 50%);
   z-index: -1;
-  width: calc(var(--topnav-logo-width) + 2 * var(--space-4));
-  height: calc(var(--topnav-logo-height) + 2 * var(--space-3));
+  width: calc(var(--topnav-logo-width) + 2 * var(--space-5));
+  height: calc(var(--topnav-logo-height) + 2 * var(--space-4));
   transform: translate(var(--topnav-logo-glow-translate-x, -50%), -50%);
   background: radial-gradient(closest-side, var(--color-topnav-logo-glow), transparent 100%);
-  filter: blur(4px);
+  filter: blur(6px);
   pointer-events: none;
 }
