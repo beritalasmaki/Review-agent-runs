@@ -6,6 +6,47 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0128 · The logo's backing goes flat, not radial; a stacking-context bug fixed on My reviews
+
+**Context.** "The logo is still quite invisible. It doesn't show at all. Fix it. Add darker colour
+behind the logo so it would pop better. Same thing with the dark mode." 0127 had already raised
+the glow's opacity and size and still wasn't enough. A first attempt here went further: replaced
+the whole hole-in-glass technique with a self-contained, always-dark opaque badge (solid chip,
+white mark on top, no transparency, same in both themes) — reverted immediately, "don't ruin the
+design that way": it dropped the one thing 0124's own original ask was about, "the logo is
+transparent and shows the background." That direction is not kept here.
+
+**Choice, flat fill.** The real defect, once actually looked for instead of just turning the
+opacity dial again: `topnav-logo-glow`'s `radial-gradient(closest-side, colour, transparent 100%)`
+fades to transparent exactly at its own box edge — and the wordmark's own thin strokes and serifs
+sit near the EDGES of its bounding box, not the dead centre, so even a strong colour at full
+opacity was already fading out exactly where the letterforms needed it most. Swapped for a flat,
+solid `background-color` (no gradient at all), sized snugly to the lettering plus a small margin
+(not the much bigger halo a radial fade needed to have room to fade through), with `filter:
+blur(2px)` only softening the rectangle's own corners, not diluting its colour. `--color-
+topnav-logo-glow` raised again, to 0.9 opacity both themes — a flat fill can run close to opaque
+without reading as a harsh flood, since there's no gradient centre to blow out.
+
+**Choice, the My reviews bug.** This fix alone made the run page's logo crisp immediately, but
+`LogoPanel` on My reviews stayed just as invisible as before — identical CSS, identical computed
+styles (verified directly: same mask, same flat fill, same 0.9 opacity, same z-index ordering),
+the only structural difference being `RunTopBar`'s host is `position: fixed` (which always gets
+its own compositing layer) while `LogoPanel`'s is a plain `position: relative` block (which
+doesn't, unless something forces one). Added `isolation: isolate` to `topnav-logo-cutout` —
+forces a real stacking context the same way `position: fixed` already does incidentally, closing
+whatever rendering gap let the masked hole and the negative-`z-index` glow drift out of the
+correct paint order specifically in a non-fixed context. Confirmed by screenshot, not just
+reasoned through: broken before the isolation was added, fixed after, on the same build.
+
+**Consequence.** `topnav-logo-glow`'s box and `filter` values changed again — a future tuning pass
+should treat "flat fill, sized to the lettering plus a small margin" as the baseline, not go back
+to a radial fade, which is now understood to be structurally wrong for text-shaped content rather
+than just insufficiently strong. `isolation: isolate` on `topnav-logo-cutout` is load-bearing, not
+decorative — removing it (e.g. while simplifying the utility later) will silently break any
+non-fixed usage of this cutout technique the same way it broke `LogoPanel` here.
+
+---
+
 ## 0127 · Logo shadow, bar elevation, a tighter run-page lockup, link hover, My reviews attaches to its table
 
 **Context.** Five pieces of feedback in one message, after seeing 0125/0126 running for real:
