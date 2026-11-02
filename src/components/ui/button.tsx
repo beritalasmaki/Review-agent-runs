@@ -15,10 +15,10 @@ import { Slot } from 'radix-ui'
  * No colour transition on most variants, on purpose: one on the line tabs made keyboard tests
  * drop key presses (docs/WORKLOG.md, 2026-09-24) — but that was a transition keyed to rapid
  * *automatic-activation* state changes from the keyboard. `outline`'s own hover fade (plus a
- * small grow) is keyed to `:hover`/`:focus-visible` only, pseudo-classes the mouse and keyboard
- * focus set directly, never a cascading React re-render from arrow-key navigation elsewhere, so
- * it cannot reproduce that bug — the same reasoning transitions.css's "Button shine" already
- * relies on for `default`/`ghost` (0083).
+ * small grow) and `link`'s own hover background (0127) are keyed to `:hover`/`:focus-visible`
+ * only, pseudo-classes the mouse and keyboard focus set directly, never a cascading React
+ * re-render from arrow-key navigation elsewhere, so neither can reproduce that bug — the same
+ * reasoning transitions.css's "Button shine" already relies on for `default`/`ghost` (0083).
  *
  * The shine itself comes in two strengths (0120, transitions.css): `default`/`ghost` carry the
  * quiet `btn-shine-sm` (a small in-place fade) as their base, since most of what they're used
@@ -62,15 +62,22 @@ const buttonVariants = cva(
           'btn-shine border-destructive bg-destructive text-destructive-foreground hover:opacity-85',
         ghost:
           'btn-shine-sm border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
-        /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". */
-        link: 'border-transparent bg-transparent text-primary underline-offset-2 hover:underline',
+        /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". A soft
+         * tinted background fades in on hover/focus (0127 — "the link style... looks plain and
+         * simple... background hover with fading animation"), replacing a plain underline: the
+         * same `--color-primary-tint`/`--color-primary-hover` wash already used for a selected
+         * row or the active tab's own count badge, not a new colour. */
+        link: 'rounded-xs border-transparent bg-transparent text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover focus-visible:bg-primary-tint focus-visible:text-primary-hover',
       },
       size: {
         default: 'gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] text-body',
         sm: 'gap-[var(--space-2)] px-[var(--space-3)] py-[var(--space-2)] text-meta',
         icon: 'h-8 w-8',
-        /** No box at all, for `link` inside running text or under an item. */
-        inline: 'gap-[var(--space-1)] border-0 p-0 text-meta',
+        /** No box at all, for `link` inside running text or under an item — a little padding,
+         * offset by a matching negative margin, so `variant="link"`'s hover background (above)
+         * has room to show without nudging surrounding text (0127). */
+        inline:
+          'gap-[var(--space-1)] border-0 -mx-[var(--space-1)] -my-[var(--space-1)] px-[var(--space-1)] py-[var(--space-1)] text-meta',
       },
     },
     compoundVariants: [

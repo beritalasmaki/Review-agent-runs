@@ -39,6 +39,95 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-02 · Logo shadow, bar elevation, a tighter run-page lockup, redesigned link hover, My reviews attaches to its table
+
+**Goal**
+Five more pieces of feedback on the just-shipped logo round (previous entry, below): make the
+logo's own shadow more visible in both themes; give the top navigation bar/panel itself some
+elevation so it "pops out"; bring the run page's breadcrumb closer to the logo and organize that
+row better; redesign the app's plain-text link style with a background hover and a fade,
+"overall," not just in one spot; and, in a follow-up message, attach My reviews' title card to
+the table below it so the two read as one cohesive block.
+
+**What changed**
+- `src/styles/tokens.css` — `--color-topnav-logo-glow` opacity raised (0.6→0.78 light,
+  0.55→0.72 dark).
+- `src/styles/index.css` — `topnav-logo-glow`'s halo and blur increased; new `topnav-logo-sm`
+  modifier (176×16px) for `RunTopBar`'s own, more cramped row.
+- `src/features/run/RunTopBar.tsx` — `shadow-glass-lg` added to the bar; `topnav-logo-sm`
+  applied; the reserved breadcrumb spacer shrunk to match; the breadcrumb link's own hover
+  redesigned (background tint + fade, replacing an underline).
+- `src/features/run/MyReviews.tsx` — `shadow-glass-lg` added to `LogoPanel`; the title card and
+  the "Runs" section (tabs/search/table) merged into one wrapper with matching radii and no gap
+  between them, reading as one attached card.
+- `src/components/ui/button.tsx` — the `link` variant's hover redesigned (tinted background +
+  fade, not an underline); `size: inline` gained a small padding/negative-margin pair so that
+  background has room without disturbing inline text flow.
+- `src/features/run/InProgressBox.tsx`, `ScoreCard.tsx`, `OpenItemsNotice.tsx` — the same hover
+  treatment applied directly to their own raw `<a>`/`<summary>` links, for consistency with the
+  `Button` `link` variant.
+- `docs/DECISIONS.md` — 0127.
+
+**Steps, in order**
+1. Read the current `RunTopBar.tsx`, `MyReviews.tsx`, `index.css`'s `topnav-*` utilities, and
+   `button.tsx`'s `buttonVariants` to see exactly what was already there.
+2. Strengthened the logo glow/shadow values; added `topnav-logo-sm` and the bar/panel shadows;
+   shrunk the run-page spacer; `npx tsc --noEmit` clean.
+3. Redesigned the `link` variant and the four raw link sites; `npx tsc --noEmit`,
+   `npx vitest run` (294/294), `npx eslint src` all clean after.
+4. Restarted the Vite dev server (the previous one had been killed by an earlier background
+   command's own timeout — restarted with a long-enough background timeout this time) and used
+   Playwright directly to screenshot both pages, both themes, hover states on the breadcrumb
+   link and "Jump to the open items", and a 390px mobile view.
+5. User flagged, mid-session, that My reviews' title area should attach to its table. Merged the
+   title card and the "Runs" section into one wrapper, adjusted radii/borders on the touching
+   edge; re-verified `tsc`/`vitest`/`eslint`, re-screenshotted both themes.
+6. Ran a targeted subset of `e2e/accessibility.spec.ts` (`pending run, Story` and `My reviews`,
+   both themes) to check for any new WCAG violations from the link/shadow changes — none; the 3
+   failures seen were the suite's own already-documented `measuredBackgroundContrast` flake
+   (viewport-only screenshot, element below the test fold), not new findings.
+
+**Why it was done this way**
+The logo's glow was already theme-adaptive (0125) — the ask here was about *strength*, not
+direction, so only the opacity/size/blur moved, not the underlying technique. Shrinking the
+run-page logo (rather than just trimming the spacer around a fixed-size one) was the real lever
+for "closer to the breadcrumb," since the 245px default size was tuned for a bar with nothing
+else in it — this placement never had that much room. The link redesign intentionally touches the
+shared `Button` `link` variant plus every raw link-style element found by grep, not just the one
+the feedback pointed at ("Back to review list"), because the request said "overall" — fixing one
+spot and leaving four others with the old underline would have been a worse inconsistency than
+before. My reviews' title-to-table attachment reuses `RunViewTabs`' own "flush, matching radii, no
+gap" technique (0124) rather than inventing a new one for two full cards instead of a tab strip
+and a card.
+
+**How to do this by hand**
+For a link's hover state going forward: `rounded-xs` + `hover:bg-primary-tint
+hover:text-primary-hover` + `transition-colors duration-[var(--motion-duration-fast)]
+ease-[var(--motion-ease-standard)]`, keyed to `:hover`/`:focus-visible` only (never a prop- or
+state-driven class change) so it can't reproduce the 2026-09-24 keyboard-test regression; add
+`-mx-[var(--space-2)] -my-[var(--space-1)] px-[var(--space-2)] py-[var(--space-1)]` if the element
+has no padding of its own to give the background room. For attaching two stacked cards: drop the
+touching radii and the touching border on each side that meets the other, remove the gap between
+just that pair (wrap them, don't touch the page's own stack gap), keep each card's own shadow.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean. Playwright
+screenshots (light/dark, both pages, hover states, 390px mobile) — logo shadow clearly visible in
+both themes, bars visibly elevated, breadcrumb close to the logo, link hovers show a tinted
+background with a visible fade, My reviews' title and table read as one block with no seam. A
+targeted `e2e/accessibility.spec.ts` run (`-g "pending run, Story|My reviews:"`, both themes,
+`--workers=1`) showed the suite's own known, pre-existing `measuredBackgroundContrast` flake on 3
+of 4 scenarios — zero actual WCAG violations, and the failures are the same already-documented
+viewport-only-screenshot limitation this suite has carried since before this round, not a new
+finding from these changes.
+
+**Open questions / next**
+The full accessibility suite's `measuredBackgroundContrast` flake rate (documented in the previous
+entry, below) is still worth a closer look across the whole app at some point, independent of this
+round's own changes — it was not re-measured in full here, only spot-checked. My reviews' archive
+view still has its own simpler header with no attached-card treatment, left that way since the
+request named the main view specifically.
+
 ## 2026-11-02 · TopNav's logo moves into each page's own bar; the cutout stops being a second box
 
 **Goal**

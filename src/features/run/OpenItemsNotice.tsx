@@ -40,7 +40,7 @@ export function OpenItemsNotice({ run, href = '#open-items' }: OpenItemsNoticePr
             [...boxes].find((box) => box.getAttribute('aria-checked') !== 'true') ?? boxes[0]
           next?.focus({ preventScroll: true })
         }}
-        className="font-medium whitespace-nowrap text-primary no-underline underline-offset-2 hover:underline"
+        className="-mx-[var(--space-2)] -my-[var(--space-1)] inline-block rounded-xs px-[var(--space-2)] py-[var(--space-1)] font-medium whitespace-nowrap text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
       >
         Jump to the open items →
       </a>
