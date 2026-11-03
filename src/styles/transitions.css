@@ -122,16 +122,19 @@
 
 /* ---- Tabs sliding --------------------------------------------------------------------- */
 
-/* The pill variant's active-tab indicator: a genuine glass capsule behind the tab again
+/* The pill variant's active-tab indicator: a genuine glass surface behind the tab again
  * (docs/DECISIONS.md, 0110, reversing 0107's bottom border — "the line tab looks outdated,"
- * asking for glassmorphism instead). 0107 moved to a bottom border because the capsule read as
+ * asking for glassmorphism instead). 0107 moved to a bottom border because the indicator read as
  * a flat, opaque box fighting the rest of the app's soft design — but that was before the page
  * itself had a real photo behind its glass (0108): the pill track already sits on a genuinely
- * glass My reviews card, which now sits over real photographic texture, so a translucent capsule
+ * glass My reviews card, which now sits over real photographic texture, so a translucent surface
  * here has something real for `backdrop-filter` to reveal, the same reasoning `btn-glass` (the
- * outline button) already relies on. Width *and* height are written inline by `TabsList` (pill
- * variant only — `.t-tabs-line` below stays a thin underline), so the transition tweens between
- * the previous and next measured positions in both dimensions. */
+ * outline button) already relies on. 0133 took this from a full stadium shape to the same
+ * `rounded-lg` (10px) every card uses (`Tabs.tsx`'s own `className`, not here) — "match the
+ * background panel behind it," so this reads as the same rounding language as its surroundings,
+ * not its own. Width *and* height are written inline by `TabsList` (pill variant only —
+ * `.t-tabs-line` below stays a thin underline), so the transition tweens between the previous
+ * and next measured positions in both dimensions. */
 .t-tabs-pill {
   position: absolute;
   top: 0;

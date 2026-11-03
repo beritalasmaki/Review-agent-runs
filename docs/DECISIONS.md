@@ -6,7 +6,60 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
-## 0131 · `backdrop-filter` was the real source of the logo's "shadow" all along
+## 0133 · The tab indicator's radius matches its panel; closer to the edges; 10px everywhere
+
+**Context.** "When it comes to tabs I meant the tab border radius would match the background
+panel behind it. I made example of it. That way it looks more cohesive and neat." — a screenshot
+showing the run page's own tab strip, the active "Story" tab as a rounded rect rather than a full
+pill. Also: "move the tabs closer to the borders of the background panel area," "the radius should
+be in both panel and tabs around 10px," and, separately, "make all the corner radius 10px
+including cards and buttons."
+
+**Finding.** `--radius-sm`/`--radius-md`/`--radius-lg` were already one flat `0.625rem` (10px) —
+cards, dialogs, most buttons already matched. Two call sites had drifted into their own full-pill
+shape (`border-radius: 9999px`/`rounded-full`) despite sitting on a rectangular surface: the tabs'
+sliding active-tab indicator (`.t-tabs-pill`, `components/Tabs.tsx`) and the glass outline button
+(`btn-glass`, `index.css` — Filters, the row "…" actions, Clear filters). Those were the actual
+mismatch the screenshot was pointing at, not a broken token.
+
+**Choice.** Both switched from a full pill to `rounded-lg`/`var(--radius-lg)` — the same 10px
+every card already uses. `RunViewTabs`' own padding (the only gap on its top and right sides,
+since `RunReviewPage`'s wrapper card deliberately has none of its own there, so the tab strip's
+`rounded-t-lg` sits flush against the card's corner) dropped from `px-5 py-3` to `px-3 py-2`,
+bringing the tabs visibly closer to the card's true edges. Left alone, per the pre-existing,
+already-documented rule (`tokens.css`'s own comment on `--radius-sm`): anything circular or
+stadium-shaped *by design* — toggles, dots, status badges, avatar circles, `ThemeToggle` — none of
+those are "a rounded corner" in the sense this request means, and squaring them off would break
+their actual shape, not make them more consistent.
+
+**Consequence.** The tabs' active-tab indicator and `btn-glass` now read as cut from the same
+sheet as every card/dialog/button in the app, both in the run page's view tabs and wherever else
+the same `PillTabsList` component is reused (My reviews' own Pending/Requested for change/…
+tabs). A future glass surface that needs a pill/stadium shape on purpose should say so explicitly
+in its own comment, the way the genuinely-circular controls already do — `rounded-full` on a
+rectangular-looking surface is now the exception to flag, not the default to reach for.
+
+**Context.** "Remove the background color of the logo totally. Make it transparent." Eight
+decision entries (0125–0131) had each tuned some version of a colour, shape or blur sitting behind
+the cutout, so the wordmark would have something to read against regardless of theme or page
+content — a glow, then a flat fill, then fixing the blur bleeding across its own edge. This asks to
+stop doing that altogether, not tune it again.
+
+**Choice.** Removed `topnav-logo-glow` entirely — the utility in `index.css`, its two call sites
+(`RunTopBar`, `MyReviews`' `LogoPanel`), `--color-topnav-logo-glow` from `tokens.css` (both themes,
+three declarations), and the glow-position custom properties `topnav-logo-start`/
+`topnav-logo-center` were only setting for it. The cutout mask itself is untouched — `.topnav-logo-
+cutout::before` still cuts a letterform-shaped hole through the bar/panel's own fill — it just no
+longer has anything placed behind it. The hole opens straight through to whatever is actually
+there, exactly as 0124's own original request described: "the logo is transparent and shows the
+background."
+
+**Consequence.** Legibility now depends entirely on what's behind the fixed bar or the panel at any
+given moment — unlike every version since 0125, nothing in this app tries to guarantee contrast
+for the wordmark against its surroundings any more. That's the explicit trade this entry makes, not
+an oversight: if a future round wants guaranteed legibility back, that is a new, separate request,
+not a bug in this one. `topnav-logo-sm`/`topnav-logo-start`/`topnav-logo-center` and the mask
+mechanism itself stay — only the backing is gone.
 
 **Context.** "I asked to remove the shadow from the top of the logo? There is a shadow on top of
 it," with a screenshot showing a soft gradient above the wordmark — after 0130 had already

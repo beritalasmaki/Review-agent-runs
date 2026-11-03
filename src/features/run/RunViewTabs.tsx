@@ -14,6 +14,12 @@ import type { Run } from '../../lib/types'
  * Each tab carries the icon its own view's heading used to show (0104): one clear place for it,
  * not the same icon twice on screen at once.
  *
+ * `px-[var(--space-3)] py-[var(--space-2)]` (0133, down from `px-5 py-3`): "move the tabs closer
+ * to the borders of the background panel area" — this strip's own padding is the only gap on its
+ * top and right sides (`RunReviewPage`'s wrapper card has none of its own there, on purpose, so
+ * this strip's `rounded-t-lg` sits flush against the card's corner), so tightening it here is what
+ * actually brings the tabs closer to the card's true edges.
+ *
  * Must render inside the page's `Tabs` root.
  */
 export interface RunViewTabsProps {
@@ -25,7 +31,7 @@ export function RunViewTabs({ run, ref }: RunViewTabsProps) {
   return (
     <div
       ref={ref}
-      className="sticky top-[var(--run-bar-height,3rem)] z-10 rounded-t-lg bg-surface px-[var(--space-5)] py-[var(--space-3)]"
+      className="sticky top-[var(--run-bar-height,3rem)] z-10 rounded-t-lg bg-surface px-[var(--space-3)] py-[var(--space-2)]"
     >
       <TabsList variant="pill" label="Views of this run">
         <TabsTrigger
