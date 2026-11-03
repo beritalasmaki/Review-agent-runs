@@ -39,6 +39,46 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-03 · The logo's backing drops its blur; the breadcrumb sits right next to it
+
+**Goal**
+"Remove the shadow effect from the logo and just add dark transparent colour to it. Do the same
+thing with dark mode but remove the light shadow and make the logo transparent white. Like 70%
+opacity to both." Plus, on the run page: "move the 'Go back to' link next to the logo."
+
+**What changed**
+- `src/styles/index.css` — `topnav-logo-glow` loses its `filter: blur(2px)`.
+- `src/styles/tokens.css` — `--color-topnav-logo-glow` opacity dropped from 0.9 to 0.7, both
+  themes.
+- `src/features/run/RunTopBar.tsx` — the reserved spacer before the breadcrumb shrunk to exactly
+  the logo's own footprint (no extra margin of its own); the row's ordinary gap does the rest.
+- `docs/DECISIONS.md` — 0129.
+
+**Steps, in order**
+1. Removed the `filter: blur()` line, dropped the opacity token to 0.7 in both the light-theme
+   base and both dark-theme blocks; `npx tsc --noEmit` clean.
+2. Shrunk the run-page spacer; `npx tsc --noEmit`, `npx eslint src`, `npx vitest run` (294/294) —
+   all clean.
+3. Restarted the Vite dev server (killed again by an earlier background command's own timeout —
+   restarted with a long background timeout) and screenshotted close-up crops of the logo on both
+   pages, both themes, plus the full run-page header, to confirm both asks landed.
+
+**Why it was done this way**
+Both asks were literal and concrete, so this was a direct implementation rather than a diagnosis —
+unlike the previous two rounds, nothing here needed root-causing. The blur was already known (0128's
+own entry) to be purely cosmetic softening on the rectangle's corners, not load-bearing for
+contrast, so removing it was safe without re-litigating the flat-fill-vs-radial-fade decision 0128
+already settled.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean. Playwright
+close-up screenshots, both pages, both themes — the logo now shows a flat, hard-edged, translucent
+patch with no blur, and the breadcrumb sits directly next to it on the run page.
+
+**Open questions / next**
+None outstanding here. The broader `measuredBackgroundContrast` flake rate (several entries below)
+remains unexamined in full.
+
 ## 2026-11-02 · The logo's backing goes flat, not radial; a stacking-context bug fixed on My reviews
 
 **Goal**
