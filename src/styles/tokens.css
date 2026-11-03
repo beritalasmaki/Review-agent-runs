@@ -284,15 +284,15 @@
   --color-intro-scrim: rgb(255 255 255 / 0.8);
   --color-intro-ink: var(--neutral-13);
   --color-intro-muted: var(--neutral-8);
-  /* The logo's own shadow, behind its cutout hole (docs/DECISIONS.md, 0125/0127/0128): dark in
-   * light theme, so the hole reads as a dark silhouette against the light glass surface and light
-   * page photo behind it — flipped from the dark-theme value below the same way `--color-glass`
-   * itself flips, not left as a fixed white (0124's first attempt), which gave light theme nothing
-   * to contrast against and made the wordmark disappear entirely. Raised again in 0128, to 0.9,
-   * now that the fill behind it is flat rather than a radial fade (`topnav-logo-glow`,
-   * `index.css`) — a flat fill can afford to run closer to opaque without looking like a harsh
-   * flood, since there's no gradient center to blow out. */
-  --color-topnav-logo-glow: rgb(15 18 26 / 0.9);
+  /* The logo's own backing, behind its cutout hole (docs/DECISIONS.md, 0125/0127/0128/0129): dark
+   * in light theme, so the hole reads as a dark silhouette against the light glass surface and
+   * light page photo behind it — flipped from the dark-theme value below the same way
+   * `--color-glass` itself flips, not left as a fixed white (0124's first attempt), which gave
+   * light theme nothing to contrast against and made the wordmark disappear entirely. 0129 ("dark
+   * transparent colour... like 70% opacity") settled on 0.7, down from 0128's 0.9 — plainly
+   * translucent rather than near-opaque, now that `topnav-logo-glow` (`index.css`) has no blur
+   * either, so this is the whole visual effect, not softened by anything on top of it. */
+  --color-topnav-logo-glow: rgb(15 18 26 / 0.7);
   /* The spotlight's dimmed surroundings, the same in both themes (docs/DECISIONS.md, 0056). */
   --color-spotlight-scrim: rgb(0 0 0 / 0.5);
   /* Behind a dialog: dims the page in both themes, never lightens it (0070). */
@@ -538,7 +538,7 @@
     --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
     --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
     --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
-    --color-topnav-logo-glow: rgb(255 255 255 / 0.9);
+    --color-topnav-logo-glow: rgb(255 255 255 / 0.7);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
@@ -601,7 +601,7 @@
   --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
   --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
   --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
-  --color-topnav-logo-glow: rgb(255 255 255 / 0.9);
+  --color-topnav-logo-glow: rgb(255 255 255 / 0.7);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);

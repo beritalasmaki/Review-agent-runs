@@ -28,9 +28,11 @@ import { cn } from '../../lib/utils'
  *
  * `topnav-logo-sm` (0127, `src/styles/index.css`) shrinks the logo's own box for this placement
  * specifically — sharing a row with the breadcrumb left much less room than the full-width bar
- * 0124 first gave it, and the reserved spacer below is sized to this smaller box, bringing the
- * breadcrumb markedly closer to the logo ("Back to review list link could be closer to the
- * logo") without the two ever actually overlapping.
+ * 0124 first gave it. The reserved spacer below is sized to exactly the logo's own footprint
+ * (inset plus width, no extra margin of its own), so the breadcrumb sits right next to it — the
+ * row's ordinary `gap-x-[var(--space-4)]` is the only space between them (0129 — "move the 'Go
+ * back to' link next to the logo"), the same gap every other pair of items in this row already
+ * has, not a special-cased wider one.
  *
  * Fixed at the viewport's own top, not sticky (0119): the way back is always one click away
  * (docs/DECISIONS.md, 0044). `ref` lets the page measure its height, so `RunReviewPage` can pad
@@ -67,10 +69,7 @@ export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
       <LogoLabel />
       <span aria-hidden className="topnav-logo-glow" />
       <div className="relative z-[1] mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
-        <span
-          aria-hidden
-          className="h-px shrink-0 basis-[calc(var(--topnav-logo-width)+var(--space-4)+var(--space-5))]"
-        />
+        <span aria-hidden className="h-px shrink-0 basis-[calc(var(--topnav-logo-width)+var(--space-4))]" />
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1 md:flex-none">
           <ol className="flex min-w-0 items-center gap-[var(--space-2)] text-meta font-normal font-body text-text-secondary">
             <li className="shrink-0">

@@ -377,12 +377,15 @@
  * colour at full opacity read as a faint, uneven ghost rather than a crisp mark. A flat rounded
  * rect, snugly sized to the lettering plus a small margin (`var(--space-4)`, not the much larger
  * halo the gradient version needed to fade through), backs every pixel of every letterform with
- * the *same* strength, edges included — `filter: blur(2px)` only softens the rectangle's own
- * corners, not the colour's intensity. A reminder tried going fully opaque and theme-fixed instead
- * (a solid badge, abandoning the hole entirely) — reverted immediately ("don't ruin the design
- * that way") for breaking the one thing 0124 actually asked for, "the logo is transparent and
- * shows the background": this keeps that, a flat fill is still only ever visible *through* the
- * hole, never as a shape of its own.
+ * the *same* strength, edges included. No `filter: blur()` either (0129 — "remove the shadow
+ * effect from the logo"): 0128 only used a small 2px blur to soften the rectangle's own corners,
+ * not to fade its colour, but it read as a shadow effect regardless; a flat, hard-edged fill at
+ * plain 70% opacity (`--color-topnav-logo-glow`) is what's actually behind the hole now, nothing
+ * softened. A reminder tried going fully opaque and theme-fixed instead (a solid badge,
+ * abandoning the hole entirely) — reverted immediately ("don't ruin the design that way") for
+ * breaking the one thing 0124 actually asked for, "the logo is transparent and shows the
+ * background": this keeps that, a flat fill is still only ever visible *through* the hole, never
+ * as a shape of its own.
  */
 @utility topnav {
   --topnav-logo-width: 245px;
@@ -456,6 +459,5 @@
   transform: translate(var(--topnav-logo-glow-translate-x, -50%), -50%);
   background: var(--color-topnav-logo-glow);
   border-radius: var(--radius-xs);
-  filter: blur(2px);
   pointer-events: none;
 }

@@ -6,6 +6,36 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0129 · The logo's backing drops its blur; the breadcrumb sits right next to it
+
+**Context.** "Remove the shadow effect from the logo and just add dark transparent colour to it.
+Do the same thing with dark mode but remove the light shadow and make the logo transparent white.
+Like 70% opacity to both." Also: "In the single run page move the 'Go back to' link next to the
+logo."
+
+**Choice, no blur.** `topnav-logo-glow`'s `filter: blur(2px)` — added in 0128 only to soften the
+flat fill's own rectangular corners, not to fade its colour — read as a shadow effect regardless.
+Removed outright: the backing is now a plain, hard-edged rounded rect, nothing softened. Polarity
+stays the same as 0125–0128 (dark in light theme, light in dark theme — the only thing that can
+ever work against a glass surface that flips the same way), but at a flat 0.7 opacity both
+themes, down from 0128's 0.9, since "transparent" was the explicit word this time, not "more
+visible."
+
+**Choice, breadcrumb next to the logo.** `RunTopBar`'s reserved spacer (the invisible flex item
+that keeps the breadcrumb from rendering into the masked hole's own space, since the logo isn't a
+real flex item with its own width) was sized to the logo's footprint *plus* an extra `--space-5`
+margin of its own. That extra margin is gone — the spacer now matches the logo's footprint
+exactly (inset plus width), so the row's own ordinary `gap-x-[var(--space-4)]` is the only space
+between the logo and "Back to the reviews list," the same gap every other pair of items in this
+row already uses.
+
+**Consequence.** `--color-topnav-logo-glow` at 0.7 is now the working value for this backing;
+0128's 0.9 doesn't apply with no blur to compensate for. If a future round needs more "pop" again,
+raise this value directly rather than reaching for blur or a gradient — both were already tried
+and both turned out to be the actual bug 0128 found, not a legitimate strengthening knob.
+
+---
+
 ## 0128 · The logo's backing goes flat, not radial; a stacking-context bug fixed on My reviews
 
 **Context.** "The logo is still quite invisible. It doesn't show at all. Fix it. Add darker colour
