@@ -284,6 +284,12 @@
   --color-intro-scrim: rgb(255 255 255 / 0.8);
   --color-intro-ink: var(--neutral-13);
   --color-intro-muted: var(--neutral-8);
+  /* The logo's own drifting blob, behind its cutout hole (docs/DECISIONS.md, 0134 — "add a dark
+   * blurry blob ball moving behind the logo"): dark in light theme, so it reads as a soft dark
+   * silhouette behind the wordmark against the light glass surface — flipped to a light grey in
+   * dark theme below ("light greyish blurry blob ball"), not white: a *grey* ball, not a bright
+   * one, was the explicit ask there. */
+  --color-topnav-logo-blob: rgb(15 18 26 / 0.6);
   /* The spotlight's dimmed surroundings, the same in both themes (docs/DECISIONS.md, 0056). */
   --color-spotlight-scrim: rgb(0 0 0 / 0.5);
   /* Behind a dialog: dims the page in both themes, never lightens it (0070). */
@@ -533,6 +539,7 @@
     --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
     --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
     --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
+    --color-topnav-logo-blob: rgb(195 200 209 / 0.55);
     --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
     --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
@@ -595,6 +602,7 @@
   --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
   --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
   --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
+  --color-topnav-logo-blob: rgb(195 200 209 / 0.55);
   --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
   --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);

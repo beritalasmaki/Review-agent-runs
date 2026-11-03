@@ -6,7 +6,58 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
-## 0133 · The tab indicator's radius matches its panel; closer to the edges; 10px everywhere
+## 0134 · A drifting blurred blob behind the logo — and a real axe overlap bug it exposed
+
+**Context.** "In light mode add dark blurry blob ball moving behind the logo so the logo would
+appear better. Put it in the background. Both table and single run page. Add light greyish blurry
+blob ball in the dark mode then." 0132 had removed every form of backing behind the logo's cutout
+outright; this asks for one again, in a new shape.
+
+**Choice, the blob itself.** A small `position: absolute` element in the same `z-index: -1` slot
+the old flat glow used (0125–0131) — visible only through the cutout's hole, never as a shape of
+its own, the same guarantee that held before. Two layers: `topnav-logo-blob-wrap` positions and
+sizes the drifting area; `topnav-logo-blob`, a separate inner element, tweens its own
+`transform`/`border-radius` via `@keyframes topnav-logo-blob-drift` — translate, scale and an
+asymmetric `border-radius` all animating together, so the shape genuinely morphs and roams rather
+than just sliding. `--color-topnav-logo-blob`: dark in light theme (`rgb(15 18 26 / 0.6)`), a
+*grey*, not white, in dark theme (`rgb(195 200 209 / 0.55)`) — "light greyish," read literally,
+not the brightest value available.
+
+**Choice, why a separate element is safe here.** `bg-page-glass`'s own doc comment (`index.css`)
+records that three earlier attempts at a page-wide ambient blob as a separate positioned element
+broke the accessibility suite's `color-contrast` rule, which treats any real-sized `fixed`/
+`absolute` box as a potential floating layer over whatever text its rect happens to overlap — the
+fix there was folding the blobs into `background-image` layers on an already-positioned element
+instead. This blob is a separate element again, deliberately: it's scoped to roughly the logo's own
+small footprint, which 0125–0131's own flat-glow version (the same technique, same slot) already
+ran clean through many accessibility passes without issue.
+
+**Finding.** That assumption held for `MyReviews`' `LogoPanel` (a standalone panel, nothing beside
+it) but not for `RunTopBar`: its logo sits right next to the breadcrumb (0130's own tight spacer),
+and the first version's generous sizing and wide animation excursion put the blob's own bounding
+box over the breadcrumb link by up to 24px at the animation's peak — not at rest, only caught by
+sampling `getBoundingClientRect` across the full animation cycle, not a single frame. Axe read that
+geometric overlap as a real background under the link's text and failed its contrast check with an
+actual measured ratio (3.27, not the usual `null`/flake) — a genuine new bug, confirmed distinct
+from the suite's already-documented `measuredBackgroundContrast` flake by the fact that it returned
+a number instead of `null`.
+
+**Choice, the fix.** `topnav-logo-start` (`RunTopBar`'s placement) now centres the blob on the
+logo's own midpoint rather than left-flush — any overflow splits evenly instead of aiming entirely
+at the breadcrumb — and sets `--topnav-logo-blob-margin: 0px` (the wrap never exceeds the logo's
+own footprint) plus `--topnav-logo-blob-bleed: 8px` (a *positive* inset, shrinking the blob inward
+from the wrap's own edge, so the animation has headroom to drift *within* the footprint rather than
+room to grow past it) and `--topnav-logo-blob-anim: topnav-logo-blob-drift-tight`, a
+smaller-amplitude twin keyframe. `topnav-logo-center` (`MyReviews`, no neighbour to crowd) keeps
+the original generous margin, bleed and full-amplitude animation. Verified the same way the bug was
+found: `getBoundingClientRect` sampled across the full animation cycle, confirming the tight
+variant's own bounding box never leaves the logo's footprint.
+
+**Consequence.** "A small element in this slot is always safe" is no longer true without
+qualification — it's safe only when nothing else sits close enough for its *maximum* extent
+(including animation) to reach. A future placement of this pattern needs the same per-neighbour
+check (`topnav-logo-start`'s own comment spells out the exact reasoning), not an assumption carried
+over from the last time it worked.
 
 **Context.** "When it comes to tabs I meant the tab border radius would match the background
 panel behind it. I made example of it. That way it looks more cohesive and neat." — a screenshot

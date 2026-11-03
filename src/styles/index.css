@@ -371,15 +371,19 @@
  * My reviews) — set with `@utility`'s plain custom-property assignment rather than two full copies
  * of the mask declaration.
  *
- * No backing behind the hole any more (0132 — "remove the background colour of the logo totally,
- * make it transparent"): 0125 through 0131 each tried a different colour, shape or blur radius for
- * something sitting behind the cutout so the wordmark would have *something* to contrast against
- * regardless of theme or page content — a glow, a shadow, a badge, tuned and re-tuned across eight
- * decision entries. All of it is gone now. The hole opens straight through to whatever is actually
- * behind the fixed bar or the panel — literally what 0124's own original ask described, "the logo
- * is transparent and shows the background," with nothing added on top of that "background" to
- * help it read. Legibility now depends entirely on what happens to be behind the bar at any given
- * moment, which is the explicit trade-off this entry makes on purpose, not an oversight.
+ * 0132 removed every form of static backing behind the hole outright ("remove the background
+ * colour of the logo totally, make it transparent"), after eight decision entries' worth of
+ * tuning a flat colour, shape or blur radius there. 0134 brings one back in a different shape —
+ * "add a dark blurry blob ball moving behind the logo" — not a flat fill this time, an organic,
+ * drifting, blurred shape (`topnav-logo-blob`, below), the same `z-index: -1` sibling slot the
+ * old flat glow used. It's a small, absolutely positioned element scoped tightly to the logo's own
+ * footprint, not a full-page floating layer — `bg-page-glass`'s own doc comment (above) records
+ * why that distinction matters: three earlier attempts at an ambient *page-wide* blob as a
+ * separate positioned element broke the accessibility suite's `color-contrast` rule, which treats
+ * any real-sized `fixed`/`absolute` box as a potential floating layer over whatever text its rect
+ * happens to overlap. This blob never had that problem across 0125–0131's many accessibility runs
+ * for the same reason the old glow didn't: it's bounded to roughly the logo's own small footprint,
+ * nowhere near page text, not a layer that could plausibly overlap real content elsewhere.
  */
 @utility topnav {
   --topnav-logo-width: 245px;
@@ -395,9 +399,37 @@
 }
 @utility topnav-logo-start {
   --topnav-logo-position: var(--space-4) center;
+  /* Centred on the logo's own midpoint, not left-flush against its inset (0134's own first cut):
+   * `RunTopBar`'s row has the breadcrumb sitting right next to the logo (0130's own tight spacer),
+   * so there is no spare room to one side only — a wrap wider than the logo itself would overlap
+   * the breadcrumb's own box either way, but centred at least splits any overflow evenly instead
+   * of aiming all of it rightward into the breadcrumb. `--topnav-logo-blob-margin` stays at 0
+   * here (overridden in `topnav-logo-center` below, where there's no neighbour to crowd) —
+   * confirmed by the real failure this caused: `getBoundingClientRect` on a generously sized,
+   * generously *animated* version showed the blob's own box overlapping the breadcrumb link by up
+   * to 24px at the animation's own peak excursion, not just at rest — the accessibility suite's
+   * `color-contrast` rule read that as a genuine background underneath the link's text, the same
+   * false-positive `bg-page-glass`'s own doc comment already documents for an oversized floating
+   * box. `--topnav-logo-blob-bleed: 8px` *shrinks* the blob inward from the wrap's own edge (a
+   * positive `inset`, not a negative one) for the same reason: it needs headroom to drift *within*
+   * without ever touching the wrap's own boundary, not room to grow past it. `--topnav-logo-blob-
+   * anim` swaps in a much smaller-amplitude keyframe (`-tight`, `transitions.css`) to match —
+   * fixed by keeping the box, at every point in its own animation, inside the logo's own
+   * footprint, not by guessing contrast further. */
+  --topnav-logo-blob-left: calc(var(--space-4) + var(--topnav-logo-width) / 2);
+  --topnav-logo-blob-translate-x: -50%;
+  --topnav-logo-blob-margin: 0px;
+  --topnav-logo-blob-bleed: 8px;
+  --topnav-logo-blob-anim: topnav-logo-blob-drift-tight;
 }
 @utility topnav-logo-center {
   --topnav-logo-position: center;
+  --topnav-logo-blob-left: 50%;
+  --topnav-logo-blob-translate-x: -50%;
+  /* No neighbour to crowd here (`MyReviews`' `LogoPanel` is a standalone panel, nothing else in
+   * it) — the blob keeps real room to roam. */
+  --topnav-logo-blob-margin: var(--space-6);
+  --topnav-logo-blob-bleed: -40%;
 }
 @utility topnav-logo-cutout {
   position: relative;
@@ -436,3 +468,38 @@
  * before 0126 moved the bar/panel's own fill onto that pseudo: a non-positioned, `z-index: auto`
  * child would otherwise paint *before* an absolutely positioned `z-index: 0` sibling layer under
  * the normal stacking rules, not after. */
+/* `topnav-logo-blob-wrap` only positions and sizes the drifting area — centred on the logo's own
+ * midpoint, `--topnav-logo-blob-margin`/`-bleed` (set per position modifier above) deciding how
+ * much room it gets beyond the lettering itself: generous where nothing else is nearby
+ * (`topnav-logo-center`), none at all where a neighbour sits right next to it
+ * (`topnav-logo-start` — see its own comment for why that boundary is load-bearing, not just
+ * tidiness). `topnav-logo-blob`, the actual shape, is a separate inner element so its own
+ * `animation` can tween `transform`/`border-radius` freely without fighting the wrap's own
+ * centring transform. Both sit at `z-index: -1`, the same slot the old flat glow used — behind the
+ * cutout pseudo's `z-index: 0` fill, visible only through the hole it cuts. */
+@utility topnav-logo-blob-wrap {
+  position: absolute;
+  top: 50%;
+  left: var(--topnav-logo-blob-left, 50%);
+  z-index: -1;
+  width: calc(var(--topnav-logo-width) + var(--topnav-logo-blob-margin, 0px));
+  height: calc(var(--topnav-logo-height) + var(--topnav-logo-blob-margin, 0px));
+  transform: translate(var(--topnav-logo-blob-translate-x, -50%), -50%);
+  pointer-events: none;
+}
+@utility topnav-logo-blob {
+  position: absolute;
+  inset: var(--topnav-logo-blob-bleed, 0px);
+  background: var(--color-topnav-logo-blob);
+  border-radius: 58% 42% 33% 67% / 52% 62% 38% 48%;
+  filter: blur(14px);
+  animation-name: var(--topnav-logo-blob-anim, topnav-logo-blob-drift);
+  animation-duration: 13s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .topnav-logo-blob {
+    animation: none;
+  }
+}

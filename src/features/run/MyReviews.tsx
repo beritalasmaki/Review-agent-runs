@@ -152,12 +152,17 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
  * `src/styles/index.css`), centred in it, not a second glass layer boxed inside the panel (0126 —
  * "what is that box... remove it"). `shadow-glass-lg` gives the panel the same cast-shadow
  * elevation every other glass card on this page already has (0127 — "make the top navigation
- * pop out").
+ * pop out"). A small drifting blob sits behind the hole (0134 — "add a dark blurry blob ball
+ * moving behind the logo"), visible only through the lettering, the same way `RunTopBar`'s own
+ * logo has one.
  */
 function LogoPanel() {
   return (
     <div className="topnav topnav-logo-cutout topnav-logo-center h-[calc(var(--topnav-logo-height)+2*var(--space-4))] rounded-lg border border-glass-border shadow-glass-lg">
       <LogoLabel />
+      <span aria-hidden className="topnav-logo-blob-wrap">
+        <span className="topnav-logo-blob" />
+      </span>
     </div>
   )
 }
