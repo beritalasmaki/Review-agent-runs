@@ -345,8 +345,17 @@
  * it paints behind the element's real content, same ordering `.glass-sheen::before` above already
  * relies on) and masking the pseudo-element itself, rather than adding any fill of its own on the
  * element doing the masking. `topnav-logo-cutout` goes directly on the bar/panel that already
- * carries `bg-glass`/`backdrop-blur`/`border-glass-border` — those utilities come off that element
- * and onto the pseudo instead; nothing else about its markup changes.
+ * carries `bg-glass`/`border-glass-border` — those utilities come off that element and onto the
+ * pseudo instead; nothing else about its markup changes. No `backdrop-blur` on the pseudo though
+ * (0131 — "there is a shadow on top of [the logo]," confirmed by sampling actual pixel colours
+ * through the mask boundary, not by eye: `backdrop-filter: blur(20px)` on a masked element blurs
+ * *across* the mask's own alpha edge, not just the colour inside it, smearing a hard letterform
+ * cutout into a ~10px soft gradient at its top and bottom — present even with the glow itself
+ * completely flat and un-blurred (0129/0130). Removing `backdrop-filter` from this one pseudo
+ * fixed it outright (confirmed the same way, by re-sampling): the bar/panel's fill is still
+ * translucent (`--color-glass` itself is not opaque), just no longer sampling and blurring
+ * whatever's behind it first — a smaller loss of "frosted glass" quality than it sounds, and the
+ * one actually compatible with a sharp-edged mask.
  *
  * `mask-mode: alpha` on both layers, same as `glass-sheen` above: reads each layer's own alpha
  * channel, not pixel luminance — matters for the logo specifically, whose source file is solid
@@ -420,8 +429,6 @@
   z-index: 0;
   border-radius: inherit;
   background-color: var(--color-glass);
-  -webkit-backdrop-filter: blur(var(--blur-glass));
-  backdrop-filter: blur(var(--blur-glass));
   -webkit-mask-image: linear-gradient(black, black), url('/textures/agent-run-logo.svg');
   mask-image: linear-gradient(black, black), url('/textures/agent-run-logo.svg');
   -webkit-mask-mode: alpha, alpha;
