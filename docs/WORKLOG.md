@@ -39,6 +39,53 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-03 · The breadcrumb spacer's responsive bug; confirming the blur really is gone
+
+**Goal**
+"The link is still quite far away from the logo. Also the dark shadow is still there. I told you
+to remove it" — with a screenshot showing a blurred halo and a visible gap, right after the
+previous round (below) was supposed to have fixed both.
+
+**What changed**
+- `src/features/run/RunTopBar.tsx` — the breadcrumb spacer's `basis` is now responsive
+  (`var(--topnav-logo-width)` below `md`, `calc(var(--topnav-logo-width) - var(--space-4))` from
+  `md` up), instead of one fixed value that only worked below `md`.
+- `docs/DECISIONS.md` — 0130. Nothing in `index.css`/`tokens.css` changed — see below.
+
+**Steps, in order**
+1. Read the attached screenshot closely rather than assuming the previous round's fix hadn't
+   landed. Took a fresh, 2×-scaled close-up screenshot of the current build (dev server already
+   running from the previous round) at the same crop — flat, hard-edged, no blur, matching what
+   0129 actually shipped. Concluded the feedback screenshot was stale (cached page or an old
+   preview URL), not a regression, and left the glow/blur CSS untouched.
+2. Measured the actual gap with `getBoundingClientRect` via Playwright (not eyeballing a
+   screenshot): 40px between the logo's own right edge and the breadcrumb link's box — found the
+   real bug, a responsive mismatch between the row's `md:px-[var(--space-6)]` and the logo's own
+   flat, non-responsive inset.
+3. Made the spacer's `basis` responsive to match; re-measured — 8px (link box) / 16px (visible,
+   accounting for the link's own padding) after the fix.
+4. `npx tsc --noEmit`, `npx eslint src`, `npx vitest run` (294/294) — all clean. Re-screenshotted
+   to confirm visually.
+
+**Why it was done this way**
+Measuring instead of eyeballing is what actually found the real bug here — "still too far" could
+have meant anything from "a few more pixels" to "the whole fix didn't ship," and only a precise
+before/after pixel measurement distinguished which. The shadow claim got the same treatment in
+the other direction: a zoomed screenshot of the *current* build, not a re-read of the CSS that was
+already known to be correct, is what justified leaving it alone instead of guessing at a second
+fix for something that already worked.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean.
+`getBoundingClientRect` measurement: gap dropped from 40px to a visible 16px. Playwright
+screenshots, 2× scale — flat, hard-edged logo backing with no blur, in the current build.
+
+**Open questions / next**
+If the shadow is still visible after a hard refresh on the actual deployed page, that would mean
+something environment-specific (a CDN/edge cache, or a different preview URL than assumed here) —
+worth a direct comparison against the live URL rather than the local dev server next time, if it
+recurs.
+
 ## 2026-11-03 · The logo's backing drops its blur; the breadcrumb sits right next to it
 
 **Goal**
