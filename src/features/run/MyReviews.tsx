@@ -158,7 +158,6 @@ function LogoPanel() {
   return (
     <div className="topnav topnav-logo-cutout topnav-logo-center h-[calc(var(--topnav-logo-height)+2*var(--space-4))] rounded-lg border border-glass-border shadow-glass-lg">
       <LogoLabel />
-      <span aria-hidden className="topnav-logo-glow" />
     </div>
   )
 }

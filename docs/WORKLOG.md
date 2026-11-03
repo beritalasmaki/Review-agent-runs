@@ -39,6 +39,47 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-03 · No backing behind the logo at all
+
+**Goal**
+"Remove the background color of the logo totally. Make it transparent" — stop tuning the glow
+behind the logo's cutout (eight rounds, 0125–0131) and remove it outright.
+
+**What changed**
+- `src/features/run/RunTopBar.tsx`, `MyReviews.tsx` — the `<span className="topnav-logo-glow" />`
+  child removed from both.
+- `src/styles/index.css` — the `topnav-logo-glow` utility deleted; `topnav-logo-start`/
+  `topnav-logo-center` no longer set the glow-position custom properties they only existed for.
+- `src/styles/tokens.css` — `--color-topnav-logo-glow` removed (light default, both dark-theme
+  blocks).
+- `docs/DECISIONS.md` — 0132.
+
+**Steps, in order**
+1. Removed the glow span from both call sites, the utility and its token everywhere it appeared;
+   `grep -rn "topnav-logo-glow"` across `src` to confirm nothing was left behind.
+2. `npx tsc --noEmit`, `npx eslint src`, `npx vitest run` (294/294) — all clean.
+3. Restarted the dev server (killed again by its own background timeout) and screenshotted both
+   pages, both themes, close-up — confirmed no fill of any kind behind the hole, just whatever is
+   genuinely behind the fixed bar/panel.
+4. Ran a targeted `e2e/accessibility.spec.ts` subset — same pre-existing flake as every prior
+   round, unrelated to the logo, zero new violations.
+
+**Why it was done this way**
+A direct instruction, not a diagnosis — unlike 0131, there was nothing to root-cause here, just an
+explicit "stop doing the thing, remove it." Cleaned up all three layers (markup, utility, token)
+rather than just hiding the glow, since leaving dead CSS/tokens around after being told to remove
+something outright would misrepresent what the code actually does to the next person reading it.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean. Playwright
+close-up screenshots, both pages, both themes — no backing of any kind behind the logo's cutout.
+Targeted `e2e/accessibility.spec.ts` run — same pre-existing flake pattern, zero new violations.
+
+**Open questions / next**
+Legibility of the wordmark now depends entirely on whatever happens to be behind the bar/panel at
+any given time — by design, per this entry, not a defect to chase if raised again without a new,
+explicit ask to restore some form of guaranteed contrast.
+
 ## 2026-11-03 · `backdrop-filter` was the real source of the logo's "shadow" all along
 
 **Goal**
