@@ -6,6 +6,42 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0130 · The breadcrumb spacer's responsive bug; confirming the blur really is gone
+
+**Context.** "The link is still quite far away from the logo. Also the dark shadow is still there.
+I told you to remove it," with a screenshot showing a soft, clearly blurred dark halo around the
+wordmark and a noticeable gap before the breadcrumb.
+
+**Finding, the shadow.** A fresh, 2×-scaled close-up screenshot of the current build showed a
+flat, hard-edged rectangle — no blur, matching what 0129 actually shipped. The screenshot in the
+feedback does not match the current code; the most likely explanation is a stale view (cached
+page, or a preview URL from before 0129 merged) rather than a regression. Nothing changed here as
+a result — there was nothing to fix that wasn't already fixed, confirmed by looking rather than
+assumed.
+
+**Finding, the gap.** This one was real. 0129's spacer formula (`var(--topnav-logo-width) +
+var(--space-4)`) implicitly assumed the row's own left padding equals the logo's mask inset — true
+only below the `md` breakpoint, where both are `var(--space-4)`. `RunTopBar`'s row is
+`md:px-[var(--space-6)]` (32px) from `md` up, while `topnav-logo-start`'s own inset off the *bar's*
+left edge stays a flat `var(--space-4)` (16px) at every width (not responsive) — a 16px gap the
+spacer math never accounted for, which is exactly the size of the "still too far" the screenshot
+showed. Measured directly (`getBoundingClientRect` via Playwright) before and after: 40px between
+the logo's own right edge and the breadcrumb link's box before this fix, 8px after (plus the
+link's own 8px internal padding before its visible chevron, landing the *visible* gap at a plain
+16px — the row's own standard `gap-x-[var(--space-4)]`, not a special-cased value).
+
+**Choice.** `RunTopBar`'s spacer: `basis-[var(--topnav-logo-width)]` below `md`,
+`md:basis-[calc(var(--topnav-logo-width)-var(--space-4))]` from `md` up — the second value
+shorter by exactly the 16px padding difference, so the breadcrumb lands in the same place
+relative to the logo at both widths instead of drifting wider on `md+`.
+
+**Consequence.** Any future change to `RunTopBar`'s row padding or `topnav-logo-start`'s inset
+needs to keep this relationship in mind — the spacer is derived from both, not just the logo's own
+width, and the two are allowed to differ by breakpoint now that this is understood and accounted
+for rather than assumed to match.
+
+---
+
 ## 0129 · The logo's backing drops its blur; the breadcrumb sits right next to it
 
 **Context.** "Remove the shadow effect from the logo and just add dark transparent colour to it.
