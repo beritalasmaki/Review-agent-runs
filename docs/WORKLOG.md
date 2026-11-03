@@ -39,6 +39,70 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-03 · A drifting blurred blob behind the logo — and a real axe overlap bug it exposed
+
+**Goal**
+"Add dark blurry blob ball moving behind the logo so the logo would appear better... both table
+and single run page... light greyish blurry blob ball in the dark mode" — a new form of backing
+behind the logo's cutout, after 0132 removed every static version of one.
+
+**What changed**
+- `src/styles/index.css` — `topnav-logo-blob-wrap`/`topnav-logo-blob` utilities added; the
+  `topnav-logo-start`/`-center` position modifiers gained blob-specific sizing/animation
+  variables.
+- `src/styles/transitions.css` — `@keyframes topnav-logo-blob-drift` (the full-amplitude version)
+  and `-tight` (a smaller-amplitude twin for `RunTopBar`'s own cramped placement).
+- `src/styles/tokens.css` — `--color-topnav-logo-blob`, dark in light theme, grey in dark theme.
+- `src/features/run/RunTopBar.tsx`, `MyReviews.tsx` — the blob elements added back as children.
+- `docs/DECISIONS.md` — 0134.
+
+**Steps, in order**
+1. Read `bg-page-glass`'s own doc comment first — it already documents, in detail, why a
+   page-wide floating blob element broke the accessibility suite three times, and why the fix was
+   folding blobs into `background-image` layers instead of a separate element. Decided a
+   logo-scoped blob was a different, smaller case (the same slot 0125–0131's flat glow already
+   used safely), not a repeat of that specific problem.
+2. Built the two-layer wrap/blob, the keyframe animation, the token, wired both call sites;
+   `npx tsc --noEmit`, `npx eslint src` clean.
+3. Restarted the dev server (killed again by its own background timeout), confirmed the animation
+   was genuinely running via `getComputedStyle().transform` sampled at three points in time, and
+   screenshotted both pages/themes.
+4. Ran a targeted `e2e/accessibility.spec.ts` subset — a *new*, real failure: the breadcrumb link's
+   measured contrast came back as an actual number (3.27, failing against 4.5), not the usual
+   `null`/flake. Diagnosed with `getBoundingClientRect` on the blob, its wrap, and the link — the
+   blob's own bounding box overlapped the link by 24px.
+5. Re-checked across the full 13s animation cycle (14 samples, one per second), not just one
+   frame — the overlap was worse at the animation's own peak excursion than at rest, which a
+   single-frame check had missed.
+6. Redesigned `RunTopBar`'s own placement specifically: centred instead of left-flush, zero extra
+   margin, a shrink-inward bleed instead of a grow-outward one, and a new small-amplitude
+   keyframe. Re-sampled the bounding box across the full cycle again — confirmed it now stays
+   inside the logo's own footprint at every point. Re-ran the same accessibility subset — back to
+   the suite's own already-documented flake pattern, not the new failure.
+7. `npx vitest run` (294/294) and a final screenshot pass on both pages/themes — all clean.
+
+**Why it was done this way**
+The codebase's own prior experience (`bg-page-glass`'s doc comment) was the right starting point,
+not something to route around — it's exactly the kind of lesson that should generalise, and
+mostly did: a small, scoped element really is safe, just not unconditionally safe regardless of
+what else is nearby. The actual bug only showed up because this specific placement (`RunTopBar`)
+has a neighbour close enough to reach, and only at the animation's peak, not at rest — both of
+which needed measurement (`getBoundingClientRect`, sampled across the full cycle) to actually
+catch, not a single screenshot or a plausible-sounding assumption carried over from the glow that
+worked fine in the same slot before.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean.
+`getComputedStyle` sampling confirmed the animation genuinely runs. `getBoundingClientRect` sampled
+across the full animation cycle — the `RunTopBar` placement's blob never exceeds 191.7px (the
+breadcrumb link starts at 200px) at any point in its cycle, down from a peak of 219px before the
+fix. Targeted `e2e/accessibility.spec.ts` run — back to the suite's own pre-existing flake, the new
+measured-contrast failure gone. Playwright screenshots, both pages, both themes — the logo reads
+clearly in all four, with a soft, blurred, moving shape behind it.
+
+**Open questions / next**
+None outstanding here.
+
 ## 2026-11-03 · The tab indicator's radius matches its panel; closer to the edges; 10px everywhere
 
 **Goal**

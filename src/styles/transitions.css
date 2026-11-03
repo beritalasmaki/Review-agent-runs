@@ -517,3 +517,49 @@
       center;
   }
 }
+
+/* `.topnav-logo-blob` (0134, `index.css`): a *separate positioned element* this time, unlike the
+ * page-wide blobs above — deliberately, not an oversight. The paragraph above explains why a
+ * full-page floating box broke axe three times; this one is scoped to roughly the logo's own
+ * small footprint, nowhere near page text, the same reasoning that let 0125–0131's flat glow (a
+ * `position: absolute` sibling in that same slot) run clean across many accessibility passes.
+ * `transform`/`border-radius` both tween, not `background-position` — there's no six-layer
+ * `background-image` list to synchronise here, just one small shape free to move and morph. */
+@keyframes topnav-logo-blob-drift {
+  0%,
+  100% {
+    transform: translate(-6%, -8%) scale(1);
+    border-radius: 58% 42% 33% 67% / 52% 62% 38% 48%;
+  }
+  33% {
+    transform: translate(10%, 6%) scale(1.12);
+    border-radius: 42% 58% 61% 39% / 38% 48% 52% 62%;
+  }
+  66% {
+    transform: translate(-4%, 10%) scale(0.95);
+    border-radius: 65% 35% 45% 55% / 60% 40% 65% 35%;
+  }
+}
+
+/* The small-amplitude twin used wherever `topnav-logo-start` picks it (`index.css`'s own comment
+ * on `--topnav-logo-blob-anim` has the full reasoning): `RunTopBar`'s logo sits right next to the
+ * breadcrumb, with no spare room for the wider excursion above without the blob's own box
+ * drifting into the breadcrumb's — confirmed by `getBoundingClientRect` sampled across this
+ * animation's own full cycle, not just at rest, after the wider version above was measured
+ * overlapping it mid-cycle. Translate stays within a few percent, scale within a few hundredths —
+ * enough to read as alive, not enough to ever leave the logo's own footprint. */
+@keyframes topnav-logo-blob-drift-tight {
+  0%,
+  100% {
+    transform: translate(-2%, -10%) scale(1);
+    border-radius: 58% 42% 33% 67% / 52% 62% 38% 48%;
+  }
+  33% {
+    transform: translate(3%, 8%) scale(1.04);
+    border-radius: 42% 58% 61% 39% / 38% 48% 52% 62%;
+  }
+  66% {
+    transform: translate(-3%, 10%) scale(0.97);
+    border-radius: 65% 35% 45% 55% / 60% 40% 65% 35%;
+  }
+}

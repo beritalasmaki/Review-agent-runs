@@ -71,6 +71,9 @@ export function RunTopBar({ run, reviewsHref, end, ref }: RunTopBarProps) {
       className="topnav topnav-logo-cutout topnav-logo-start topnav-logo-sm fixed inset-x-0 top-0 z-20 border-b border-glass-border shadow-glass-lg"
     >
       <LogoLabel />
+      <span aria-hidden className="topnav-logo-blob-wrap">
+        <span className="topnav-logo-blob" />
+      </span>
       <div className="relative z-[1] mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)] md:px-[var(--space-6)]">
         <span
           aria-hidden
