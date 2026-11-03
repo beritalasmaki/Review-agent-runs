@@ -6,6 +6,44 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0131 · `backdrop-filter` was the real source of the logo's "shadow" all along
+
+**Context.** "I asked to remove the shadow from the top of the logo? There is a shadow on top of
+it," with a screenshot showing a soft gradient above the wordmark — after 0130 had already
+confirmed, by screenshot, that the current build had no blur. Both were right: 0130's crop looked
+clean at the scale it was taken; this screenshot showed the same build at a size where a much
+subtler, but real, soft edge was still visible.
+
+**Finding.** Sampled actual pixel colours through the mask boundary with Playwright/canvas (not
+eyeballing a screenshot, which is what let this slip past 0129 and 0130): at a column inside the
+badge, colour transitioned gradually over roughly 10px above and below the lettering's own
+bounding box, even though `topnav-logo-glow` itself had zero `filter` and a flat `background-color`
+(confirmed again directly) — the softness wasn't coming from the glow at all. A column outside the
+badge, same bar, was perfectly flat with no gradient anywhere, ruling out the page's own gradient
+bleeding through as the cause. The remaining candidate was `.topnav-logo-cutout::before`'s own
+`backdrop-filter: blur(var(--blur-glass))` (20px) — confirmed by removing it and re-sampling the
+same column: the transition collapsed from a ~10px gradient to a ~2px jump, consistent with normal
+SVG-mask antialiasing and nothing more. `backdrop-filter` blurring *across* a mask's own alpha
+edge, not just the colour inside the masked region, is the actual mechanism: it was never the
+glow, the blur value, or the opacity — all three of 0128/0129/0130 tuned the wrong layer.
+
+**Choice.** Removed `backdrop-filter`/`-webkit-backdrop-filter` from `.topnav-logo-cutout::before`
+outright, for both places it's used (`RunTopBar`, `MyReviews`' `LogoPanel`). The fill itself
+(`--color-glass`, already well short of opaque) stays, so the bar/panel is still visibly
+translucent — just no longer sampling and blurring whatever sits behind it before compositing,
+which is exactly the part that doesn't coexist cleanly with a sharp-edged mask.
+
+**Consequence.** `RunTopBar`'s own bar and `MyReviews`' logo panel read slightly less "frosted"
+than every other glass card in the app (which all keep their own `backdrop-blur`) — a deliberate,
+narrow trade confined to the one surface that has to carry a precise cutout mask, not a change to
+the app's glass language generally. If a future round wants the frosted quality back on these two
+specifically, it needs a technique that doesn't combine `backdrop-filter` and a complex alpha mask
+on the same element — e.g. the mask on an unfiltered layer, the blur on a separate unmasked one
+behind it — not simply re-adding `backdrop-filter` here, which is what caused this in the first
+place.
+
+---
+
 ## 0130 · The breadcrumb spacer's responsive bug; confirming the blur really is gone
 
 **Context.** "The link is still quite far away from the logo. Also the dark shadow is still there.

@@ -39,6 +39,60 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-03 · `backdrop-filter` was the real source of the logo's "shadow" all along
+
+**Goal**
+"I asked to remove the shadow from the top of the logo? There is a shadow on top of it" — a
+screenshot, right after the previous round (below) had confirmed, by its own screenshot, that the
+build had no blur. Needed to find out which was actually true, not just look again at the same
+scale and shrug.
+
+**What changed**
+- `src/styles/index.css` — `.topnav-logo-cutout::before` loses `backdrop-filter`/
+  `-webkit-backdrop-filter`. Nothing else: the mask, the glow, the opacity are all untouched —
+  they were never the problem.
+- `docs/DECISIONS.md` — 0131.
+
+**Steps, in order**
+1. Looked at the attached screenshot closely rather than re-asserting the previous round's own
+   screenshot was still right. Restarted the dev server (killed again by its own background
+   timeout).
+2. Sampled actual pixel colours through the mask boundary with Playwright + an in-page canvas
+   (`getImageData`), at a column inside the badge and a column outside it on the same bar: inside,
+   a ~10px gradient above/below the lettering; outside, perfectly flat. Ruled out the page's own
+   background gradient as the cause (would show at both columns).
+3. Hypothesised `backdrop-filter: blur(20px)` on the masked pseudo-element as the cause — blurring
+   across the mask's own alpha edge, not just the colour under it. Tested by temporarily removing
+   it and re-sampling the same column: the ~10px gradient collapsed to a ~2px jump.
+4. Removed it for real (both `RunTopBar` and `MyReviews`' `LogoPanel`, since both use the same
+   `.topnav-logo-cutout::before` rule); `npx tsc --noEmit`, `npx eslint src`, `npx vitest run`
+   (294/294) — all clean.
+5. Re-screenshotted both pages, both themes, at 2× scale to confirm visually — flat, hard edges,
+   no gradient. Ran a targeted `e2e/accessibility.spec.ts` subset — only the suite's own
+   already-documented `measuredBackgroundContrast` flake, unrelated to this change, no new
+   violations.
+
+**Why it was done this way**
+Two previous rounds (0129, 0130) each shipped a screenshot that looked clean and called it done —
+and each was wrong at a scale or precision the screenshot didn't show. Pixel sampling through
+`getImageData`, not a visual screenshot, is what actually distinguished "the glow's own value is
+the cause" from "something else entirely is" this time — comparing a column inside vs. outside the
+masked area isolated the page's own gradient as a non-cause, and the controlled
+remove-and-re-sample test on `backdrop-filter` specifically is what turned a hypothesis into a
+confirmed fix rather than another guess.
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean. Pixel
+sampling before/after: ~10px gradient collapsed to ~2px (normal mask antialiasing). Playwright 2×
+screenshots, both pages, both themes — flat, hard-edged logo backing, no visible gradient anywhere
+near it. Targeted `e2e/accessibility.spec.ts` run (`pending run, Story` + `My reviews`, both
+themes) — same pre-existing flake pattern as every prior round, zero new violations.
+
+**Open questions / next**
+If a "shadow" is reported again after this, the next step should be the same pixel-sampling
+technique applied directly against the live deployed URL, not the local dev server — to rule out
+an environment-specific cache or build difference rather than assuming the same CSS bug recurred.
+
 ## 2026-11-03 · The breadcrumb spacer's responsive bug; confirming the blur really is gone
 
 **Goal**
