@@ -275,12 +275,15 @@
  * than `--color-glass` itself — rather than stacking the card's own translucency a second time,
  * which read as flat and opaque (two ~70%-opaque layers compose to ~91%, indistinguishable from
  * a plain solid surface). The button's own `hover:` classes are a different Tailwind "slot" than
- * these, so they still apply untouched on top.
+ * these, so they still apply untouched on top. `border-radius: var(--radius-lg)` (0133, down
+ * from a full `9999px` pill) — "make all the corner radius 10px including cards and buttons":
+ * the same flat 10px every other button, card and dialog in the app already uses, not its own
+ * stadium shape.
  */
 @utility btn-glass {
   background-color: var(--color-glass-chip);
   border-color: var(--color-glass-chip-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-glass);
   backdrop-filter: blur(var(--blur-glass)) saturate(1.4);
 }

@@ -6,7 +6,38 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
-## 0132 · No backing behind the logo at all
+## 0133 · The tab indicator's radius matches its panel; closer to the edges; 10px everywhere
+
+**Context.** "When it comes to tabs I meant the tab border radius would match the background
+panel behind it. I made example of it. That way it looks more cohesive and neat." — a screenshot
+showing the run page's own tab strip, the active "Story" tab as a rounded rect rather than a full
+pill. Also: "move the tabs closer to the borders of the background panel area," "the radius should
+be in both panel and tabs around 10px," and, separately, "make all the corner radius 10px
+including cards and buttons."
+
+**Finding.** `--radius-sm`/`--radius-md`/`--radius-lg` were already one flat `0.625rem` (10px) —
+cards, dialogs, most buttons already matched. Two call sites had drifted into their own full-pill
+shape (`border-radius: 9999px`/`rounded-full`) despite sitting on a rectangular surface: the tabs'
+sliding active-tab indicator (`.t-tabs-pill`, `components/Tabs.tsx`) and the glass outline button
+(`btn-glass`, `index.css` — Filters, the row "…" actions, Clear filters). Those were the actual
+mismatch the screenshot was pointing at, not a broken token.
+
+**Choice.** Both switched from a full pill to `rounded-lg`/`var(--radius-lg)` — the same 10px
+every card already uses. `RunViewTabs`' own padding (the only gap on its top and right sides,
+since `RunReviewPage`'s wrapper card deliberately has none of its own there, so the tab strip's
+`rounded-t-lg` sits flush against the card's corner) dropped from `px-5 py-3` to `px-3 py-2`,
+bringing the tabs visibly closer to the card's true edges. Left alone, per the pre-existing,
+already-documented rule (`tokens.css`'s own comment on `--radius-sm`): anything circular or
+stadium-shaped *by design* — toggles, dots, status badges, avatar circles, `ThemeToggle` — none of
+those are "a rounded corner" in the sense this request means, and squaring them off would break
+their actual shape, not make them more consistent.
+
+**Consequence.** The tabs' active-tab indicator and `btn-glass` now read as cut from the same
+sheet as every card/dialog/button in the app, both in the run page's view tabs and wherever else
+the same `PillTabsList` component is reused (My reviews' own Pending/Requested for change/…
+tabs). A future glass surface that needs a pill/stadium shape on purpose should say so explicitly
+in its own comment, the way the genuinely-circular controls already do — `rounded-full` on a
+rectangular-looking surface is now the exception to flag, not the default to reach for.
 
 **Context.** "Remove the background color of the logo totally. Make it transparent." Eight
 decision entries (0125–0131) had each tuned some version of a colour, shape or blur sitting behind

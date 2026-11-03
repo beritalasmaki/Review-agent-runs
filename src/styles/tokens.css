@@ -291,8 +291,12 @@
 
   /* Radius. A flat 10px everywhere a corner rounds — cards, dialogs, buttons and fields alike
    * — replacing the old per-size scale (4px/8px/14px) that read as "really round" at the
-   * card size. `rounded-full` (pills, dots, toggles) is untouched: those are circular by
-   * design, not a rounded corner. */
+   * card size. `rounded-full` on a genuinely circular or stadium-shaped control (a toggle, a
+   * dot, a status badge) is untouched: those are circular by design, not a rounded corner. Two
+   * call sites had drifted from this rule into their own full-pill shape despite sitting on a
+   * rectangular surface — the glass outline button (`btn-glass`) and the tabs' sliding
+   * indicator (`.t-tabs-pill`, `components/Tabs.tsx`) — both brought back to this same flat
+   * 10px in 0133 ("make all the corner radius 10px including cards and buttons"). */
   --radius-sm: 0.625rem;
   --radius-md: 0.625rem;
   --radius-lg: 0.625rem;

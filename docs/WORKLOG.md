@@ -39,6 +39,55 @@ What is unfinished, uncertain, or should be decided by a human.
 
 <!-- New entries go below this line, newest first. -->
 
+## 2026-11-03 · The tab indicator's radius matches its panel; closer to the edges; 10px everywhere
+
+**Goal**
+"The tab border radius would match the background panel behind it... move the tabs closer to the
+borders of the background panel area... the radius should be in both panel and tabs around 10px...
+make all the corner radius 10px including cards and buttons" — a screenshot showed the run page's
+tab strip with its active tab as a full pill against a 10px-rounded card.
+
+**What changed**
+- `src/components/Tabs.tsx` — the sliding active-tab indicator's `rounded-full` → `rounded-lg`.
+- `src/styles/transitions.css` — its own doc comment updated ("capsule"/"stadium" → matching the
+  panel's own radius).
+- `src/features/run/RunViewTabs.tsx` — padding `px-5 py-3` → `px-3 py-2`.
+- `src/styles/index.css` — `btn-glass`'s `border-radius: 9999px` → `var(--radius-lg)`.
+- `src/styles/tokens.css` — the radius section's own comment notes both drifted call sites and
+  that they're fixed now.
+- `docs/DECISIONS.md` — 0133.
+
+**Steps, in order**
+1. Found the two actual full-pill call sites by grepping `rounded-full`/`9999px` across `src`
+   and checking each against "is this a genuinely circular/toggle control (leave it) or a
+   rectangular surface that drifted into a pill (fix it)," per the pre-existing rule already
+   documented in `tokens.css`.
+2. Changed both, tightened `RunViewTabs`' padding; `npx tsc --noEmit`, `npx eslint src` clean.
+3. Restarted the dev server (killed again by its own background timeout), screenshotted the run
+   page's tabs at 2× zoom in both themes, and My reviews' own run-type tabs and Filters button —
+   confirmed the radius now visibly matches the card in all of them.
+4. `npx vitest run` (294/294) and a targeted `e2e/accessibility.spec.ts` subset — both clean, same
+   pre-existing flake pattern as every prior round, no new violations.
+
+**Why it was done this way**
+The radius tokens themselves were already correct and already flat at 10px everywhere — this
+wasn't a token problem, it was two specific components that had opted into their own `rounded-full`
+instead of reaching for the shared token, each for its own stated reason at the time (a "glass
+capsule" look for the tabs, a pill-shaped outline button). Checking each `rounded-full` site
+individually against the already-documented "circular controls stay circular" rule, rather than a
+blanket find-and-replace, is what kept toggles, dots and avatar circles untouched while still
+catching everything the request actually meant by "cards and buttons."
+
+**Verification**
+`npx tsc --noEmit` — clean. `npx vitest run` — 294/294 passed. `npx eslint src` — clean. Playwright
+2× screenshots — the active tab's own rounding now visibly matches its card's corner, in both
+themes, on both the run page and My reviews' own tabs; the tab strip sits noticeably closer to the
+card's edges. Targeted `e2e/accessibility.spec.ts` run — same pre-existing flake, zero new
+violations.
+
+**Open questions / next**
+None outstanding here.
+
 ## 2026-11-03 · No backing behind the logo at all
 
 **Goal**

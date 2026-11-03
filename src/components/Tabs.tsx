@@ -266,11 +266,15 @@ function PillTabsList({
       className={className}
       onKeyDownCapture={handleRovingFocusKeyDown}
     >
+      {/* `rounded-lg` (docs/DECISIONS.md, 0133), not a full pill: "the tab border radius would
+          match the background panel behind it" — the same 10px every card/dialog/button uses
+          (`--radius-lg`), not its own stadium shape, so it reads as cut from the same sheet as
+          the card it sits on rather than a different rounding language layered on top. */}
       <span
         ref={indicatorRef}
         aria-hidden
         className={cn(
-          't-tabs-pill rounded-full border border-glass-chip-border bg-glass-chip shadow-glass backdrop-blur-[var(--blur-glass)]',
+          't-tabs-pill rounded-lg border border-glass-chip-border bg-glass-chip shadow-glass backdrop-blur-[var(--blur-glass)]',
           indicatorClassName,
         )}
       />
