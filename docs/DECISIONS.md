@@ -59,6 +59,8 @@ brand colour and its tint are brighter. Checked with the WCAG formula: text 13.8
 indigo border on an indigo tint, not a faint grey border. The run page's first row is a card as
 wide as the columns below it.
 
+**Follow-up (same day).** The dark tint backgrounds were lifted a further step: green `#255438`, amber `#534215`, red `#602a28`, blue `#244772`, indigo `#363376`. Status text on them is 5.7-6.2:1 (was 6.4-7.1:1), still above 4.5:1. Every status pill, badge, check card and score chip reads these tokens, so none needed its own change.
+
 **Consequence.** Dark mode is lighter overall, so cards separate from the page by tone and a
 visible border. Light theme is unchanged. Changing one dark value now means changing a `--dark-*`
 token, not the neutral ramp. The `dark:` classes on the badge and notice duplicate some of this and
