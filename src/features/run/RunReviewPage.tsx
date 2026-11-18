@@ -239,7 +239,7 @@ export function RunReviewPage({
          * of a long page. No top bar (0135): the way back and the theme switch are the first row
          * of the page, and the columns start at one height under it.
          */}
-        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-4)] px-[var(--space-4)] pt-[var(--space-4)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-4)] pb-[var(--space-7)] md:px-[var(--space-6)]">
           <RunPageNav
             reviewsHref={reviewsHref}
             end={toSolve ? <OpenItemsNotice run={run} /> : undefined}

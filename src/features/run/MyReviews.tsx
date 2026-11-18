@@ -419,17 +419,25 @@ function ReviewsBoard({
           <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-t-lg rounded-b-none border border-b-0 border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card">
             <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
-              <p className="text-lead leading-relaxed text-text-secondary">
-                Agent runs assigned to you. Decide on pending runs, and find your past decisions.
+              <p className="max-w-[55rem] text-lead leading-relaxed text-text-secondary">
+                AI agents now change customers' software faster than anyone can follow. This page is
+                where a person stays in charge: each run below is one change, and nothing is
+                released until you decide on it. Open a pending run to see what the agent did, which
+                checks passed or failed and what it could not verify, then approve it, request
+                changes or reject it. Your earlier decisions are in the archive. All runs here are
+                fictional sample data.
               </p>
             </div>
             <div className="flex items-center gap-[var(--space-3)]">
               <Badge
                 variant="warning"
                 data-tour="needs-review-badge"
-                className="border-transparent px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
+                className="border-transparent px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body dark:bg-status-waived-dot dark:text-surface"
               >
-                <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
+                <span
+                  aria-hidden
+                  className="h-2 w-2 rounded-full bg-status-waived-tint-fg dark:bg-surface"
+                />
                 {needsYou} need{needsYou === 1 ? 's' : ''} your review
               </Badge>
               <Button

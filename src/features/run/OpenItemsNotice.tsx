@@ -21,8 +21,11 @@ export function OpenItemsNotice({ run, href = '#open-items' }: OpenItemsNoticePr
 
   return (
     <p className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-[var(--space-1)] text-meta font-body">
-      <span className="inline-flex items-center gap-[var(--space-2)] font-semibold text-text-primary">
-        <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full bg-status-waived-dot" />
+      <span className="inline-flex items-center gap-[var(--space-2)] rounded-full bg-status-waived-tint-bg px-[var(--space-3)] py-[var(--space-1)] font-semibold text-status-waived-tint-fg dark:bg-status-waived-dot dark:text-surface">
+        <span
+          aria-hidden
+          className="h-2.5 w-2.5 shrink-0 rounded-full bg-status-waived-tint-fg dark:bg-surface"
+        />
         {count === 1 ? '1 thing to solve' : `${count} things to solve`}
       </span>
       <a
@@ -40,7 +43,7 @@ export function OpenItemsNotice({ run, href = '#open-items' }: OpenItemsNoticePr
             [...boxes].find((box) => box.getAttribute('aria-checked') !== 'true') ?? boxes[0]
           next?.focus({ preventScroll: true })
         }}
-        className="-mx-[var(--space-2)] -my-[var(--space-1)] inline-block rounded-xs px-[var(--space-2)] py-[var(--space-1)] font-medium whitespace-nowrap text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
+        className="-mx-[var(--space-2)] -my-[var(--space-1)] inline-block rounded-xs px-[var(--space-2)] py-[var(--space-1)] font-medium whitespace-nowrap text-primary underline-offset-2 transition-colors dark:text-text-primary dark:underline duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
       >
         Jump to the open items →
       </a>
