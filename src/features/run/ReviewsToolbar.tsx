@@ -91,7 +91,7 @@ export function ReviewsToolbar({
           <Button
             variant="outline"
             className={cn(
-              'btn-glass glass-sheen gap-[var(--space-2)]',
+              'gap-[var(--space-2)]',
               open &&
                 'border-primary bg-primary-tint text-primary hover:border-primary hover:bg-primary-tint',
             )}
@@ -109,9 +109,9 @@ export function ReviewsToolbar({
         </PopoverTrigger>
         <PopoverContent
           align="start"
-          className="flex w-72 flex-col gap-[var(--space-4)] border-glass-border bg-glass shadow-glass backdrop-blur-[var(--blur-glass)]"
+          className="flex w-72 flex-col gap-[var(--space-4)] border-border-subtle bg-surface shadow-card"
         >
-          <PopoverArrow className="fill-glass-chip" />
+          <PopoverArrow className="fill-surface" />
           <label className={FIELD_LABEL}>
             {timeLabel}
             <NativeSelect

@@ -21,22 +21,6 @@ const TYPE_SCALE = [
 ]
 
 /**
- * `btn-glass` (src/styles/index.css, docs/DECISIONS.md 0092, 0098 — the `outline`-variant glass
- * button; `btn-glass-fill` was its filled-variant counterpart, removed in 0109) sets background-
- * color, border-color, border-radius, box-shadow and backdrop-filter in one custom class.
- * tailwind-merge doesn't know the name, so without this it would keep both the glass class and
- * whatever `bg-*`/`border-*`/`rounded-*` class a caller passes alongside it (the same class of
- * bug as `TYPE_SCALE` above, 0043) — which one actually painted would then depend on generated
- * CSS source order, not on which class appears later in the component. `conflictingClassGroups`
- * makes the two sides interchangeable either order: a glass class after a colour/radius class
- * drops that class, and a colour/radius class after a glass class drops the glass class — e.g.
- * the Filters button's open-state override (ReviewsToolbar.tsx) still wins over its own
- * `btn-glass`, and `btn-glass`'s own `border-radius: 9999px` still wins over `button.tsx`'s base
- * `rounded-md`.
- */
-const GLASS_BUTTON = ['btn-glass']
-
-/**
  * `btn-shine`/`btn-shine-sm` (src/styles/transitions.css, docs/DECISIONS.md 0120) are the two
  * strengths of the button hover stripe: a call site opts up from the `default`/`ghost`
  * variants' quiet `btn-shine-sm` base to the full `btn-shine` sweep for a one-off, final action
@@ -47,20 +31,11 @@ const GLASS_BUTTON = ['btn-glass']
  */
 const BUTTON_SHINE = ['btn-shine', 'btn-shine-sm']
 
-const twMerge = extendTailwindMerge<'glass-btn' | 'btn-shine'>({
+const twMerge = extendTailwindMerge<'btn-shine'>({
   extend: {
     classGroups: {
       'font-size': [{ text: TYPE_SCALE }],
-      'glass-btn': GLASS_BUTTON,
       'btn-shine': BUTTON_SHINE,
-    },
-    conflictingClassGroups: {
-      'glass-btn': ['bg-color', 'border-color', 'shadow', 'backdrop-blur', 'rounded'],
-      'bg-color': ['glass-btn'],
-      'border-color': ['glass-btn'],
-      shadow: ['glass-btn'],
-      'backdrop-blur': ['glass-btn'],
-      rounded: ['glass-btn'],
     },
   },
 })

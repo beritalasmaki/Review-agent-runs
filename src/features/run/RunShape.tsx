@@ -25,7 +25,7 @@ export function RunShape({ run }: RunShapeProps) {
   return (
     <section
       aria-labelledby="run-shape-heading"
-      className="flex flex-col gap-[var(--space-2)] rounded-lg border border-glass-border bg-glass p-[var(--space-4)] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+      className="flex flex-col gap-[var(--space-2)] rounded-lg border border-border-subtle bg-surface p-[var(--space-4)] shadow-card"
     >
       <h2
         id="run-shape-heading"

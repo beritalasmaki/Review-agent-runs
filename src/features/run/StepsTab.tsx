@@ -136,7 +136,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         </p>
       ) : (
         <Table
-          containerClassName="rounded-lg border border-glass-border bg-glass shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          containerClassName="rounded-lg border border-border-subtle bg-surface shadow-card"
           className="min-w-[40rem] table-fixed"
         >
           <colgroup>

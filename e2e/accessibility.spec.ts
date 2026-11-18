@@ -163,7 +163,13 @@ function backgroundLightness(page: Page) {
  * behind it, for text in a floating layer only: an open modal dialog or a fixed element. */
 function ownContrast(page: Page, selector: string) {
   return page.evaluate((sel) => {
-    const element = document.querySelector(sel)
+    // Several elements can share a selector axe could only describe loosely (`p:nth-child(1)`):
+    // take the one in a floating layer, not the first one in the page behind it.
+    const matches = Array.from(document.querySelectorAll(sel))
+    const isFloating = (el: Element): boolean =>
+      getComputedStyle(el).position === 'fixed' ||
+      (!!el.parentElement && isFloating(el.parentElement))
+    const element = matches.find(isFloating) ?? matches[0] ?? null
     // Only for text in a layer that floats above the page: an open modal dialog, or a
     // fixed-position element such as the toast. Anything else stays undecided and fails.
     const floating = (el: Element | null): boolean =>

@@ -284,12 +284,6 @@
   --color-intro-scrim: rgb(255 255 255 / 0.8);
   --color-intro-ink: var(--neutral-13);
   --color-intro-muted: var(--neutral-8);
-  /* The logo's own drifting blob, behind its cutout hole (docs/DECISIONS.md, 0134 — "add a dark
-   * blurry blob ball moving behind the logo"): dark in light theme, so it reads as a soft dark
-   * silhouette behind the wordmark against the light glass surface — flipped to a light grey in
-   * dark theme below ("light greyish blurry blob ball"), not white: a *grey* ball, not a bright
-   * one, was the explicit ask there. */
-  --color-topnav-logo-blob: rgb(15 18 26 / 0.6);
   /* The spotlight's dimmed surroundings, the same in both themes (docs/DECISIONS.md, 0056). */
   --color-spotlight-scrim: rgb(0 0 0 / 0.5);
   /* Behind a dialog: dims the page in both themes, never lightens it (0070). */
@@ -314,71 +308,6 @@
   /* A card's lift off the page: faint and flat, true black, not tinted (0073 — the flat
    * neutral replaces 0068's page-tinted shadow along with the rest of that palette). */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
-
-  /*
-   * Glass surface (docs/DECISIONS.md, 0089 — My reviews pilot only; re-tuned more transparent in
-   * 0118, "the card and the table are not transparent at all"). A translucent, blurred stand-in
-   * for `--color-surface`/`--shadow-card`, used only on card "chrome" (the frame around data, not
-   * the data itself) so the reviewer-facing text keeps reading off today's already-contrast-
-   * verified `--color-surface`/`--color-text-primary`, unchanged. The percentages below were
-   * tuned against a real contrast measurement, not chosen by eye (see the decision entry) — dark
-   * glass needed to be noticeably less translucent than light glass to keep reading comfortably
-   * over the busier dark gradient.
-   */
-  --color-glass: color-mix(in srgb, var(--neutral-0) 62%, transparent);
-  /* Dimmer in dark theme (0125 — "dark mode has too visible border lines"): the same white-at-30%
-   * line reads as a much bolder edge against the dark theme's own dark glass fill than against
-   * light glass, even though the literal colour and opacity never changed — the dark override
-   * below tones it down for that surface specifically rather than changing this shared value. */
-  --color-glass-border: rgb(255 255 255 / 0.3);
-  --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.12);
-  /* A deeper version of the same shadow, for the one band in a stacked layout (0099) that
-   * should read as sitting highest above the page — the table, the layout's main surface, not
-   * the tabs or search/filters bands around it. Same two-layer shape as --shadow-card (a tight
-   * near shadow plus a looser far one), scaled up. */
-  --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.1), 0 20px 56px rgb(0 0 0 / 0.18);
-  /* A glass surface that needs to carry a status tint through it and keep its own text's
-   * contrast (0091 — the "N need your review" badge): a neutral `--color-glass` dilutes
-   * `--status-waived-tint-fg` below 4.5:1 once blended with the page's gradient underneath, so
-   * this mixes toward the same amber tint the text was already verified against, more opaque
-   * than the neutral glass needs to be, rather than toward plain white/black. Tuned against a
-   * real contrast measurement of the rendered pixels, the same way `--color-glass` was. */
-  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-light) 80%, transparent);
-  /* A *more* translucent glass for a small element that sits on top of an already-glass surface
-   * — a button inside the glass My reviews card (0095). Reusing `--color-glass` there read as
-   * flat and opaque: two ~70%-opaque white layers compose to ~91% opaque, which looks like a
-   * plain solid surface, not "more glass." Mixes to a much lower opacity so the card (and the
-   * page behind it) still visibly shows through a second time. Only the `outline`-variant glass
-   * button (`btn-glass`) uses this now — the filled variant's own `-fill-chip` counterpart was
-   * removed (0109): the primary "Review"/"Create report" buttons it styled sit on the page's
-   * opaque table/selection-bar chrome, not open glass, so there was never real translucency
-   * behind them for `backdrop-filter` to reveal regardless of how this token was tuned; they use
-   * the plain solid `Button` variant now, like every other primary action in the app. Tuned
-   * against a real contrast measurement of the rendered pixels, the same way `--color-glass`
-   * itself was. */
-  --color-glass-chip: color-mix(in srgb, var(--neutral-0) 18%, transparent);
-  --color-glass-chip-border: rgb(255 255 255 / 0.55);
-  /* The ambient background blobs (0116, rebuilt three times in 0117/0118): one calm hue,
-   * `--status-blue` (the same muted slate-blue already used for "unknown"/"info" elsewhere in
-   * the UI — not the brand indigo/lime, which read as purple/yellow and were too saturated to
-   * "not pop out"), at three alpha levels for depth rather than three different colours. 0117's
-   * first values (16/11/8%) were tuned while the blobs still painted *underneath*
-   * `--color-glass`'s own page-wide wash (index.css) — once 0118 moved them above the wash, "I
-   * don't see those blurry balls... they are not bluish" turned out to mean the wash itself was
-   * muting them almost to nothing, not that the colour was wrong. Bumped once they were no
-   * longer being diluted a second time; re-confirmed against the accessibility suite's own
-   * contrast check (every page these sit behind), not chosen by eye alone. */
-  --color-blob-1: color-mix(in srgb, var(--status-blue-light) 32%, transparent);
-  --color-blob-2: color-mix(in srgb, var(--status-blue-light) 24%, transparent);
-  --color-blob-3: color-mix(in srgb, var(--status-blue-light) 18%, transparent);
-  /* A specular highlight for a glass surface (0098) — a soft diagonal sheen near the top-left
-   * corner, like light catching a curved pane. One shared value, not per-theme: the existing
-   * `--color-glass-border` (white, both themes) already established that a glass highlight
-   * reads correctly against either theme's glass without needing its own dark-theme variant.
-   * Consumed by `.glass-sheen::before` (index.css, buttons and the warning badge) and
-   * `.t-tabs-pill::before` (transitions.css, the tab indicator's own capsule surface — back
-   * again in 0110 after 0107 had briefly dropped it). */
-  --glass-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.4) 0%, transparent 45%);
 
   /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text
    * colour — at partial opacity. `currentColor` resolves per element at use time, not here, so
@@ -444,34 +373,6 @@
  */
 :root {
   --page-gradient: var(--page-gradient-light);
-  /* A real photo behind the page's glass, not a procedural gradient or noise (docs/DECISIONS.md,
-   * 0108, replacing 0106's `feTurbulence` grain): "liquid glass" only reads as glass when there
-   * is genuine, busy detail for `backdrop-filter: blur()` to soften — Apple's own reference
-   * material is always photographic or app content, never a flat wash or synthetic speckle.
-   * `public/textures/page-glass-*.webp`: the user's own reference photo (frost/rain on glass),
-   * lightly blurred and with a handful of soft diagonal streaks drawn over it for depth —
-   * processed once, not generated at runtime, since this is a real image, not an SVG filter.
-   * Replaces `--page-gradient` as `bg-page-glass`'s base layer. */
-  --page-photo: url('/textures/page-glass-light.webp');
-  --blur-glass: 20px;
-  /* The page's own header zone (docs/DECISIONS.md, 0101): a translucent wash behind the title
-   * and the top of the page's main card, tinting that zone without flattening it to a solid
-   * colour — the vivid gradient underneath still shows through, same as every other glass
-   * surface in the app. Reuses `--color-glass` itself, not a new value: whatever polarity that
-   * token already has per theme (a light wash in light theme, a dark wash in dark theme — CSS
-   * custom properties resolve `var()` at computed-value time, so this single line picks up
-   * `--color-glass`'s own per-theme override automatically, with no separate dark-theme
-   * definition needed here) is exactly right for this zone too, and the existing
-   * `text-text-primary`/`text-text-secondary` title text already reads correctly against it —
-   * it's the same token every other glass card's text already sits on. Not Tailwind-registered,
-   * since it's only ever consumed inside `bg-page-glass`'s own `background-image`, the same
-   * reasoning as `--page-gradient` above. */
-  --color-hero-band: var(--color-glass);
-  /* Ends just past the title/description row and the tabs row below it — before the
-   * search/filters row and the table, which both need their own ordinary (dark-on-light) text
-   * colours to stay readable. Tuned against a real screenshot, not guessed (docs/DECISIONS.md,
-   * 0101). */
-  --hero-band-height: 195px;
 }
 
 /*
@@ -531,19 +432,7 @@
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     --color-modal-scrim: rgb(0 0 0 / 0.6);
 
-    --color-glass: color-mix(in srgb, var(--neutral-12) 51%, transparent);
-    --color-glass-border: rgb(255 255 255 / 0.14);
-    --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
-    --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
-    --color-glass-chip-border: rgb(255 255 255 / 0.18);
-    --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
-    --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
-    --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
-    --color-topnav-logo-blob: rgb(195 200 209 / 0.55);
-    --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
-    --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
     --page-gradient: var(--page-gradient-dark);
-    --page-photo: url('/textures/page-glass-dark.webp');
   }
 }
 
@@ -594,19 +483,7 @@
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
   --color-modal-scrim: rgb(0 0 0 / 0.6);
 
-  --color-glass: color-mix(in srgb, var(--neutral-12) 51%, transparent);
-  --color-glass-border: rgb(255 255 255 / 0.14);
-  --color-glass-warning: color-mix(in srgb, var(--status-amber-tint-bg-dark) 78%, transparent);
-  --color-glass-chip: color-mix(in srgb, var(--neutral-12) 15%, transparent);
-  --color-glass-chip-border: rgb(255 255 255 / 0.18);
-  --color-blob-1: color-mix(in srgb, var(--status-blue-dark) 26%, transparent);
-  --color-blob-2: color-mix(in srgb, var(--status-blue-dark) 19%, transparent);
-  --color-blob-3: color-mix(in srgb, var(--status-blue-dark) 14%, transparent);
-  --color-topnav-logo-blob: rgb(195 200 209 / 0.55);
-  --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4);
-  --shadow-glass-lg: 0 4px 12px rgb(0 0 0 / 0.3), 0 20px 56px rgb(0 0 0 / 0.5);
   --page-gradient: var(--page-gradient-dark);
-  --page-photo: url('/textures/page-glass-dark.webp');
 }
 
 /*

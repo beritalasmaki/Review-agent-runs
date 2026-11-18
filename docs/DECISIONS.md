@@ -6,6 +6,29 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0135 · No logo, no top bar, no glass
+
+**Context.** The run page had a fixed top bar with a cut-out logo, and every card, button and tab
+was frosted glass over a moving coloured photo background (0089-0134). The user asked for a calmer
+page: remove the logo and the top bar, drop the glass style, and balance the cards on the run page.
+
+**Options.** (1) Restyle by tuning the glass tokens to be opaque and keep the class names.
+(2) Replace the glass classes with the flat tokens and delete the glass code. (3) Hide the bar and
+leave the glass.
+
+**Choice.** Option 2, for the whole app, as the user chose. Cards use `bg-surface`,
+`border-border-subtle` and the existing faint `shadow-card`. The page background is flat `bg-bg`.
+The back link, open-items notice and theme switch moved into `RunPageNav`, a plain first row. On
+the run page the three columns start at one height; nothing is fixed, so the bar-height
+measuring is gone. Supersedes 0042, 0089-0134 and 0100.
+
+**Consequence.** The app no longer has a wordmark or any decoration; it is quieter and the code is
+smaller. The glass identity that earlier entries built is gone and would need rebuilding.
+The welcome intro still uses a gradient. Two accessibility e2e states (filters popover) fail
+before and after this change in this environment.
+
+---
+
 ## 0134 · A drifting blurred blob behind the logo — and a real axe overlap bug it exposed
 
 **Context.** "In light mode add dark blurry blob ball moving behind the logo so the logo would

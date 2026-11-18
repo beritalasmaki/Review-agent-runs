@@ -32,8 +32,7 @@ export function SectionHeading({
       id={id}
       tabIndex={focusTarget ? -1 : undefined}
       className={cn(
-        focusTarget &&
-          'scroll-mt-[calc(var(--run-bar-height,3rem)+var(--run-tabs-height,3.5rem)+var(--space-4))]',
+        focusTarget && 'scroll-mt-[calc(var(--run-tabs-height,3.5rem)+var(--space-4))]',
         'flex items-center gap-[var(--space-3)] text-section-heading leading-tight font-semibold font-heading text-text-primary',
         className,
       )}

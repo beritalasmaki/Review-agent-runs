@@ -38,14 +38,14 @@ describe('RunReviewPage', () => {
     expect(screen.getByRole('region', { name: 'All 200 steps' })).toBeVisible()
   })
 
-  it('lays out run details, the overview and the decision side by side, with a fixed top bar', async () => {
+  it('lays out run details, the overview and the decision side by side, with no top bar', async () => {
     render(<RunReviewPage runId={runMessyPending.id} getRunOptions={{ delayMs: 0 }} />)
     await screen.findByRole('heading', { level: 1 })
     expect(screen.getByRole('region', { name: 'Run details' })).toBeVisible()
     expect(screen.getByText('Why the agent was asked')).toBeVisible()
     expect(screen.getByText('3 things to solve')).toBeVisible()
     expect(screen.queryByRole('button', { name: /details/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('navigation', { name: 'Breadcrumb' }).closest('.fixed')).not.toBeNull()
+    expect(screen.getByRole('navigation', { name: 'Breadcrumb' }).closest('.fixed')).toBeNull()
   })
 
   it('choosing a tab moves focus to that view, and every column stays in place', async () => {
@@ -170,7 +170,7 @@ describe('RunReviewPage', () => {
     for (const name of ['Approve and release', 'Request changes', 'Reject run']) {
       expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()
     }
-    // Nothing to solve yet, so no notice in the top bar either.
+    // Nothing to solve yet, so no notice beside the way back either.
     expect(screen.queryByText(/things? to solve/)).not.toBeInTheDocument()
   })
 

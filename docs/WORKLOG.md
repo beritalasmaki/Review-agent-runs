@@ -37,6 +37,52 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · Calmer look: no logo, no top bar, no glass
+
+**Goal**
+Remove the logo and the top bar, drop the glassmorphism, and make the run page's cards sit
+evenly side by side.
+
+**What changed**
+- Deleted `LogoLabel`, the logo mask and blob CSS, `LogoPanel` (My reviews), the page photos in
+  `public/textures/` and `agent-run-logo.svg`.
+- `RunTopBar` became `RunPageNav` (`src/features/run/`): an ordinary first row with the back
+  link, the open-items notice and the theme switch.
+- Every glass class (`bg-glass`, `backdrop-blur`, `btn-glass`, `glass-sheen`, `bg-page-glass`) is
+  replaced by the plain tokens `bg-surface`, `border-border-subtle`, `shadow-card`, `bg-bg`.
+  Glass tokens, blobs, hero band and drift keyframes removed from `tokens.css`, `index.css`,
+  `transitions.css`; `glass-btn` merge group removed from `lib/utils.ts`.
+- `RunReviewPage`: columns start at one height under the first row; bar-height maths removed.
+- Tests: `RunReviewPage.test.tsx` (no fixed bar), `e2e/keyboard.spec.ts` (wait for the list
+  before tabbing), `e2e/accessibility.spec.ts` (`ownContrast` picks the floating match).
+
+**Steps, in order**
+1. `npm ci`; read `AGENTS.md`, the spec, `RunTopBar.tsx`, `RunReviewPage.tsx`, `index.css`.
+2. Python script replaced the glass classes in all `src/**/*.tsx`; removed the CSS utilities.
+3. `git mv RunTopBar.tsx RunPageNav.tsx`; deleted the logo files; edited `RunReviewPage.tsx`.
+4. `npx vite --port 5199` and a Playwright script took screenshots of the three fixtures at
+   1440, 900 and 390 px.
+5. `npx tsc -b`, `npx eslint .`, `npx vitest run`, `npx playwright test --trace off`.
+
+**Why it was done this way**
+See docs/DECISIONS.md, 0135. The user asked for it; the trade-off is losing the glass identity
+that 0089-0134 built.
+
+**How to do this by hand**
+Delete the logo component and its CSS, move the back link and theme toggle into a plain row
+above the grid, search for `glass` in `src/` and swap each class for its flat token.
+
+**Verification**
+`tsc -b` and `eslint .` clean; `vitest run` 293/293. `playwright test`: 42 passed, 2 failed.
+The failures (filters popover contrast in the "approved tab with filters open" and "decision
+details" states) also fail on the untouched code, checked with `git stash`. Screenshots of
+the run page at 1440 px show the three columns starting at one height.
+
+**Open questions / next**
+- The welcome intro (`intro.css`) still uses `--page-gradient-light`. Left alone: it plays once.
+- Only the 1440 px view was checked by eye for balance; 900 and 390 px were rendered but not reviewed.
+
+
 <!-- New entries go below this line, newest first. -->
 
 ## 2026-11-03 · A drifting blurred blob behind the logo — and a real axe overlap bug it exposed

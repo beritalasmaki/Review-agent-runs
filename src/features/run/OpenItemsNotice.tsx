@@ -3,7 +3,7 @@ import { spotlight } from '../../components/spotlight'
 import type { Run } from '../../lib/types'
 
 /**
- * How many things are open before a decision, at the right end of the page's top bar: a
+ * How many things are open before a decision, above the decision panel: a
  * yellow dot, "3 things to solve" and a link to the tick list in the decision panel
  * (docs/DECISIONS.md, 0053). The link scrolls to the list, spotlights it (0056) and focuses its first unticked item (0059); the `href`
  * still works without script. Nothing when nothing is open — the decision panel says so itself.

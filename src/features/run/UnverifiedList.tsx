@@ -22,7 +22,7 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
   return (
     <section
       aria-labelledby="unverified-heading"
-      className="flex flex-col gap-[var(--space-4)] rounded-lg border border-glass-border bg-glass p-[var(--space-4)] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+      className="flex flex-col gap-[var(--space-4)] rounded-lg border border-border-subtle bg-surface p-[var(--space-4)] shadow-card"
     >
       <div className="flex flex-col gap-[var(--space-5)]">
         <SectionHeading

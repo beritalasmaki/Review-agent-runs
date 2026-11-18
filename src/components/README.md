@@ -21,7 +21,7 @@ Rules:
 - Every state a component can be in has a Storybook story, including empty and error.
 - Status is never carried by colour alone: icon plus text as well.
 
-`Tabs` has three variants: `segmented`, `pill` and `line`. The pill variant has a sliding glass
+`Tabs` has three variants: `segmented`, `pill` and `line`. The pill variant has a sliding
 capsule behind the active tab, from transitions.dev (docs/DECISIONS.md, 0047, 0110 — briefly a
 bottom border in 0107, reversed once the track it sits on had a real photo behind its own glass
 to reveal) and optional per-tab tooltips (`tooltip`). `line` is underlined text tabs for

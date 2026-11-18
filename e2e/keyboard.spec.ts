@@ -163,6 +163,8 @@ test('My reviews, keyboard only', async ({ page }) => {
 test('the theme switch works from the keyboard and is remembered', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   await page.goto('/')
+  // Tab only once the list has loaded: while it loads, the page has nothing to focus.
+  await expect(page.getByRole('button', { name: /^Archive/ })).toBeVisible()
   await tabTo(page, /^Dark theme$/)
   await page.keyboard.press('Space')
   await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
