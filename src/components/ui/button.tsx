@@ -14,19 +14,13 @@ import { Slot } from 'radix-ui'
  *
  * No colour transition on most variants, on purpose: one on the line tabs made keyboard tests
  * drop key presses (docs/WORKLOG.md, 2026-09-24) — but that was a transition keyed to rapid
- * *automatic-activation* state changes from the keyboard. `outline`'s own hover fade (plus a
- * small grow) and `link`'s own hover background (0127) are keyed to `:hover`/`:focus-visible`
+ * *automatic-activation* state changes from the keyboard. `outline`'s own hover fade and `link`'s own hover background (0127) are keyed to `:hover`/`:focus-visible`
  * only, pseudo-classes the mouse and keyboard focus set directly, never a cascading React
  * re-render from arrow-key navigation elsewhere, so neither can reproduce that bug — the same
- * reasoning transitions.css's "Button shine" already relies on for `default`/`ghost` (0083).
+ * reasoning that makes the fade on the other variants safe (0137).
  *
- * The shine itself comes in two strengths (0120, transitions.css): `default`/`ghost` carry the
- * quiet `btn-shine-sm` (a small in-place fade) as their base, since most of what they're used
- * for is stepped through repeatedly (a tour's Next, a table row's Review) where the full
- * travelling sweep got old fast. A call site opts up to the full `btn-shine` only for a genuine
- * one-off, final action — Approve and release, Take the tour, Move to the archive — via an
- * explicit `className`; `destructiveFill`'s Reject-run confirm keeps `btn-shine` as its base,
- * since it's always exactly that kind of action.
+ * Every variant fades its colours in on hover/focus and nothing else (0137): no travelling stripe
+ * and no grow, which lagged. The fade is keyed to `:hover`/`:focus-visible` only.
  */
 const buttonVariants = cva(
   [
@@ -39,19 +33,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        /** The page's main action: Approve and release, Review, Undo, Create report. A light
-         * stripe fades in on hover/focus — see transitions.css, "Button shine" — full-strength
-         * only where a call site opts up to `btn-shine` for a one-off, final action (0120). */
-        default: 'btn-shine-sm border-text-primary bg-text-primary text-surface hover:opacity-85',
+        /** The page's main action: Approve and release, Review, Undo, Create report. It fades on hover/focus. */
+        default:
+          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-text-primary bg-text-primary text-surface hover:opacity-85',
         /** The quieter action beside it: Request changes, Cancel, Filters. A plain fade on
-         * hover/focus (not the shine — it read poorly here), with a small grow. */
+         * hover/focus. */
         outline:
-          'border-border bg-surface text-text-primary transition duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:scale-[1.02] hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
+          'border-border bg-surface text-text-primary transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
         /** `DecisionPanel`'s own standalone Reject run: a red outline, never a red fill
          * (docs/DECISIONS.md, 0039) — it sits under Approve with its own caption, not beside
          * another button, so staying quiet is what keeps Approve the one default-reflex action. */
         destructive:
-          'border-status-fail bg-surface text-status-fail-tint-fg hover:bg-status-fail-tint-bg active:bg-status-fail-tint-bg',
+          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-status-fail bg-surface text-status-fail-tint-fg hover:bg-status-fail-tint-bg active:bg-status-fail-tint-bg',
         /** A modal confirm footer's destructive action (Reject run), beside Cancel: filled, so
          * it reads as the dialog's one primary action rather than a second secondary button
          * next to Cancel (docs/DECISIONS.md, 0113 — a narrower exception to 0039, scoped to the
@@ -59,9 +52,9 @@ const buttonVariants = cva(
          * for `bg-destructive` (src/styles/index.css) — already defined to flip white-in-light/
          * near-black-in-dark, verified at 6.25:1 / 7.10:1 against this red. */
         destructiveFill:
-          'btn-shine border-destructive bg-destructive text-destructive-foreground hover:opacity-85',
+          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-destructive bg-destructive text-destructive-foreground hover:opacity-85',
         ghost:
-          'btn-shine-sm border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
+          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
         /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". A soft
          * tinted background fades in on hover/focus (0127 — "the link style... looks plain and
          * simple... background hover with fading animation"), replacing a plain underline: the

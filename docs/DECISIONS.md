@@ -6,6 +6,41 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0138 · 16 px between the run page's cards
+
+**Context.** The first-row panel sat 24 px above the columns and read as far from the content.
+
+**Options.** 16 px everywhere, 24 px everywhere, or 16 px under the panel and 24 px between columns.
+
+**Choice.** 16 px (`--space-4`) between every card on the run page: panel to columns, column to
+column, and the cards stacked in a column (already 16 px). One value keeps the three columns and the
+panel reading as one grid.
+
+**Consequence.** The page is denser; the cards separate by border and tone, not air. My reviews
+keeps its own 24 px stack, not changed here.
+
+---
+
+## 0137 · Button hover is a plain fade
+
+**Context.** Button hover lagged. `default`, `ghost` and `destructiveFill` ran a stripe animation
+(`btn-shine`, 2.3 s travelling sweep or a `::after` fade, 0083/0120) and `outline` also grew by 2%
+(`hover:scale-[1.02]`).
+
+**Options.** (1) Tune the stripe. (2) Remove it and fade colours only. (3) Remove all hover motion.
+
+**Choice.** Option 2. Every variant now transitions opacity, background, border and text colour
+over `--motion-duration-fast` (140 ms) on `:hover`/`:focus-visible`. The shine classes, their CSS,
+the `--color-button-shine` token and the `btn-shine` tailwind-merge group are deleted; the
+`btn-shine` class is gone from the four call sites. The scale on `outline` is removed.
+
+**Consequence.** Hover is lighter and the same on every button, but the full-strength sweep on the
+final actions (Approve and release, Take the tour) is gone, so those no longer stand out on hover.
+Colour transitions are keyed to hover/focus only, so the key-press bug of 2026-09-24 (line tabs)
+does not apply. The keyboard spec passed 24 of 24 runs.
+
+---
+
 ## 0136 · Brighter dark theme, and a stronger active tab
 
 **Context.** In dark mode the page, cards and status colours were dark and muddy, and the active tab

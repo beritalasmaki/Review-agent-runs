@@ -239,12 +239,12 @@ export function RunReviewPage({
          * of a long page. No top bar (0135): the way back and the theme switch are the first row
          * of the page, and the columns start at one height under it.
          */}
-        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-4)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-4)] px-[var(--space-4)] pt-[var(--space-4)] pb-[var(--space-7)] md:px-[var(--space-6)]">
           <RunPageNav
             reviewsHref={reviewsHref}
             end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
           />
-          <div className="grid grid-cols-1 items-start gap-[var(--space-5)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
+          <div className="grid grid-cols-1 items-start gap-[var(--space-4)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
             <div
               className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
               data-tour="run-overview"

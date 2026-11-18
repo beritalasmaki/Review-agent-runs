@@ -319,13 +319,6 @@
    * neutral replaces 0068's page-tinted shadow along with the rest of that palette). */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
 
-  /* The button hover shine (0083, 0086): a stripe in `currentColor` — each button's own text
-   * colour — at partial opacity. `currentColor` resolves per element at use time, not here, so
-   * one token gives every variant a correct-looking stripe against its own fill: light over the
-   * default variant's dark fill, dark over the outline/ghost variants' light fill, in both
-   * themes, with no per-variant override needed. */
-  --color-button-shine: color-mix(in srgb, currentColor 45%, transparent);
-
   /*
    * Type. Raleway for headings, buttons and the wordmark; Montserrat for body and
    * table/data text. Both loaded via Google Fonts — see index.html. Weights are
