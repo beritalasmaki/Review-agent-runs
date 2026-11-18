@@ -22,7 +22,7 @@ export function RunPageNav({ reviewsHref, end }: RunPageNavProps) {
     >
       <a
         href={reviewsHref}
-        className="inline-flex items-center gap-[var(--space-1)] rounded-xs px-[var(--space-2)] py-[var(--space-1)] whitespace-nowrap text-primary transition-colors dark:text-text-primary duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
+        className="icon-motion inline-flex items-center gap-[var(--space-1)] rounded-xs px-[var(--space-2)] py-[var(--space-1)] whitespace-nowrap text-primary transition-colors dark:text-text-primary duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
       >
         <ChevronLeft aria-hidden className="h-4 w-4" />
         Back to the reviews list

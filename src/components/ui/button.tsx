@@ -24,7 +24,7 @@ import { Slot } from 'radix-ui'
  */
 const buttonVariants = cva(
   [
-    'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border',
+    'icon-motion inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border',
     'font-semibold font-heading leading-none whitespace-nowrap',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
     'disabled:cursor-not-allowed disabled:border-border-subtle disabled:bg-border-subtle disabled:text-text-disabled',
