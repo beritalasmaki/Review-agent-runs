@@ -37,6 +37,30 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · Button hover: plain fade
+
+**Goal**
+Stop the button hover from lagging; use a simple fade in.
+
+**What changed**
+- `src/components/ui/button.tsx`: all variants fade colours on hover (140 ms); outline's 2% grow removed.
+- Removed `.btn-shine`/`.btn-shine-sm` from `transitions.css`, `--color-button-shine` from `tokens.css`, the merge group from `lib/utils.ts`, and the class from `WelcomeModal`, `DecisionPanel`, `DecisionDialog`, `ReviewDialogs`.
+- `docs/DECISIONS.md` 0137.
+
+**Steps, in order**
+1. Found the cause: a stripe `::after` animation on three variants plus `hover:scale` on outline.
+2. Replaced them with `transition-[opacity,background-color,border-color,color]`.
+3. `npx tsc -b`, `npx eslint .`, `npx vitest run`, `npx playwright test --trace off`, and the keyboard spec with `--repeat-each=8`.
+
+**Why it was done this way**
+See 0137. The earlier warning about colour transitions concerned tabs changing on arrow keys, not hover.
+
+**How to do this by hand**
+In `button.tsx`, add a `transition-*` class and a `hover:` colour to each variant; delete the shine CSS.
+
+**Verification**
+`tsc -b`, `eslint .` clean; `vitest run` 293/293; `playwright test` 42 passed, 2 failed (the known filters-popover contrast states); keyboard spec 24/24. Hover feel not judged in a real browser.
+
 ### 2026-11-18 · Brighter dark theme and stronger active tab
 
 **Goal**
