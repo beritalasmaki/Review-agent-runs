@@ -161,22 +161,22 @@
    */
   --status-green-tint-bg-light: #e6f6ec;
   --status-green-tint-fg-light: #1a7a3e; /* 4.81:1 on the tint above — new, see comment */
-  --status-green-tint-bg-dark: #1f4a31; /* paired with --status-green-dark: 7.87:1 */
+  --status-green-tint-bg-dark: #255438; /* paired with --status-green-dark: 6.2:1 */
   --status-amber-tint-bg-light: #fdf3d9; /* paired with --status-amber-light: 5.36:1 */
-  --status-amber-tint-bg-dark: #4a3a12; /* paired with --status-amber-dark: 7.54:1 */
+  --status-amber-tint-bg-dark: #534215; /* paired with --status-amber-dark: 6.0:1 */
   /* Red tint — the Low confidence chip and Reject run's hover (docs/DECISIONS.md, 0039 and
    * 0041). Both reuse the existing red as foreground: 5.67:1 light, 6.57:1 dark. */
   --status-red-tint-bg-light: #fcebea;
-  --status-red-tint-bg-dark: #542422;
+  --status-red-tint-bg-dark: #602a28;
   /* Blue tint for "Requested for change" in My reviews (docs/DECISIONS.md, 0060). */
   --status-blue-tint-bg-light: #e3ecfb;
   --status-blue-tint-fg-light: #1f5fbf; /* 5.02:1 on the tint above */
-  --status-blue-tint-bg-dark: #1f3e66; /* paired with --status-blue-dark */
+  --status-blue-tint-bg-dark: #244772; /* paired with --status-blue-dark */
 
   /* A light wash of the brand indigo: selected rows, the active tab's count (0094). */
   --indigo-tint-light: #eae9fb;
   --indigo-tint-border-light: #c9c5f0;
-  --indigo-tint-dark: #302d6b;
+  --indigo-tint-dark: #363376;
   --indigo-tint-border-dark: #8a85e0;
 
   /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */

@@ -37,6 +37,28 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · Lighter dark status backgrounds
+
+**Goal**
+Make the dark-mode backgrounds of the open-item cards and the status pills a few steps lighter.
+
+**What changed**
+- `src/styles/tokens.css`: `--status-{green,amber,red,blue}-tint-bg-dark` and `--indigo-tint-dark` lifted (values in DECISIONS.md 0136, follow-up).
+
+**Steps, in order**
+1. Searched `tint-bg` in `src/`: every pill, badge, check card, score chip and the open-item cards use the same tokens, so only the tokens change.
+2. Computed WCAG contrast for candidate values (status text on tint 5.7-6.2:1) and picked the midpoint between the old and the strongest candidate.
+3. `npx tsc -b`, `npx eslint .`, `npm run check:theme-bridge`, `npx vitest run`, `npx playwright test --trace off`; dark screenshots of My reviews and the decision panel.
+
+**Why it was done this way**
+One token change reaches every status surface, so the pills cannot drift apart.
+
+**How to do this by hand**
+Edit the five `*-tint-bg-dark` values in `tokens.css`, check each against its text colour at 4.5:1, look at both lists in dark mode.
+
+**Verification**
+`tsc -b`, `eslint .`, theme-bridge clean; `vitest run` 293/293; `playwright test` 42 passed, 2 failed (the known filters-popover contrast states). Pending pills and open-item cards checked by eye in dark mode; the other pill types (Approved, Declined, Requested for change) not looked at one by one.
+
 ### 2026-11-18 · 16 px between run page cards
 
 **Goal**
