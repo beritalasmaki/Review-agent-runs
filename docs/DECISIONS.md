@@ -22,6 +22,8 @@ the filters icon wiggles. They play once on `:hover`/`:focus-visible`, not on di
 only when the user has not asked for reduced motion. They animate `translate`/`rotate`/`scale`, not
 `transform`, so an icon with its own rotation is not overridden.
 
+**Follow-up (same day).** Audited every other icon. Interactive ones now move too: tab triggers (clock turns, file lifts 2 px, list nudges right, swap arrows turn a half, plus the existing check and X), and the theme switch (the sun turns an eighth, the moon wiggles), by adding `icon-motion` to the tab trigger and the switch, and the file and report icons in buttons. Left still on purpose: icons that only decorate a heading, a badge, a status or an actor name, the search icon inside the field, the chevrons that already morph (`MorphIcon`), and the text "i" of `InfoTip`, which is not an icon.
+
 **Consequence.** No call site needed changes and every new button gets the motion for free, but the
 CSS depends on lucide keeping its `lucide-<name>` class names; a different icon library or an icon
 without the class gets no motion. Icons outside a button (the theme switch, info tips) do not move.

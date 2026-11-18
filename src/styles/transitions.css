@@ -261,7 +261,7 @@
 /* One short, controlled move for the icon inside a button, played once when the pointer enters
  * or the button takes keyboard focus (docs/DECISIONS.md, 0139). Each icon moves the way its shape
  * suggests: an arrow nudges in the direction it points and settles back, a refresh icon turns,
- * a check pops, an X turns a quarter (it looks the same at the end, so there is no jump back).
+ * a check pops, an X turns a quarter (it looks the same at the end, so there is no jump back); the sun turns an eighth, the swap arrows a half, for the same reason.
  * Keyed to `:hover`/`:focus-visible` on a plain `.icon-motion` class, the same reasoning as the
  * old button shine (0083): pseudo-classes the mouse and keyboard focus set directly, never a
  * React re-render. The individual `translate`/`rotate`/`scale` properties are animated, not
@@ -297,8 +297,30 @@
     animation: icon-nudge-down var(--icon-dur) var(--icon-ease);
   }
   .icon-motion:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true'])
-    .lucide-sliders-horizontal {
+    :is(.lucide-sliders-horizontal, .lucide-moon) {
     animation: icon-wiggle 460ms var(--icon-ease);
+  }
+  .icon-motion:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true'])
+    :is(.lucide-clock) {
+    animation: icon-turn 600ms var(--icon-ease);
+  }
+  .icon-motion:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true'])
+    :is(.lucide-file-text) {
+    animation: icon-lift var(--icon-dur) var(--icon-ease);
+  }
+  .icon-motion:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true']) .lucide-list {
+    animation: icon-nudge-right var(--icon-dur) var(--icon-ease);
+  }
+  .icon-motion:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true'])
+    .lucide-arrow-right-left {
+    animation: icon-half-turn 480ms var(--icon-ease);
+  }
+  .icon-motion:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true']) .lucide-sun {
+    animation: icon-eighth-turn 480ms var(--icon-ease);
+  }
+  .icon-motion:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true'])
+    :is(.lucide-file-bar-chart, .lucide-file-chart-column-increasing) {
+    animation: icon-pop 360ms var(--icon-ease);
   }
 }
 @keyframes icon-nudge-right {
@@ -319,6 +341,21 @@
 @keyframes icon-turn {
   to {
     rotate: 360deg;
+  }
+}
+@keyframes icon-lift {
+  50% {
+    translate: 0 -2px;
+  }
+}
+@keyframes icon-half-turn {
+  to {
+    rotate: 180deg;
+  }
+}
+@keyframes icon-eighth-turn {
+  to {
+    rotate: 45deg;
   }
 }
 @keyframes icon-pop {
