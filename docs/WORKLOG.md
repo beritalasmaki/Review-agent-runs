@@ -37,6 +37,27 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · My reviews intro text
+
+**Goal**
+Write a fluent description under the "My reviews" title that says what the page is and what it shows.
+
+**What changed**
+- `src/features/run/MyReviews.tsx`: the one-line subtitle is now four short sentences: what a run is, that nothing is released until a person decides, what to do with a pending run, where earlier decisions are.
+
+**Steps, in order**
+1. Found the text with a search for the old sentence; no test or doc quoted it.
+2. Replaced it, ran `npx prettier --write`, `npx tsc -b`, `npx vitest run`.
+
+**Why it was done this way**
+It follows the spec's voice rules (short sentences, plain words, no praise) and AGENTS.md rule 2: the text says a person decides.
+
+**How to do this by hand**
+Open `MyReviews.tsx`, find the `<p>` under `PageTitle`, edit the sentence.
+
+**Verification**
+`tsc -b` clean; `vitest run` 293/293. Not checked in a browser.
+
 ### 2026-11-18 · Calmer look: no logo, no top bar, no glass
 
 **Goal**

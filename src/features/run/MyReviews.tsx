@@ -420,7 +420,10 @@ function ReviewsBoard({
             <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
               <p className="text-lead leading-relaxed text-text-secondary">
-                Agent runs assigned to you. Decide on pending runs, and find your past decisions.
+                Each run is a change an AI agent made to a customer's software. Nothing is released
+                until a person decides. Open a pending run to see what the agent did and which
+                checks passed, then approve it, request changes or reject it. Your earlier decisions
+                are in the archive.
               </p>
             </div>
             <div className="flex items-center gap-[var(--space-3)]">
