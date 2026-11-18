@@ -37,6 +37,54 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · Brighter dark theme and stronger active tab
+
+**Goal**
+Make dark mode brighter and clearer (surfaces, text, status colours) and give the active tab a visible state.
+
+**What changed**
+- `src/styles/tokens.css`: new `--dark-*` primitives (surface, raised, lines, secondary and disabled text) used by both dark blocks; brighter dark status colours, tints, indigo and its tint.
+- `src/components/Tabs.tsx`: the pill tab's sliding indicator is `border-2 border-primary bg-primary-tint`.
+- Kept the earlier uncommitted work found in the tree: `RunPageNav` as a card, `dark:` classes on the badge and notice (see the entry below).
+- `docs/DECISIONS.md` 0136.
+
+**Steps, in order**
+1. Computed WCAG contrast for the new values in Python before editing.
+2. Edited the tokens and the tab indicator; `npx prettier --write src docs`.
+3. `npx tsc -b`, `npx eslint .`, `npm run check:theme-bridge`, `npx vitest run`, `npx playwright test --trace off`.
+4. Dark-mode screenshot of `?run=run-blocked` at 1440 px.
+
+**Why it was done this way**
+See 0136: the neutral ramp is shared with the light theme, so dark gets its own values.
+
+**How to do this by hand**
+Pick brighter dark values, check each pair at 4.5:1 (text) or 3:1 (lines) with a contrast checker, put them in `tokens.css`, and look at both themes.
+
+**Verification**
+`tsc -b`, `eslint .`, theme-bridge check clean; `vitest run` 293/293; `playwright test` 42 passed, 2 failed, the same two filters-popover contrast states that fail on untouched code. Run page checked by eye in dark mode; My reviews and the 390 px view not checked by eye.
+
+### 2026-11-18 · Dark mode: brighter notices, run page nav in a panel
+
+**Goal**
+Make the "N need your review" badge and the "N things to solve" notice readable in dark mode, and put the run page's first row in a panel as wide as the cards below.
+
+**What changed**
+- `MyReviews.tsx` badge and `OpenItemsNotice.tsx`: in dark mode a solid bright amber fill (`bg-status-waived-dot`) with dark text (`text-surface`); the notice's link and the back link use `text-text-primary` in dark mode. Light mode unchanged.
+- `RunPageNav.tsx`: now a card (`bg-surface`, border, `shadow-card`); `RunReviewPage.tsx` gap under it is `--space-5`, same as between the columns.
+
+**Steps, in order**
+1. Edited the four files above using `dark:` classes (no new colours or tokens).
+2. `npx tsc -b`, `npx eslint src`, `npx vitest run`; screenshots in dark mode at 1440 px of the run and list pages.
+
+**Why it was done this way**
+The dark amber tint (`#3a2c0a`) is shared by every waived/warning surface, so changing the token would recolour all of them. Only these two were asked for, so the change is local. Contrast: dark `--color-surface` on `#ffb224` is well above 4.5:1.
+
+**How to do this by hand**
+Add `dark:bg-status-waived-dot dark:text-surface` to the badge and notice; wrap the nav row in the same card classes as the other cards.
+
+**Verification**
+`tsc -b` clean, `vitest run` 293/293, screenshots checked by eye. E2E accessibility run not repeated for this change.
+
 ### 2026-11-18 · My reviews intro text
 
 **Goal**

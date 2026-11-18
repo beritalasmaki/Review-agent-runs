@@ -52,7 +52,17 @@
    * than the flat true-grey 0073 originally gave this.
    */
   --page-light: #f3f5f7;
-  --page-dark: #0d0f14;
+  --page-dark: #161a22;
+  /* Dark theme surfaces, text and lines, lifted brighter than the shared neutral ramp so the
+   * dark page reads clearly rather than muddy (docs/DECISIONS.md, 0136). Own values, because
+   * the ramp's dark steps double as the light theme's text colours. Contrast checked with the
+   * WCAG formula: text 13.8:1, secondary 9.8:1 on the surface; the line 3:1. */
+  --dark-surface: #222836;
+  --dark-surface-raised: #2d3445;
+  --dark-border-subtle: #4a5368;
+  --dark-border: #74809a;
+  --dark-text-secondary: #cdd3dd;
+  --dark-text-disabled: #8a93a3;
 
   /*
    * The page-wide gradient wash (docs/DECISIONS.md, 0089 introduced it, My reviews only; 0097
@@ -107,11 +117,11 @@
    * palette, never reused for non-status UI" rule in spirit even if the literal values differ. */
   --indigo-light: #4338ca;
   --indigo-light-hover: #332d9e;
-  --indigo-dark: #9ea3ff;
-  --indigo-dark-hover: #aab0ff;
+  --indigo-dark: #b3b7ff;
+  --indigo-dark-hover: #c4c7ff;
   /* Deeper, for fills and underlines only, not text: 4.75:1 on the dark surfaces, matching
    * 0073's precedent for this token's old (magenta) value. */
-  --indigo-dark-strong: #8086ff;
+  --indigo-dark-strong: #9a9fff;
 
   /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
   --lime-light: #427000;
@@ -125,15 +135,15 @@
    * fill — see the README before using one as a background or as text colour.
    */
   --status-green-light: #1e8a5a;
-  --status-green-dark: #4fd98a;
+  --status-green-dark: #6ff0a8;
   --status-red-light: #b3261e;
-  --status-red-dark: #f2897f;
+  --status-red-dark: #ff9e95;
   --status-amber-light: #8a5a00;
-  --status-amber-dark: #ffb224;
+  --status-amber-dark: #ffc233;
   --status-slate-light: #6b7280;
-  --status-slate-dark: #9aa1ac;
+  --status-slate-dark: #bcc3ce;
   --status-blue-light: #3d5a80;
-  --status-blue-dark: #8fb8e0;
+  --status-blue-dark: #a8cdf6;
 
   /*
    * Status "tint" pair — a light fill plus its own foreground, for the one deliberate
@@ -151,23 +161,23 @@
    */
   --status-green-tint-bg-light: #e6f6ec;
   --status-green-tint-fg-light: #1a7a3e; /* 4.81:1 on the tint above — new, see comment */
-  --status-green-tint-bg-dark: #16301f; /* paired with --status-green-dark: 7.87:1 */
+  --status-green-tint-bg-dark: #1f4a31; /* paired with --status-green-dark: 7.87:1 */
   --status-amber-tint-bg-light: #fdf3d9; /* paired with --status-amber-light: 5.36:1 */
-  --status-amber-tint-bg-dark: #3a2c0a; /* paired with --status-amber-dark: 7.54:1 */
+  --status-amber-tint-bg-dark: #4a3a12; /* paired with --status-amber-dark: 7.54:1 */
   /* Red tint — the Low confidence chip and Reject run's hover (docs/DECISIONS.md, 0039 and
    * 0041). Both reuse the existing red as foreground: 5.67:1 light, 6.57:1 dark. */
   --status-red-tint-bg-light: #fcebea;
-  --status-red-tint-bg-dark: #3b1714;
+  --status-red-tint-bg-dark: #542422;
   /* Blue tint for "Requested for change" in My reviews (docs/DECISIONS.md, 0060). */
   --status-blue-tint-bg-light: #e3ecfb;
   --status-blue-tint-fg-light: #1f5fbf; /* 5.02:1 on the tint above */
-  --status-blue-tint-bg-dark: #152338; /* paired with --status-blue-dark */
+  --status-blue-tint-bg-dark: #1f3e66; /* paired with --status-blue-dark */
 
   /* A light wash of the brand indigo: selected rows, the active tab's count (0094). */
   --indigo-tint-light: #eae9fb;
   --indigo-tint-border-light: #c9c5f0;
-  --indigo-tint-dark: #211f45;
-  --indigo-tint-border-dark: #423c7a;
+  --indigo-tint-dark: #302d6b;
+  --indigo-tint-border-dark: #8a85e0;
 
   /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */
   --mark-amber: #f0a04b;
@@ -383,23 +393,23 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --color-bg: var(--page-dark);
-    --color-surface: var(--neutral-12);
-    --color-surface-raised: var(--neutral-11);
+    --color-surface: var(--dark-surface);
+    --color-surface-raised: var(--dark-surface-raised);
 
-    --color-border-subtle: var(--neutral-10);
-    --color-border: var(--neutral-9);
+    --color-border-subtle: var(--dark-border-subtle);
+    --color-border: var(--dark-border);
 
     --color-text-primary: var(--neutral-1);
-    --color-text-secondary: var(--neutral-5);
-    --color-text-disabled: var(--neutral-7);
+    --color-text-secondary: var(--dark-text-secondary);
+    --color-text-disabled: var(--dark-text-disabled);
 
     --color-primary: var(--indigo-dark);
     --color-primary-hover: var(--indigo-dark-hover);
     --color-primary-strong: var(--indigo-dark-strong);
-    --color-primary-foreground: var(--neutral-13);
+    --color-primary-foreground: var(--dark-surface);
     --color-accent: var(--lime-dark);
     --color-accent-hover: var(--lime-dark-hover);
-    --color-accent-foreground: var(--neutral-13);
+    --color-accent-foreground: var(--dark-surface);
 
     --color-status-pass: var(--status-green-dark);
     --color-status-fail: var(--status-red-dark);
@@ -438,23 +448,23 @@
 
 :root[data-theme='dark'] {
   --color-bg: var(--page-dark);
-  --color-surface: var(--neutral-12);
-  --color-surface-raised: var(--neutral-11);
+  --color-surface: var(--dark-surface);
+  --color-surface-raised: var(--dark-surface-raised);
 
-  --color-border-subtle: var(--neutral-10);
-  --color-border: var(--neutral-9);
+  --color-border-subtle: var(--dark-border-subtle);
+  --color-border: var(--dark-border);
 
   --color-text-primary: var(--neutral-1);
-  --color-text-secondary: var(--neutral-5);
-  --color-text-disabled: var(--neutral-7);
+  --color-text-secondary: var(--dark-text-secondary);
+  --color-text-disabled: var(--dark-text-disabled);
 
   --color-primary: var(--indigo-dark);
   --color-primary-hover: var(--indigo-dark-hover);
   --color-primary-strong: var(--indigo-dark-strong);
-  --color-primary-foreground: var(--neutral-13);
+  --color-primary-foreground: var(--dark-surface);
   --color-accent: var(--lime-dark);
   --color-accent-hover: var(--lime-dark-hover);
-  --color-accent-foreground: var(--neutral-13);
+  --color-accent-foreground: var(--dark-surface);
 
   --color-status-pass: var(--status-green-dark);
   --color-status-fail: var(--status-red-dark);

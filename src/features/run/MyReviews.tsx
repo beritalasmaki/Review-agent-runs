@@ -432,9 +432,12 @@ function ReviewsBoard({
               <Badge
                 variant="warning"
                 data-tour="needs-review-badge"
-                className="border-transparent px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
+                className="border-transparent px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body dark:bg-status-waived-dot dark:text-surface"
               >
-                <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
+                <span
+                  aria-hidden
+                  className="h-2 w-2 rounded-full bg-status-waived-tint-fg dark:bg-surface"
+                />
                 {needsYou} need{needsYou === 1 ? 's' : ''} your review
               </Badge>
               <Button

@@ -6,6 +6,31 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0136 · Brighter dark theme, and a stronger active tab
+
+**Context.** In dark mode the page, cards and status colours were dark and muddy, and the active tab
+was only a faint border. The user asked for brighter colours in dark mode, status colours included,
+and a clearer active tab.
+
+**Options.** (1) Change the shared neutral ramp. Rejected: its dark steps are also the light theme's
+text colours. (2) Add dark-only surface, line and text primitives and lift the dark status and tint
+values. (3) Fix single components with `dark:` classes; this was started for the "need your review"
+badge and the open-items notice, and is kept but is not the general fix.
+
+**Choice.** Option 2. New `--dark-*` primitives in `tokens.css`: page `#161a22`, surface `#222836`,
+lines `#4a5368` and `#74809a`, secondary text `#cdd3dd`. Status colours and their tints, the indigo
+brand colour and its tint are brighter. Checked with the WCAG formula: text 13.8:1, status colours
+7.4-10.3:1 on the surface, text on every tint 6.4-7.1:1. The active tab's sliding indicator is a 2px
+indigo border on an indigo tint, not a faint grey border. The run page's first row is a card as
+wide as the columns below it.
+
+**Consequence.** Dark mode is lighter overall, so cards separate from the page by tone and a
+visible border. Light theme is unchanged. Changing one dark value now means changing a `--dark-*`
+token, not the neutral ramp. The `dark:` classes on the badge and notice duplicate some of this and
+can go in a later clean-up.
+
+---
+
 ## 0135 · No logo, no top bar, no glass
 
 **Context.** The run page had a fixed top bar with a cut-out logo, and every card, button and tab

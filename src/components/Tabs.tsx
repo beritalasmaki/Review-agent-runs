@@ -274,7 +274,7 @@ function PillTabsList({
         ref={indicatorRef}
         aria-hidden
         className={cn(
-          't-tabs-pill rounded-lg border border-border-subtle bg-surface-raised',
+          't-tabs-pill rounded-lg border-2 border-primary bg-primary-tint',
           indicatorClassName,
         )}
       />
