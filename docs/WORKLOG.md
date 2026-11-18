@@ -43,7 +43,7 @@ What is unfinished, uncertain, or should be decided by a human.
 Write a fluent description under the "My reviews" title that says what the page is and what it shows.
 
 **What changed**
-- `src/features/run/MyReviews.tsx`: the one-line subtitle is now four short sentences: what a run is, that nothing is released until a person decides, what to do with a pending run, where earlier decisions are.
+- `src/features/run/MyReviews.tsx`: the one-line subtitle is now five short sentences: why the page exists (agents change software faster than anyone follows), that nothing is released until a person decides, how to use a pending run, where earlier decisions are, and that the data is fictional. Width capped at 55rem like the Archive page's intro.
 
 **Steps, in order**
 1. Found the text with a search for the old sentence; no test or doc quoted it.

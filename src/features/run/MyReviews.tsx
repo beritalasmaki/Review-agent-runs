@@ -419,11 +419,13 @@ function ReviewsBoard({
           <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-t-lg rounded-b-none border border-b-0 border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card">
             <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
-              <p className="text-lead leading-relaxed text-text-secondary">
-                Each run is a change an AI agent made to a customer's software. Nothing is released
-                until a person decides. Open a pending run to see what the agent did and which
-                checks passed, then approve it, request changes or reject it. Your earlier decisions
-                are in the archive.
+              <p className="max-w-[55rem] text-lead leading-relaxed text-text-secondary">
+                AI agents now change customers' software faster than anyone can follow. This page is
+                where a person stays in charge: each run below is one change, and nothing is
+                released until you decide on it. Open a pending run to see what the agent did, which
+                checks passed or failed and what it could not verify, then approve it, request
+                changes or reject it. Your earlier decisions are in the archive. All runs here are
+                fictional sample data.
               </p>
             </div>
             <div className="flex items-center gap-[var(--space-3)]">
