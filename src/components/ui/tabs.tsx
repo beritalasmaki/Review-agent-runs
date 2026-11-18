@@ -49,7 +49,7 @@ function TabsList({
 }
 
 const tabsTriggerVariants = cva(
-  'cursor-pointer items-center whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus-ring',
+  'icon-motion cursor-pointer items-center whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus-ring',
   {
     variants: {
       variant: {

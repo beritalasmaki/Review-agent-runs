@@ -37,6 +37,31 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · Icon motion on the remaining icons
+
+**Goal**
+Check the rest of the icons and add motion where an icon sits in something the reviewer can hover.
+
+**What changed**
+- `src/styles/transitions.css`: rules and keyframes for clock (turn), file text (lift), list (nudge right), swap arrows (half turn), sun (eighth turn), moon (wiggle), report file (pop).
+- `src/components/ui/tabs.tsx` and `src/components/ThemeToggle.tsx`: `icon-motion` class.
+- `docs/DECISIONS.md` 0139, follow-up.
+
+**Steps, in order**
+1. Searched `src/` for every lucide icon and sorted them: in a button (done last time), in a tab trigger, in the theme switch, or decorative.
+2. Added the rules and the class; checked lucide's class names by rendering each icon on the server.
+3. Played each in Chromium: read `animation-name`, `translate`, `rotate`, `scale` 160 ms into a hover and 700 ms after leaving.
+4. `npx tsc -b`, `npx eslint .`, `npx vitest run`, `npx playwright test --trace off`, and the keyboard spec with `--repeat-each=8`.
+
+**Why it was done this way**
+See 0139. Decorative icons stay still: motion that does not respond to anything reads as noise.
+
+**How to do this by hand**
+Put `icon-motion` on the control, add a rule for the icon's `lucide-<name>` class and a keyframe.
+
+**Verification**
+Measured in Chromium: tab icons clock 174 deg, X 76 deg, check scale 1.25, list +3.97 px, file lift -2 px, sun 26 deg, moon wiggle; all back to rest afterwards. The report file icon was not reached by the script (on the archive page). Not judged by feel.
+
 ### 2026-11-18 · Icon motion on button hover
 
 **Goal**

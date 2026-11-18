@@ -41,7 +41,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       // The track stays neutral in both states: the sun or the moon, in the brand colour, says
       // which theme is on.
       className={cn(
-        'h-8 w-16 justify-between px-[var(--space-2)] data-[state=checked]:bg-surface-raised',
+        'icon-motion h-8 w-16 justify-between px-[var(--space-2)] data-[state=checked]:bg-surface-raised',
         className,
       )}
       thumbClassName="absolute top-1/2 left-1 h-6 w-6 -translate-y-1/2 data-[state=checked]:translate-x-8"
