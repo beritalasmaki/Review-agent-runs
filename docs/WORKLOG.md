@@ -37,6 +37,28 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · 16 px between run page cards
+
+**Goal**
+Bring the run page's first-row panel closer to the content; use 16-24 px.
+
+**What changed**
+- `RunReviewPage.tsx`: the page stack gap and the grid gap are `--space-4` (16 px), were `--space-5`.
+- `docs/DECISIONS.md` 0138.
+
+**Steps, in order**
+1. Changed the two `gap-[var(--space-5)]` classes at the top of the page layout.
+2. Dark-mode screenshot at 1440 px.
+
+**Why it was done this way**
+See 0138: one gap value for the whole grid.
+
+**How to do this by hand**
+Change the gap utility on the page wrapper and on the grid.
+
+**Verification**
+Checked by eye in a 1440 px dark screenshot. Tests not re-run for this one-class change.
+
 ### 2026-11-18 · Button hover: plain fade
 
 **Goal**

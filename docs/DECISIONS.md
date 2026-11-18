@@ -6,6 +6,21 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0138 · 16 px between the run page's cards
+
+**Context.** The first-row panel sat 24 px above the columns and read as far from the content.
+
+**Options.** 16 px everywhere, 24 px everywhere, or 16 px under the panel and 24 px between columns.
+
+**Choice.** 16 px (`--space-4`) between every card on the run page: panel to columns, column to
+column, and the cards stacked in a column (already 16 px). One value keeps the three columns and the
+panel reading as one grid.
+
+**Consequence.** The page is denser; the cards separate by border and tone, not air. My reviews
+keeps its own 24 px stack, not changed here.
+
+---
+
 ## 0137 · Button hover is a plain fade
 
 **Context.** Button hover lagged. `default`, `ghost` and `destructiveFill` ran a stripe animation
