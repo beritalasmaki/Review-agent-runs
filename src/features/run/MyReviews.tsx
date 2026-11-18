@@ -15,7 +15,6 @@ import { MorphIcon } from '../../components/MorphIcon'
 import { useEffect, useRef, useState } from 'react'
 import type { ComponentType } from 'react'
 import { LoadingState } from '../../components/LoadingState'
-import { LogoLabel } from '../../components/LogoLabel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/Tabs'
 import { Button } from '../../components/ui/button'
 import {
@@ -119,7 +118,6 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
   }
   return (
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-6)] md:px-[var(--space-6)]">
-      <LogoPanel />
       <PageTitle>My reviews</PageTitle>
       {state.status === 'loading' ? (
         <LoadingState label="Loading reviews…" className="min-h-[40vh]" />
@@ -139,30 +137,6 @@ export function MyReviews({ runHref, options, now }: MyReviewsProps) {
           </Button>
         </p>
       )}
-    </div>
-  )
-}
-
-/**
- * The app's wordmark on My reviews (docs/DECISIONS.md, 0125, replacing 0124's separate full-width
- * `TopNav` bar): a panel the same width as the rest of the page's content, sitting close above the
- * title card rather than spanning the full viewport above everything — "the logo navigation area
- * could be close to the main title and be same width as the rest of the content areas." The logo
- * is a hole cut through this panel's own glass fill (`topnav-logo-cutout`, `topnav-logo-center`,
- * `src/styles/index.css`), centred in it, not a second glass layer boxed inside the panel (0126 —
- * "what is that box... remove it"). `shadow-glass-lg` gives the panel the same cast-shadow
- * elevation every other glass card on this page already has (0127 — "make the top navigation
- * pop out"). A small drifting blob sits behind the hole (0134 — "add a dark blurry blob ball
- * moving behind the logo"), visible only through the lettering, the same way `RunTopBar`'s own
- * logo has one.
- */
-function LogoPanel() {
-  return (
-    <div className="topnav topnav-logo-cutout topnav-logo-center h-[calc(var(--topnav-logo-height)+2*var(--space-4))] rounded-lg border border-glass-border shadow-glass-lg">
-      <LogoLabel />
-      <span aria-hidden className="topnav-logo-blob-wrap">
-        <span className="topnav-logo-blob" />
-      </span>
     </div>
   )
 }
@@ -399,7 +373,7 @@ function ReviewsBoard({
           <Button
             size="sm"
             variant="outline"
-            className="btn-glass glass-sheen"
+
             onClick={() => setDialog({ type: 'archive', ids: archivable })}
             disabled={archivable.length === 0}
           >
@@ -431,7 +405,6 @@ function ReviewsBoard({
 
   return (
     <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
-      <LogoPanel />
       {!onArchivePage ? (
         <div className="flex flex-col">
           {/*
@@ -443,7 +416,7 @@ function ReviewsBoard({
            * (docs/DECISIONS.md, 0124), one level up: two cards here, not a tab strip and a card,
            * fused into one continuous outline rather than a strip meeting a card's own edge.
            */}
-          <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-t-lg rounded-b-none border border-b-0 border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]">
+          <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-t-lg rounded-b-none border border-b-0 border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card">
             <div className="flex flex-col gap-[var(--space-2)]">
               <PageTitle headingRef={headingRef}>My reviews</PageTitle>
               <p className="text-lead leading-relaxed text-text-secondary">
@@ -454,7 +427,7 @@ function ReviewsBoard({
               <Badge
                 variant="warning"
                 data-tour="needs-review-badge"
-                className="border-glass-chip-border bg-glass-warning px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
+                className="border-transparent px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body"
               >
                 <span aria-hidden className="h-2 w-2 rounded-full bg-status-waived-tint-fg" />
                 {needsYou} need{needsYou === 1 ? 's' : ''} your review
@@ -477,7 +450,7 @@ function ReviewsBoard({
           </div>
           <section
             aria-label="Runs"
-            className="overflow-hidden rounded-t-none rounded-b-lg border border-t-0 border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+            className="overflow-hidden rounded-t-none rounded-b-lg border border-t-0 border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card"
           >
             <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
               <div data-tour="run-tabs">
@@ -573,7 +546,7 @@ function ReviewsBoard({
                         size="sm"
                         variant="outline"
                         onClick={clearFilters}
-                        className="btn-glass glass-sheen mt-[var(--space-1)] px-[var(--space-4)]"
+                        className="mt-[var(--space-1)] px-[var(--space-4)]"
                       >
                         Clear filters
                       </Button>
@@ -646,7 +619,7 @@ function ReviewsBoard({
       {inlineArchive && (
         <section
           aria-label="Also found in the archive"
-          className="overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg border border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card"
         >
           {archiveTable()}
         </section>
@@ -655,7 +628,7 @@ function ReviewsBoard({
       {onArchivePage && (
         <section
           aria-label="Archived runs"
-          className="overflow-hidden rounded-lg border border-glass-border bg-glass pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-glass-lg backdrop-blur-[var(--blur-glass)]"
+          className="overflow-hidden rounded-lg border border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card"
         >
           <div>
             <ReviewsToolbar

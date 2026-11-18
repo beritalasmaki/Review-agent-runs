@@ -16,7 +16,7 @@ import { checkCardId, scoreCardId } from './openItemTargets'
 import { RunDetails } from './RunDetails'
 import { RunOverview } from './RunOverview'
 import { RunShape } from './RunShape'
-import { RunTopBar } from './RunTopBar'
+import { RunPageNav } from './RunPageNav'
 import { RunViewTabs } from './RunViewTabs'
 import { StepsTab } from './StepsTab'
 import { StoryTimeline } from './StoryTimeline'
@@ -76,25 +76,17 @@ export function RunReviewPage({
   const [decidedHere, setDecidedHere] = useState(false)
   // Set when the reviewer picks a tab, read once after the new view has rendered.
   const focusViewHeading = useRef(false)
-  const barRef = useRef<HTMLDivElement>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
-  const [barHeight, setBarHeight] = useState<number | undefined>(undefined)
   const [tabsHeight, setTabsHeight] = useState<number | undefined>(undefined)
   const detailsRef = useRef<HTMLElement>(null)
   const [detailsScroll, setDetailsScroll] = useState(false)
 
-  // The sticky bar's and view tabs' heights, so the tabs stick under the bar, and scrolled-to
-  // headings and the sticky "Run details" column sit below them rather than under them.
+  // The view tabs' height, so scrolled-to headings sit below them rather than under them.
   const loaded = state.status === 'success'
   useEffect(() => {
-    const bar = barRef.current
     const tabs = tabsRef.current
-    if (!bar || !tabs || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => {
-      setBarHeight(bar.offsetHeight)
-      setTabsHeight(tabs.offsetHeight)
-    })
-    observer.observe(bar)
+    if (!tabs || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => setTabsHeight(tabs.offsetHeight))
     observer.observe(tabs)
     return () => observer.disconnect()
   }, [loaded])
@@ -230,7 +222,6 @@ export function RunReviewPage({
   }
 
   const barStyle = {
-    ...(barHeight != null && { '--run-bar-height': `${barHeight}px` }),
     ...(tabsHeight != null && { '--run-tabs-height': `${tabsHeight}px` }),
   } as CSSProperties
 
@@ -241,102 +232,96 @@ export function RunReviewPage({
       activationMode="manual"
     >
       <div style={barStyle}>
-        <RunTopBar
-          ref={barRef}
-          run={run}
-          reviewsHref={reviewsHref}
-          end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
-        />
-
         {/*
          * Three columns from xl up (docs/DECISIONS.md, 0046): run details | overview + view |
          * decision. Two from md: the details sit under the overview. One column below md, in
          * the order overview, decision, details, view — so the decision is never at the bottom
-         * of a long page. The last row takes any spare height, so a short view never pushes a
-         * gap in under the overview.
-         *
-         * `pt-[calc(var(--run-bar-height)+var(--space-5))]` (0119): `RunTopBar` is `position:
-         * fixed`, so it reserves no space of its own in normal flow — this padding is that
-         * reserved space, put back by hand, plus the same `--space-5` top padding this grid
-         * always had.
+         * of a long page. No top bar (0135): the way back and the theme switch are the first row
+         * of the page, and the columns start at one height under it.
          */}
-        <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-start gap-[var(--space-5)] px-[var(--space-4)] pt-[calc(var(--run-bar-height,4rem)+var(--space-5))] pb-[var(--space-7)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] md:px-[var(--space-6)] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
-          <div
-            className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
-            data-tour="run-overview"
-          >
-            <RunOverview run={run} />
-          </div>
+        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-4)] px-[var(--space-4)] pt-[var(--space-4)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+          <RunPageNav
+            reviewsHref={reviewsHref}
+            end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
+          />
+          <div className="grid grid-cols-1 items-start gap-[var(--space-5)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
+            <div
+              className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
+              data-tour="run-overview"
+            >
+              <RunOverview run={run} />
+            </div>
 
-          <aside
-            aria-label={
-              isStillRunning(run)
-                ? 'Your decision, not ready yet'
-                : decided
-                  ? 'The decision record'
-                  : 'Your decision'
-            }
-            data-tour="decision-panel"
-            className="flex min-w-0 flex-col gap-[var(--space-4)] md:col-start-2 md:row-span-3 md:row-start-1 xl:col-start-3 xl:row-span-2"
-          >
-            {isStillRunning(run) ? (
-              <InProgressBox run={run} reviewsHref={reviewsHref} />
-            ) : decided ? (
-              <>
-                <UndoBox
-                  run={run}
-                  onRunUpdated={applyRun}
-                  celebrate={decidedHere}
-                  undoOptions={submitDecisionOptions}
-                />
-                <UnverifiedList run={run} />
-                <RunShape run={run} />
-              </>
-            ) : (
-              <>
-                <DecisionPanel
-                  // A fresh panel after an undo: the earlier ticks and reason belonged to a
-                  // decision that no longer stands.
-                  key={run.status}
-                  run={run}
-                  onRunUpdated={applyRun}
-                  submitDecisionOptions={submitDecisionOptions}
-                  onShowItem={showItem}
-                />
-                <UnverifiedList run={run} />
-              </>
-            )}
-          </aside>
+            <aside
+              aria-label={
+                isStillRunning(run)
+                  ? 'Your decision, not ready yet'
+                  : decided
+                    ? 'The decision record'
+                    : 'Your decision'
+              }
+              data-tour="decision-panel"
+              className="flex min-w-0 flex-col gap-[var(--space-4)] md:col-start-2 md:row-span-3 md:row-start-1 xl:col-start-3 xl:row-span-2"
+            >
+              {isStillRunning(run) ? (
+                <InProgressBox run={run} reviewsHref={reviewsHref} />
+              ) : decided ? (
+                <>
+                  <UndoBox
+                    run={run}
+                    onRunUpdated={applyRun}
+                    celebrate={decidedHere}
+                    undoOptions={submitDecisionOptions}
+                  />
+                  <UnverifiedList run={run} />
+                  <RunShape run={run} />
+                </>
+              ) : (
+                <>
+                  <DecisionPanel
+                    // A fresh panel after an undo: the earlier ticks and reason belonged to a
+                    // decision that no longer stands.
+                    key={run.status}
+                    run={run}
+                    onRunUpdated={applyRun}
+                    submitDecisionOptions={submitDecisionOptions}
+                    onShowItem={showItem}
+                  />
+                  <UnverifiedList run={run} />
+                </>
+              )}
+            </aside>
 
-          <div className="min-w-0 md:col-start-1 md:row-start-2 xl:sticky xl:top-[calc(var(--run-bar-height,4rem)+var(--space-4))] xl:row-span-2 xl:row-start-1">
-            <RunDetails
-              ref={detailsRef}
-              run={run}
-              tabIndex={detailsScroll ? 0 : undefined}
-              className="xl:max-h-[calc(100dvh-var(--run-bar-height,4rem)-2*var(--space-4))] xl:scrollbar-none xl:overflow-y-auto xl:overscroll-contain"
-            />
-          </div>
+            <div className="min-w-0 md:col-start-1 md:row-start-2 xl:sticky xl:top-[var(--space-4)] xl:row-span-2 xl:row-start-1">
+              <RunDetails
+                ref={detailsRef}
+                run={run}
+                tabIndex={detailsScroll ? 0 : undefined}
+                className="xl:max-h-[calc(100dvh-2*var(--space-4))] xl:scrollbar-none xl:overflow-y-auto xl:overscroll-contain"
+              />
+            </div>
 
-          <div
-            data-tour="run-tabs-view"
-            className="min-w-0 rounded-lg border border-glass-border bg-glass pb-[var(--space-4)] pl-[var(--space-4)] shadow-glass-lg backdrop-blur-[var(--blur-glass)] md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
-          >
-            {/* No top/right padding on the wrapper above, on purpose: RunViewTabs' own
+            <div
+              data-tour="run-tabs-view"
+              className="min-w-0 rounded-lg border border-border-subtle bg-surface pb-[var(--space-4)] pl-[var(--space-4)] shadow-card md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
+            >
+              {/* No top/right padding on the wrapper above, on purpose: RunViewTabs' own
                 `rounded-t-lg` corner sits flush against this card's top-right corner instead of
                 floating with a gap around it, so the tab strip reads as this card's own attached
                 header rather than a separate element — the pill tabs and the content below both
                 keep their own `px-[var(--space-5)]`, so nothing touches the true edge. */}
-            <RunViewTabs ref={tabsRef} run={run} />
-            <div className="px-[var(--space-5)] pt-[var(--space-5)] pb-[var(--space-5)]">
-              <TabsContent value="story">
-                <StoryTimeline run={run} onShowSteps={showStep} />
-              </TabsContent>
-              <TabsContent value="evidence">
-                <EvidenceTab run={run} onOpenStep={showStep} />
-              </TabsContent>
-              <TabsContent value="steps">
-                <StepsTab run={run} focusEventId={focusEventId} />
-              </TabsContent>
+              <RunViewTabs ref={tabsRef} run={run} />
+              <div className="px-[var(--space-5)] pt-[var(--space-5)] pb-[var(--space-5)]">
+                <TabsContent value="story">
+                  <StoryTimeline run={run} onShowSteps={showStep} />
+                </TabsContent>
+                <TabsContent value="evidence">
+                  <EvidenceTab run={run} onOpenStep={showStep} />
+                </TabsContent>
+                <TabsContent value="steps">
+                  <StepsTab run={run} focusEventId={focusEventId} />
+                </TabsContent>
+              </div>
             </div>
           </div>
         </div>
