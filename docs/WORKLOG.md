@@ -37,6 +37,31 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-18 · Icon motion on button hover
+
+**Goal**
+Add a short, controlled animation to the icon inside a button on hover, fitted to each icon.
+
+**What changed**
+- `src/styles/transitions.css`: `.icon-motion` rules and eight keyframes (nudge right/left/down, turn, pop, quarter turn, wiggle).
+- `src/components/ui/button.tsx`: `icon-motion` in the base classes; `src/features/run/RunPageNav.tsx`: same class on the back link.
+- `docs/DECISIONS.md` 0139.
+
+**Steps, in order**
+1. Listed the icons used in buttons and read lucide's rendered class names (`lucide-arrow-right`).
+2. Wrote the CSS keyed to those names, wrapped in `prefers-reduced-motion: no-preference`.
+3. Played each in Chromium with a Playwright script: read `animation-name`, `translate`, `rotate` 150 ms into a hover and 600 ms after leaving.
+4. `npx tsc -b`, `npx eslint .`, `npx vitest run`, `npx playwright test --trace off`.
+
+**Why it was done this way**
+See 0139: one class and no call-site edits.
+
+**How to do this by hand**
+Add the class to a button, write a keyframe that moves the icon, scope it to the icon's class.
+
+**Verification**
+Measured in Chromium: Review arrow +3.97 px at 150 ms and back to rest; Archive +2.97 px down; Filters -5 deg; Back link and Request changes -3.89 px; Reject (X) 72 deg; nothing under reduced motion. Check, refresh and download icons were not measured. Not judged by feel.
+
 ### 2026-11-18 · Lighter dark status backgrounds
 
 **Goal**

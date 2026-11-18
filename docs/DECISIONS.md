@@ -6,6 +6,28 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0139 · Icon motion on button hover
+
+**Context.** After 0137 removed the stripe, buttons had only a colour fade. The user asked for a
+small, controlled icon animation on hover, such as an arrow nudging in its direction, and a fitting
+one for other icons.
+
+**Options.** (1) Edit each call site and give each icon its own class. (2) One `.icon-motion` class
+on `Button` and the back link, with CSS matching lucide's own class names. (3) The `morphicons`
+package already in the project.
+
+**Choice.** Option 2. Arrows and chevrons nudge 4 px in the direction they point and settle back
+(380 ms); the refresh icons turn once; check pops; X turns a quarter; archive and download drop 3 px;
+the filters icon wiggles. They play once on `:hover`/`:focus-visible`, not on disabled buttons, and
+only when the user has not asked for reduced motion. They animate `translate`/`rotate`/`scale`, not
+`transform`, so an icon with its own rotation is not overridden.
+
+**Consequence.** No call site needed changes and every new button gets the motion for free, but the
+CSS depends on lucide keeping its `lucide-<name>` class names; a different icon library or an icon
+without the class gets no motion. Icons outside a button (the theme switch, info tips) do not move.
+
+---
+
 ## 0138 · 16 px between the run page's cards
 
 **Context.** The first-row panel sat 24 px above the columns and read as far from the content.
