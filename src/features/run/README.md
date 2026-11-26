@@ -59,15 +59,16 @@ the run, and a right column that stays in place.
   screen straight away, without a refetch. Lays out the three columns, owns which view is
   open, and where focus goes when the view changes: the view's heading after a
   tab, or one step's row after a link into the step list (docs/DECISIONS.md, 0044).
-- `RunPageNav.tsx` — the first row of the page, not a bar: the link back to "My reviews", the
-  open-items notice and the theme switch. No logo, no fill, not fixed (0135).
+- `TopBar.tsx` — the bar across the top of every screen: the breadcrumb on the left, "Reviewing as"
+  and, before a decision, the open-items notice on the right. Sticky, translucent over the
+  terrain (0143, replacing 0135's plain first row).
 - `RunViewTabs.tsx` — the Story / Evidence / All N steps tab list, at the top of the view it
   switches, sticky at the top of the window (0052).
 - `RunOverview.tsx` — the card at the top of the middle column: status, initiative, why the
   agent was asked, where the run is now.
 - `RunDetails.tsx` — "Run details", the left-hand column: *The change* (target, revision, run
   reference) and *The run* (requester, agent, time, checks, lowest score) (0046).
-- `OpenItemsNotice.tsx` — in the first row, beside the theme switch, before a decision: a yellow dot,
+- `OpenItemsNotice.tsx` — in the top bar, before a decision: a yellow dot,
   "3 things to solve" and a link to the tick list (0053).
 - `UndoBox.tsx` — heads the right-hand column after a decision: the outcome ("Approved", with a
   check that plays transitions.dev's "Success check" and takes focus when the decision was just

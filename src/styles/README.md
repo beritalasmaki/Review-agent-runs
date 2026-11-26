@@ -8,20 +8,22 @@ component having to.
 
 Two layers:
 
-1. **Primitives** — the raw values: `--lime-light`, `--neutral-3`. Plain custom properties,
-   never Tailwind utilities.
+1. **Primitives** — the raw values: `--ink-1`, `--orange`, `--st-pass`. Plain custom properties,
+   deliberately not inside `@theme`, so they never become Tailwind utilities. Components must
+   not use them.
 2. **Semantic tokens** — what the product uses: `--color-primary`, `--color-status-pass`,
    `--color-surface-raised`, `--color-border-subtle`. Components only ever use these.
 
-Both themes are defined here. Dark is the default (docs/DECISIONS.md, 0142, reversing 0001),
-whatever the system setting; light is an explicit choice with the theme switch and is
-remembered. Brand is signal orange in both.
+There is one theme: dark (docs/DECISIONS.md, 0143, which also removed the light theme and its
+switch that 0063 and 0142 had kept). The palette is the satellite design's — warm black
+surfaces, one signal orange, steel for people, four status colours — and `check-theme-bridge`
+still checks every semantic token resolves in a real browser.
 
 ## Type
 
-Chakra Petch (500/600/700) for headings, buttons and the wordmark — `--font-heading`. Hanken
-Grotesk (400/500/600) for body text and table/data text — `--font-body`. Both load via Google Fonts (see
-`index.html`); neither varies by theme.
+Chakra Petch (500/600/700) for headings, labels and the wordmark — `--font-heading`. Hanken
+Grotesk (400/500/600) for body text, buttons and table/data text — `--font-body`. Both load via
+Google Fonts (see `index.html`).
 
 ## Type scale
 
@@ -29,15 +31,16 @@ Exact sizes, weights and fonts, decided once — not a fresh judgment call per c
 
 | Token                     | Size  | Weight | Font                 | Used for                                             |
 | ------------------------- | ----- | ------ | -------------------- | ----------------------------------------------------- |
-| `--text-page-title`       | 28px  | 700    | `font-heading`        | The page identity element — one per page              |
-| `--text-section-heading`  | 18px  | 600    | `font-heading`        | One per region: Policy gates, Audit log, Decision...  |
-| `--text-item-title`       | 15px  | 600    | `font-body`           | A row's own title — a gate's rule name, an event title |
-| `--text-body`             | 14px  | 400    | `font-body`           | Descriptions, sentences                               |
+| `--text-page-title`       | 44px  | 700    | `font-heading`        | The page identity element — one per page              |
+| `--text-run-title`        | 32px  | 600    | `font-heading`        | A run's title on its own page                         |
+| `--text-section-heading`  | 22px  | 600    | `font-heading`        | One per region: Run details, Your decision...         |
+| `--text-item-title`       | 16px  | 600    | `font-body`           | A row's own title — a gate's rule name, an event title |
+| `--text-body`             | 15px  | 400    | `font-body`           | Descriptions, sentences                               |
 | `--text-meta`             | 13px  | 400    | `font-body`, always `--color-text-secondary` | Timestamps, "Evaluated by", counts |
-| `--text-badge-label`      | 13px  | 600    | `font-heading`        | `StatusBadge`'s label text specifically               |
-| `--text-lead`             | 16px  | 400    | `font-body`           | The story's running prose                             |
-| `--text-caption`          | 12px  | 400    | `font-body`           | Field labels, helper text under a control, chips      |
-| `--text-score`            | 22px  | 600    | `font-heading`        | A confidence percentage, the undo countdown           |
+| `--text-badge-label`      | 13px  | 600    | `font-body`           | `StatusBadge`'s label text specifically               |
+| `--text-lead`             | 17px  | 400    | `font-body`           | The story's running prose                             |
+| `--text-caption`          | 12px  | 500    | `font-heading`, uppercase, tracked | Labels (`.lbl`), helper text   |
+| `--text-score`            | 24px  | 600    | `font-heading`        | A confidence percentage, the undo countdown           |
 
 A new `--text-*` token must also be added to `TYPE_SCALE` in `src/lib/utils.ts`, or `cn()`
 will drop it next to a colour class (docs/DECISIONS.md, 0043).
@@ -77,21 +80,18 @@ Consumed through Tailwind's arbitrary-value syntax instead — `gap-[var(--space
 
 ## Usage rules
 
-- **Primary and accent are never used on Approve, Request changes or Reject** (the `brand`
-  Button variant is for the tour and welcome only, 0142). Those three
-  stay neutral. A brand colour on the decision actions would read as "the recommended
+- **Primary is never used on Approve, Request changes or Reject.** Approve is the
+  green plate (`approve` Button variant, a status colour), Request changes an outline, Reject
+  a red outline. The orange plate (`default`) is for everything else: Review, Send to agent, the
+  tour's Next. A brand colour on the decision actions would read as "the recommended
   option" or "the easy one," and the interface must never imply that (docs/spec-review-screen.md,
   Scenario S2; AGENTS.md non-negotiable 2).
-- **Accent never resembles a status badge.** No check/cross icon on an accent element, and a
-  different shape from a status chip — accent as an outline pill, status as a filled chip
-  with icon + text. One is a brand colour, the other is a claim about a policy check; they
-  must not be visually interchangeable.
 - **Status is a separate palette from brand, and is never reused for non-status UI.** If
   something needs colour and it is not reporting a pass/fail/waived/not-applicable/unknown
   result, it does not get a status colour.
-- **Status and accent colours are for the icon, border and swatch — never the text itself.**
-  The label next to a status icon or inside an accent pill uses `--color-text-primary` or
-  `--color-text-secondary`, not the status/accent colour. This is not a style preference: see
+- **Status colours are for the icon, border and swatch — never the text itself.**
+  The label next to a status icon uses `--color-text-primary` or
+  `--color-text-secondary`, not the status colour. This is not a style preference: see
   the contrast numbers below. **One scoped exception:** `StatusBadge`'s `success`/`warning`
   tones are a filled tint (background, border, icon and text all the status colour) — see
   `StatusBadge.tsx`'s own doc comment and `docs/DECISIONS.md` for why, and why it stops at
@@ -101,36 +101,20 @@ Consumed through Tailwind's arbitrary-value syntax instead — `gap-[var(--space
 
 ## Contrast
 
-Verified against every realistic pairing (WCAG relative-luminance formula, target 4.5:1 for
-text). Full numbers were computed, not estimated — see `docs/DECISIONS.md`, 0005, for how.
+Computed with the WCAG relative-luminance formula, target 4.5:1 for text (docs/DECISIONS.md,
+0005 for the method; the numbers below are the dark palette's, 0143).
 
-- **Text tokens pass everywhere they're used.** `--color-text-primary` and
-  `--color-text-secondary` clear 4.5:1 against `--color-bg`, `--color-surface` and
-  `--color-surface-raised`, in both themes (5.4:1 to 18:1). The page itself is flat, true-grey,
-  with no decorative gradient over it (docs/DECISIONS.md, 0073) — nothing for text to clear
-  contrast against beyond the surface tokens above.
-- **`--color-text-disabled` does not clear 4.5:1** (2.3–3.4:1 depending on theme and surface).
-  Left as given: WCAG 1.4.3 does not require a minimum contrast for inactive UI text, and this
-  token is not used for anything else.
-- **`--color-status-pass` and `--color-status-not-applicable` fail 4.5:1 as literal text colour
-  in light theme** (3.98:1 and 4.43:1 against `--color-surface-raised` respectively). This is
-  exactly why the usage rule above exists: used for an icon or a border (WCAG's 3:1
-  non-text threshold), both pass; used as running text, neither would. `--color-accent` (the
-  chartreuse-lime, 0073) actually clears 4.5:1 even as text now (5.4–5.9:1 light, 9.5:1+ dark) —
-  still unused by any component today, but unlike the old teal it would be exempt for this
-  reason too, not just by the usage rule. In dark theme every status and brand colour clears
-  4.5:1 even as text (5.4–10.5:1) — the dark-theme values were lightened with this in mind.
-- **A filled primary (or destructive) surface needs different foreground text per theme.**
-  White text on `--color-primary` passes in light (5.9:1) but fails in dark (2.5:1), because
-  the dark-theme primary is deliberately lightened for its own contrast; near-black passes in
-  dark (6.6:1) but fails in light (2.8:1). `--color-primary-foreground` (and
-  `--color-destructive-foreground`, which reuses it) is defined to flip per theme rather than
-  fixed to white — a real bug this check caught before it shipped.
-- **`--color-border` and `--color-border-subtle` sit at 1.2–1.5:1 against every surface**, in
-  both themes. Noted, not changed: borders aren't subject to the text-contrast rule, and these
-  are the values given. Worth knowing if a border ever needs to carry meaning on its own — and
-  why a container relying on fill contrast alone (not a border) can go invisible even when its
-  *stated* contrast ratio looks adequate (docs/DECISIONS.md, 0072).
+- Text on a panel (`--ink-1`): primary 15.0:1, secondary 6.5:1 (6.0:1 on raised, `--ink-2`).
+  Text on a count pill (`--ink-chip`): 10.0:1.
+- Brand: `--color-primary` text on a panel 6.9:1; dark text (`--color-primary-foreground`) on the
+  orange fill 5.9:1; orange links on the amber tint 5.8:1.
+- Status on a panel: pass 11.1:1, waived 11.2:1, fail 5.7:1. Each also holds on its own tint
+  (5.4:1 to 9.8:1), and the approve plate's dark text on green is 11.9:1.
+- `--color-border` is 3.1:1 against a panel (a control's own edge, WCAG's 3:1 non-text
+  threshold); `--color-border-subtle` is a hairline between things and carries no meaning alone.
+- `--color-text-disabled` is 4.6:1 here, though inactive text is exempt.
+- Panels are solid on purpose: a gradient or texture behind text makes contrast unverifiable for
+  axe, and the e2e spec would have to measure pixels instead.
 
 Motion tokens live here too, and motion is functional only: state changes, data arriving,
 focus. `prefers-reduced-motion` is respected.
@@ -140,11 +124,11 @@ Storybook — that is the point of writing design decisions as code.
 
 ## transitions.css
 
-Three transitions from transitions.dev (docs/DECISIONS.md, 0047): "Success check", "Tooltip
+Transitions from transitions.dev (docs/DECISIONS.md, 0047): "Success check", "Tooltip
 open/close" and "Tabs sliding". Each keeps its `.t-*` classes, its own motion variables, and
 its `prefers-reduced-motion` guard. Colours come from the semantic tokens above. Change a
 transition's feel through its variables (`--check-*`, `--tt-*`, `--tabs-*`), never by editing
 the keyframes.
 
-The welcome intro's colours (`--color-signature`, `--color-intro-*`) are in tokens.css. They are
-the same in both themes on purpose, and are used by the intro only (0048).
+The welcome intro's drawing colours (the `--art-*` palette) are in tokens.css and are used by the intro only (0048, 0143). The terrain backdrop's
+SVG is `--terrain-image`: a data URI cannot read tokens, so its colours are literal.

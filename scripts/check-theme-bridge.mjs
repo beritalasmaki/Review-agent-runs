@@ -147,11 +147,7 @@ async function checkColorUtilities(css, colorNames) {
     ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE }
     : {}
   const browser = await chromium.launch(launchOptions)
-  const themeVariants = [
-    { label: 'light', colorScheme: 'light', dataTheme: 'light' },
-    { label: 'dark (default)', colorScheme: 'light', dataTheme: null },
-    { label: 'dark (data-theme attribute)', colorScheme: 'light', dataTheme: 'dark' },
-  ]
+  const themeVariants = [{ label: 'dark', colorScheme: 'dark', dataTheme: null }]
 
   try {
     const results = {}

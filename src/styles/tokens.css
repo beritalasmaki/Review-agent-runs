@@ -43,11 +43,7 @@
   --st-info-fg: #b8c7d0;
   --st-pass-ink: #04140c; /* dark text on the green fill, 12:1 */
   --st-pass-quiet: #9bbfb2; /* disabled approve's text */
-  /* Accent (lime), kept for the few places that used it. */
-  --lime: #a8e063;
-  --lime-hover: #cdeba2;
-  /* The welcome intro's and terrain's own colours: decorative, never text. */
-  --signature-orange: #f45b22;
+  /* The terrain's own colours: decorative, never text. */
   --terrain-glow: #ff7a47;
   --terrain-shade: #11100f;
   --terrain-line: #6e777d;
@@ -96,9 +92,6 @@
   --color-primary-hover: var(--orange-hover);
   --color-primary-foreground: var(--orange-ink);
   --color-primary-strong: var(--orange);
-  --color-accent: var(--lime);
-  --color-accent-hover: var(--lime-hover);
-  --color-accent-foreground: var(--ink-1);
   --color-focus-ring: var(--orange-hi);
   --color-primary-tint: var(--orange-tint);
   --color-primary-tint-border: var(--orange-tint-edge);
@@ -134,11 +127,7 @@
   --color-toast-link: var(--orange-hi);
   --color-toast-icon: var(--st-pass);
 
-  /* The welcome intro's sheet and ink; the spotlight and modal scrims. */
-  --color-signature: var(--signature-orange);
-  --color-intro-scrim: rgb(17 16 15 / 0.97);
-  --color-intro-ink: var(--paper);
-  --color-intro-muted: var(--paper-muted);
+  /* The spotlight and modal scrims. */
   --color-spotlight-scrim: rgb(0 0 0 / 0.6);
   --color-modal-scrim: rgb(0 0 0 / 0.65);
 

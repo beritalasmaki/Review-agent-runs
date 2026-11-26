@@ -6,6 +6,48 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0143 · The app is made to match the design: dark only, no old UI left
+
+**Context.** 0142 ported the first pieces of the satellite design, but the app still carried the
+old interface beside it: a light theme and a switch, glass cards, a plain first row, rounded
+10 px cards, a white-on-dark default button, and an intro that was not the one in the design. The
+author asked that the old UI be removed and the site match the design exactly.
+
+**Choices.**
+- *One theme.* The light theme, `ThemeToggle`, `theme.ts` and the `dark:` variant are gone; the
+  design has no switch. This reverses 0063 and the light half of 0142. Cost: no light mode for
+  anyone who wants it; git history has it if it is ever wanted back.
+- *Tokens.* `tokens.css` was rewritten as the design's palette (warm black, signal orange, steel,
+  four status colours); the neutral ramp, glass gradients and unused tokens (accent lime, the
+  signature and intro colours) were deleted. Corners are 3 to 4 px, cards are `.panel` (a lit top
+  edge, a long shadow) and main ones carry the orange `.foil`.
+- *Approve.* The design's Approve is green, not orange, so AGENTS.md's rule (no brand colour on
+  Approve, Request changes or Reject) holds without the `brand` variant 0142 added; that variant
+  is gone. `default` is the orange chamfered plate (Review, Send to agent, the tour's Next),
+  `approve` the green one, `outline` the quiet one, `destructive` a red outline.
+- *Panels are solid.* The design's faint grain and gradient on cards were left out: axe cannot
+  decide contrast on a gradient, and the e2e spec would have to measure screenshots instead.
+  Likewise the orange plate is a flat fill, not the design's three-stop gradient. The visual
+  difference is a few percent of brightness.
+- *Top bar.* One bar on every screen: breadcrumb left, "Reviewing as" right, replacing 0135's
+  plain row. The design's "Open audit log" link is not built: there is no audit log page.
+- *Intro.* The designed scene is ported as it is: route, three stations, two round faces and a
+  robot, cards, camera, timed in CSS. The welcome dialog opens over its last frame (so it never
+  sits on the table) and has "Replay intro"; "Skip intro" and "Replay intro" are also top right.
+  The author's signature mark is no longer shown, so `SignatureMark.tsx` was deleted (git has it).
+- *Copy.* The dialog now carries the design's text, including that the idea rests on the EU AI
+  Act (Article 14, human oversight). That reference has not been checked against the Act's text.
+- *Left as it was.* Fixtures and run copy (the design uses its own sample runs and reviewer);
+  the Story / Evidence / All steps tabs stay above the story, not in the panel header as drawn.
+
+**Fixed on the way.** The tour's overview step scrolled a page-tall element to the centre,
+scrolling the page away; it now stays put.
+
+**Consequence.** `npm run check` passes with axe in the one theme. Anything that wants colour
+must use a semantic token; the drawing palette (`--art-*`) is for the intro only.
+
+---
+
 ## 0142 · Dark by default, signal-orange brand, terrain backdrop and a new welcome intro
 
 **Context.** The approved satellite design (0140) is now ported to `src/`: dark by default, a warm

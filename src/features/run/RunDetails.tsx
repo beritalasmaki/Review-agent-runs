@@ -43,16 +43,14 @@ const ENVIRONMENT = {
   dev: { dot: 'bg-status-not-applicable', help: 'A developer copy. No real customers use it.' },
 } as const
 
-const LABEL = 'text-caption font-normal font-body leading-none text-text-secondary'
+const LABEL = 'lbl leading-none'
 const VALUE = 'text-body font-medium font-body leading-snug text-text-primary'
 const HELP = 'text-caption font-normal font-body leading-relaxed text-text-secondary'
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section aria-label={title} className="flex flex-col">
-      <h3 className="pb-[var(--space-2)] text-caption font-semibold font-heading tracking-wide text-text-secondary uppercase">
-        {title}
-      </h3>
+      <h3 className="lbl pb-[var(--space-2)]">{title}</h3>
       <dl className="flex flex-col">{children}</dl>
     </section>
   )

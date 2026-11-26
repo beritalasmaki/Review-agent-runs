@@ -37,6 +37,36 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-26 · Remove the old UI and make the site match the design
+
+**Goal**
+Remove everything left of the old interface and make the app, and above all the intro, match the design.
+
+**What changed**
+- `src/styles/tokens.css`, `index.css`, `transitions.css`: rewritten for one dark theme; `.panel`, `.foil`, `.lbl`, `.sat`, the terrain `::before`.
+- Removed: `ThemeToggle`, `theme.ts`, `RunPageNav`, `SignatureMark`, the `brand` button variant, glass and gradient tokens, unused tokens.
+- Added: `features/run/TopBar.tsx`, `app/IntroScene.tsx`; rewrote `WelcomeIntro.tsx`, `intro.css`, `WelcomeModal.tsx`.
+- Restyled: Button, Badge, StatusBadge, Tabs, Table, Dialog, My reviews header, run overview and decision panel.
+- Tests: intro, modal, App, badge; e2e accessibility (one theme, sticky counts as a floating layer), keyboard (theme test removed), approve flow.
+- `docs/DECISIONS.md` 0143; READMEs.
+
+**Steps, in order**
+1. Compared the artifact with the app side by side in screenshots. 2. Rewrote the tokens and global CSS. 3. Replaced the first row with a top bar. 4. Restyled the shared controls, then the page headers. 5. Ported the intro scene's SVG and CSS from the artifact, with the drawing colours as `--art-*` tokens. 6. Ran `npm run check` and fixed what axe and the keyboard spec found: gradients on panels and the plate (axe cannot decide), a focus outline cut off by `clip-path`, a muted badge scrolled off screen by the overview step.
+
+**Why it was done this way**
+See 0143.
+
+**How to do this by hand**
+Open the artifact and the app at 1440 px side by side; change tokens first, then shared controls, then screens, checking the Playwright axe spec after each step.
+
+**Verification**
+`npm run check` passes (unit tests, Playwright with axe and the keyboard specs). Screenshots of the list, run page, tour and intro were compared with the artifact by eye.
+
+**Open questions / next**
+Tabs in the story panel's header as drawn; the audit log link; an exact pixel pass on the run page; whether to keep the design's gradients and check contrast by measuring.
+
+---
+
 ### 2026-11-26 · Satellite design ported to src (theme, backdrop, intro, buttons, fonts)
 
 **Goal**

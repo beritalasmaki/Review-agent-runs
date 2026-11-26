@@ -8,8 +8,8 @@ Each was fetched from shadcn-ui/ui on GitHub (the registry is blocked here) and 
 our tokens. The API stays shadcn's, with a few additions, each noted in the file's header
 comment. Every control in the app is built from these. The files beside `ui/` put them
 together for this app: `Modal` (Dialog), `Tabs` (Tabs, with a sliding active-tab indicator), `InfoTip`
-(Tooltip), `StatusBadge` (Badge), `ThemeToggle` (Switch), `notify` (Sonner) and
-`OnboardingTour` (Popover). `TerrainBackdrop` is the page `<main>` with the dark-theme terrain backdrop (0142).
+(Tooltip), `StatusBadge` (Badge), `notify` (Sonner) and
+`OnboardingTour` (Popover). `TerrainBackdrop` is the page `<main>` with the terrain backdrop (0142, 0143).
 
 **The test:** would this component work, unchanged, in a completely different product? If
 yes, it belongs here. If it needs to know what a policy gate is, it belongs in `features/run/`.
@@ -32,8 +32,6 @@ sliding mechanics with pill.
 shows a short confirmation that stays until closed; the page renders `<Toaster />` for it. Both
 come from the My reviews design (0060).
 
-`ThemeToggle` switches light and dark (docs/DECISIONS.md, 0063); `theme.ts` reads and sets the
-page's theme for it.
 
 `LoadingState` is the loading indicator: the `thinking-orbs` "working" orb with a label under
 it, centred (docs/DECISIONS.md, 0050). jsdom can't draw it, so the test setup stubs the canvas.
