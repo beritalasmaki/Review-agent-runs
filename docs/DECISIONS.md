@@ -26,6 +26,8 @@ background layer that stops under `prefers-reduced-motion`, and a satellite-unde
 fog text is decorative and `aria-hidden`; colours must be re-checked with `npm run check` contrast
 tests in both themes. Not yet done: any of the above in code.
 
+**Palette (follow-up).** The theme moved from cold blue-black to warm black and orange: page `#12100e`, warm graphite panels, text `#f5efea`, accent orange `#ff8a1f`. Status colours stay distinct from the accent: failed is red-coral `#ff6b5e`, pending and exception amber `#f2c94c`, passed green `#34e89e`, not run and requested lavender `#b9a6e8`, and people pills sand. Trade-off: orange as the accent sits close to amber and red, so each status keeps its own icon shape and word, not colour alone.
+
 **Fonts (follow-up).** Two families, not three: Chakra Petch for headings and small labels, Hanken Grotesk for body text and numbers. Numbers use `font-feature-settings: "tnum"` on Hanken instead of a third, monospaced family (Martian Mono). Trade-off: less of a "terminal" feel for figures, one fewer font to load.
 
 ---
