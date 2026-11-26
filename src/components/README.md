@@ -9,7 +9,7 @@ our tokens. The API stays shadcn's, with a few additions, each noted in the file
 comment. Every control in the app is built from these. The files beside `ui/` put them
 together for this app: `Modal` (Dialog), `Tabs` (Tabs, with a sliding active-tab indicator), `InfoTip`
 (Tooltip), `StatusBadge` (Badge), `ThemeToggle` (Switch), `notify` (Sonner) and
-`OnboardingTour` (Popover).
+`OnboardingTour` (Popover). `TerrainBackdrop` is the page `<main>` with the dark-theme terrain backdrop (0142).
 
 **The test:** would this component work, unchanged, in a completely different product? If
 yes, it belongs here. If it needs to know what a policy gate is, it belongs in `features/run/`.

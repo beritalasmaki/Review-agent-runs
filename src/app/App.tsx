@@ -3,6 +3,7 @@ import { OnboardingTour } from '../components/OnboardingTour'
 import { MyReviews } from '../features/run/MyReviews'
 import { RunReviewPage } from '../features/run/RunReviewPage'
 import { LIST_TOUR_STEPS, RUN_TOUR_STEPS } from '../features/run/tourSteps'
+import { TerrainBackdrop } from '../components/TerrainBackdrop'
 import { shouldShowIntro } from './intro'
 import { markListLegFinished, markTourSeen, shouldShowListTour, shouldShowRunTour } from './tour'
 import { WelcomeIntro } from './WelcomeIntro'
@@ -74,13 +75,13 @@ export default function App() {
           applies to every screen now, run page included. The slowly drifting ambient colour
           (0116, rebuilt in 0117) is part of `bg-bg` itself now — more `radial-gradient()`
           layers on the same utility, not a separate positioned element. */}
-      <main className="min-h-screen bg-bg">
+      <TerrainBackdrop>
         {runId ? (
           <RunReviewPage runId={runId} getRunOptions={delayMs ? { delayMs } : undefined} />
         ) : (
           <MyReviews runHref={runHref} options={delayMs ? { delayMs } : undefined} />
         )}
-      </main>
+      </TerrainBackdrop>
       {showIntro && !runId && (
         <WelcomeIntro
           onDone={() => {
@@ -91,6 +92,10 @@ export default function App() {
       )}
       {showWelcomeModal && (
         <WelcomeModal
+          onReplayIntro={() => {
+            setShowWelcomeModal(false)
+            setShowIntro(true)
+          }}
           onStartTour={() => {
             setShowWelcomeModal(false)
             setShowTour(true)
