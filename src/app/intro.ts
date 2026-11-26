@@ -1,5 +1,3 @@
-import { prefersReducedMotion } from '../lib/motion'
-
 /**
  * The welcome intro's once-per-visit logic and timing (WelcomeIntro.tsx, docs/DECISIONS.md
  * 0048, 0049 and 0142). A visit is a browser session: the intro plays again whenever someone opens
@@ -11,16 +9,9 @@ import { prefersReducedMotion } from '../lib/motion'
 export const INTRO_SEEN_KEY = 'ledger:intro-seen'
 
 export const INTRO_TIMING = {
-  /** How long each of the three stations holds the stage (Alpha, Beta, Omega). */
-  station: 2800,
-  /** The signature and name, after the route is done. */
-  sign: 2400,
-  fade: 500,
+  /** How long the animation plays before the welcome dialog opens, in ms. */
+  total: 14000,
 } as const
-
-/** The intro's stages, in order; `fade` is the last. */
-export const INTRO_PHASES = ['alpha', 'beta', 'omega', 'sign', 'fade'] as const
-export type IntroPhase = (typeof INTRO_PHASES)[number]
 
 function readSeen(): boolean {
   try {
@@ -42,7 +33,8 @@ export function markIntroSeen() {
   }
 }
 
-/** Whether this page load should show the intro: not yet seen in this visit, and motion is OK. */
+/** Whether this page load should show the intro: not yet seen in this visit. (With reduced
+ * motion it still shows, as its last frame, so the welcome dialog has its backdrop.) */
 export function shouldShowIntro(): boolean {
-  return !prefersReducedMotion() && !readSeen()
+  return !readSeen()
 }

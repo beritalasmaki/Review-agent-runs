@@ -47,10 +47,10 @@ const runHref = (id: string) => `?run=${encodeURIComponent(id)}`
 
 export default function App() {
   const { runId, delayMs } = currentParams()
-  const [showIntro, setShowIntro] = useState(shouldShowIntro)
-  // On the home page the welcome modal waits for the intro to finish first, so the two never
-  // overlap — it starts out false here whenever the intro is about to show, and `WelcomeIntro`'s
-  // own `onDone` turns it on.
+  // The welcome: the animated map, with the welcome dialog opening over its last frame. Only on
+  // the home page, once per visit. A visit that already saw the intro but never answered the
+  // dialog gets the dialog alone.
+  const [showIntro, setShowIntro] = useState(() => !runId && shouldShowIntro())
   const [showWelcomeModal, setShowWelcomeModal] = useState(
     () => !runId && !shouldShowIntro() && shouldShowListTour(),
   )
@@ -82,20 +82,20 @@ export default function App() {
           <MyReviews runHref={runHref} options={delayMs ? { delayMs } : undefined} />
         )}
       </TerrainBackdrop>
-      {showIntro && !runId && (
+      {showIntro && (
         <WelcomeIntro
-          onDone={() => {
+          onStartTour={() => {
             setShowIntro(false)
-            setShowWelcomeModal(shouldShowListTour())
+            setShowTour(true)
+          }}
+          onSkip={() => {
+            setShowIntro(false)
+            markTourSeen()
           }}
         />
       )}
       {showWelcomeModal && (
         <WelcomeModal
-          onReplayIntro={() => {
-            setShowWelcomeModal(false)
-            setShowIntro(true)
-          }}
           onStartTour={() => {
             setShowWelcomeModal(false)
             setShowTour(true)

@@ -36,12 +36,12 @@ describe('WelcomeModal', () => {
   it('replays the intro from its own button, when one is given', () => {
     const onReplayIntro = vi.fn()
     render(<WelcomeModal onStartTour={vi.fn()} onSkip={vi.fn()} onReplayIntro={onReplayIntro} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Replay the intro' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Replay intro' }))
     expect(onReplayIntro).toHaveBeenCalledTimes(1)
   })
 
   it('has no replay button without a handler', () => {
     render(<WelcomeModal onStartTour={vi.fn()} onSkip={vi.fn()} />)
-    expect(screen.queryByRole('button', { name: 'Replay the intro' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Replay intro' })).not.toBeInTheDocument()
   })
 })

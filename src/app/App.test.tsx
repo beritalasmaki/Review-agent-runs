@@ -32,10 +32,7 @@ describe('App', () => {
     window.history.pushState({}, '', `/?run=${runClean.id}`)
     render(<App />)
     expect(await screen.findByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
-    expect(screen.getByRole('link', { name: 'My reviews' })).toHaveAttribute(
-      'href',
-      '/',
-    )
+    expect(screen.getByRole('link', { name: 'My reviews' })).toHaveAttribute('href', '/')
   })
 
   it('loads the run named by ?run=', async () => {
@@ -63,12 +60,12 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'My reviews' })).toBeVisible()
   })
 
-  it("hands off to the page's own loading state when a skip beats a slow load", async () => {
+  it("hands off to the page's own loading state when the welcome is skipped before a slow load", async () => {
     window.sessionStorage.clear()
-    window.sessionStorage.setItem(TOUR_SEEN_KEY, 'seen')
     window.history.pushState({}, '', '/?delay=100')
     render(<App />)
     fireEvent.keyDown(window, { key: 'Escape' })
+    fireEvent.click(await screen.findByRole('button', { name: /^Skip, I'll look around/ }))
     expect(screen.queryByTestId('welcome-intro')).not.toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Loading reviews')
     expect(await screen.findByRole('heading', { name: 'My reviews' })).toBeVisible()

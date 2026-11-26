@@ -69,6 +69,7 @@ function DialogContent({
         )}
         {...props}
       >
+        <div aria-hidden className="foil -mx-[var(--space-5)] -mt-[var(--space-5)]" />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close

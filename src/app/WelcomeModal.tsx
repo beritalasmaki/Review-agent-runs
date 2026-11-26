@@ -20,21 +20,24 @@ export interface WelcomeModalProps {
 
 export function WelcomeModal({ onStartTour, onSkip, onReplayIntro }: WelcomeModalProps) {
   return (
-    <Modal title="Welcome to Review agent runs" onClose={onSkip} className="max-w-[32rem]">
-      <p className="text-body leading-relaxed text-text-primary">
+    <Modal title="Welcome to Review agent runs" onClose={onSkip} className="max-w-[35rem]">
+      <p className="text-lead leading-relaxed text-text-secondary">
         This is where a reviewer looks at what an AI agent did to a piece of software, and decides
         whether to approve it, send it back, or reject it.
       </p>
-      <p className="text-body leading-relaxed text-text-primary">
-        It was built by Berit Alasmäki, a UX and product designer. She kept seeing teams bring in AI
-        agents faster than anyone could keep track of what those agents were actually doing, and
-        wanted to try designing an interface for that — not for any one company, just an idea worth
-        testing.
+      <p className="text-lead leading-relaxed text-text-secondary">
+        The idea is based on the EU AI Act, which asks that people can oversee what an AI system
+        does (Article 14, human oversight). As agents take on more work, a person has to stay in the
+        loop on what they are doing.
+      </p>
+      <p className="text-lead leading-relaxed text-text-secondary">
+        It was built by Berit Alasmäki, a UX and product designer, to test how an interface for that
+        could work. It is not for any one company, and it is not a compliance tool.
       </p>
       {onReplayIntro && !prefersReducedMotion() && (
         <Button variant="link" size="inline" onClick={onReplayIntro} className="self-start">
           <RotateCcw aria-hidden className="h-4 w-4" />
-          Replay the intro
+          Replay intro
         </Button>
       )}
       <div className="flex flex-wrap items-center justify-end gap-[var(--space-3)]">
