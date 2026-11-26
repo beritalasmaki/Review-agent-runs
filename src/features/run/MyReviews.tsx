@@ -747,7 +747,7 @@ function InProgress({
 }) {
   return (
     <Collapsible open={open} onOpenChange={onToggle} className="flex flex-col">
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-[var(--space-4)] rounded-b-lg data-[state=open]:rounded-b-none px-[var(--space-5)] py-[var(--space-4)] text-left hover:bg-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-[var(--space-4)] rounded-b-lg data-[state=open]:rounded-b-none px-[var(--space-5)] py-[var(--space-4)] text-left hover:bg-text-primary/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring">
         <span
           aria-hidden
           className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-raised text-text-secondary"

@@ -139,7 +139,7 @@ export function DetailsButton({ run, onClick }: { run: Run; onClick: () => void 
       aria-haspopup="dialog"
       aria-label={`Decision details: ${run.initiative}`}
       title="Show decision details"
-      className="h-7 w-7 text-text-secondary hover:bg-primary-tint "
+      className="h-7 w-7 text-text-secondary"
     >
       <FileText aria-hidden className="h-3.5 w-3.5" />
     </Button>

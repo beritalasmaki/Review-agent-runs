@@ -76,7 +76,7 @@ export function CheckCard({ gate, timeline, actionable = false }: CheckCardProps
             onClick={() => setQueued(true)}
             disabled={queued}
             className={cn(
-              'border-status-waived px-[var(--space-4)] hover:border-status-waived hover:bg-status-waived-tint-bg active:bg-status-waived-tint-bg',
+              'border-status-waived px-[var(--space-4)]',
               'disabled:cursor-default disabled:border-status-waived disabled:bg-surface disabled:text-text-primary disabled:opacity-70',
             )}
           >

@@ -47,16 +47,16 @@ const buttonVariants = cva(
         ),
         outline: cn(
           SWEEP,
-          'border-border bg-transparent font-medium text-text-primary hover:enabled:brightness-125 hover:enabled:bg-surface-raised',
+          'border-border bg-transparent font-medium text-text-primary hover:enabled:brightness-[1.12]',
         ),
         destructive: cn(
           SWEEP,
-          'border-status-fail bg-status-fail-tint-bg font-medium text-text-primary hover:enabled:brightness-125',
+          'border-status-fail bg-status-fail-tint-bg font-medium text-text-primary hover:enabled:brightness-[1.12]',
         ),
         destructiveFill:
           'border-status-fail bg-status-fail text-primary-foreground hover:enabled:brightness-110',
         ghost:
-          'border-transparent bg-transparent font-medium text-text-primary hover:bg-surface-raised',
+          'border-transparent bg-transparent font-medium text-text-secondary hover:enabled:text-text-primary',
         link: 'sat rounded-none border-0 bg-transparent p-0 font-medium text-text-primary',
       },
       size: {

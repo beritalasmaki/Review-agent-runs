@@ -56,7 +56,7 @@ const tabsTriggerVariants = cva(
         segmented: [
           'flex flex-1 justify-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-3)]',
           'text-item-title font-semibold font-body text-text-secondary underline-offset-4',
-          'bg-surface-raised transition-colors duration-[var(--motion-duration-fast)] hover:underline',
+          'bg-surface-raised transition-colors duration-[var(--motion-duration-fast)] hover:text-text-primary',
           'data-[state=active]:bg-surface data-[state=active]:text-text-primary',
           'focus-visible:relative focus-visible:z-10 focus-visible:outline-offset-[-2px]',
         ],
@@ -66,7 +66,7 @@ const tabsTriggerVariants = cva(
           // The pressed tab is brighter and bolder; the sliding underline behind it
           // (components/Tabs.tsx) carries the orange. aria-selected, not data-state: a trigger
           // wrapped in Radix's Tooltip gets that tooltip's own data-state on the same node.
-          'hover:text-text-primary aria-selected:font-semibold aria-selected:text-text-primary focus-visible:outline-offset-2',
+          'sweep hover:text-text-primary aria-selected:font-semibold aria-selected:text-text-primary focus-visible:outline-offset-2',
         ],
         // No -mb-px onto the list's rule: the list scrolls sideways, which clips anything below
         // its edge, and that clipped the selected tab's underline to nothing. No colour
@@ -79,7 +79,7 @@ const tabsTriggerVariants = cva(
         line: [
           'inline-flex gap-[var(--space-3)] border-b-2 border-transparent px-[var(--space-5)] py-[var(--space-4)]',
           'text-body font-semibold font-heading leading-none text-text-secondary',
-          'hover:border-border hover:text-text-primary',
+          'sweep hover:text-text-primary',
           'data-[state=active]:text-text-primary',
           'focus-visible:outline-offset-[-2px]',
         ],

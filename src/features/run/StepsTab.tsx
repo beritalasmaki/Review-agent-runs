@@ -86,7 +86,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         tabIndex={focused ? -1 : undefined}
         className={cn(
           'text-meta font-normal font-body text-text-primary',
-          attention ? 'bg-status-waived-tint-bg/60' : nested ? 'bg-bg' : 'hover:bg-bg',
+          attention ? 'bg-status-waived-tint-bg/60' : nested ? 'bg-bg' : 'hover:bg-text-primary/5',
           focused && 'outline-2 -outline-offset-2 outline-focus-ring',
           nested && 'text-text-secondary',
         )}
@@ -196,7 +196,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
                         type="button"
                         aria-expanded={state !== 'closed'}
                         onClick={toggle}
-                        className="flex w-full cursor-pointer items-center gap-[var(--space-2)] text-left hover:underline"
+                        className="flex w-full cursor-pointer items-center gap-[var(--space-2)] sat text-left"
                       >
                         <MorphIcon
                           icon={state !== 'closed' ? ChevronUp : ChevronDown}

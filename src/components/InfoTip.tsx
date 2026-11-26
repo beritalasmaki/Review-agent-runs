@@ -26,7 +26,7 @@ export function InfoTip({ label, children, align = 'start', className }: InfoTip
           size="icon"
           aria-label={`About ${label}`}
           className={cn(
-            'h-4 w-4 cursor-help rounded-full border-border text-caption leading-none text-text-secondary hover:border-primary hover:text-primary',
+            'h-4 w-4 cursor-help rounded-full border-border text-caption leading-none text-text-secondary hover:text-text-primary',
             className,
           )}
         >

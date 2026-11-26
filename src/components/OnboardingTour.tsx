@@ -142,6 +142,7 @@ export function OnboardingTour({
   const [index, setIndex] = useState(0)
   const [exhausted, setExhausted] = useState(false)
   const [finishing, setFinishing] = useState(false)
+  const [tracking, setTracking] = useState(false)
   const [rect, setRect] = useState<DOMRect | null>(null)
   // Which step `rect` was measured for — a stale rect from the step just left must never
   // render under the new step's title while the new one is still being found.
@@ -219,12 +220,22 @@ export function OnboardingTour({
       timeout = window.setTimeout(giveUp, missingTimeoutMs)
     }
 
+    // While the page scrolls or resizes the outline follows its target at once (no glide, which
+    // would lag behind and land in the wrong place); it measures once more when things go still.
+    let settle: number | undefined
     const measure = () => {
       if (cancelled) return
       const element = document.querySelector<HTMLElement>(step.selector)
       if (element) {
+        setTracking(true)
         setRect(element.getBoundingClientRect())
         setRectStepId(step.id)
+        window.clearTimeout(settle)
+        settle = window.setTimeout(() => {
+          if (cancelled) return
+          setRect(element.getBoundingClientRect())
+          setTracking(false)
+        }, 180)
       }
     }
     window.addEventListener('scroll', measure, true)
@@ -233,6 +244,7 @@ export function OnboardingTour({
       cancelled = true
       observer?.disconnect()
       if (timeout != null) window.clearTimeout(timeout)
+      window.clearTimeout(settle)
       window.removeEventListener('scroll', measure, true)
       window.removeEventListener('resize', measure)
     }
@@ -287,10 +299,14 @@ export function OnboardingTour({
     width: Math.min(box.width + PAD * 2, vw - 8),
     height: Math.max(spotBottom - Math.max(spotTop, 4), 0),
   }
+  // Scrolled right out of view: the outline hides, and the bubble waits at the screen edge.
+  const offscreen = !overview && (box.bottom < 0 || box.top > vh)
   // Where the bubble hangs from: the outline, or on an overview a point low in the middle.
   const anchor = overview
     ? { left: vw / 2, top: vh * 0.66, width: 0, height: 0 }
-    : { left: spot.left, top: spot.top, width: spot.width, height: spot.height }
+    : offscreen
+      ? { left: spot.left, top: box.top > vh ? vh - 4 : 4, width: spot.width, height: 0 }
+      : { left: spot.left, top: spot.top, width: spot.width, height: spot.height }
   const doneStops = finishing ? total : number - 1
   const fill = total > 1 ? (doneStops / (total - 1)) * 100 : 100
 
@@ -351,7 +367,11 @@ export function OnboardingTour({
 
   return (
     <>
-      <div aria-hidden className="tour-spot" style={spot} />
+      <div
+        aria-hidden
+        className={cn('tour-spot', tracking && 'is-tracking', offscreen && 'is-offscreen')}
+        style={spot}
+      />
       {trail && (
         <>
           <svg aria-hidden className="tour-trail" width={vw} height={vh} key={trail.key}>

@@ -32,10 +32,7 @@ export function InProgressBox({ run, reviewsHref }: InProgressBoxProps) {
           approve, send back or reject.
         </p>
       </div>
-      <a
-        href={reviewsHref}
-        className="-mx-[var(--space-2)] -my-[var(--space-1)] inline-block w-fit rounded-xs px-[var(--space-2)] py-[var(--space-1)] text-meta font-semibold font-heading text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
-      >
+      <a href={reviewsHref} className="sat w-fit text-meta font-semibold">
         Back to my reviews
       </a>
     </div>

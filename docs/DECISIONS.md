@@ -6,6 +6,26 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0145 · One set of hovers, the design's
+
+**Context.** Hovers had piled up over many rounds: tinted boxes behind links, a border and fill on
+outline buttons, a different move for every icon (0139), row fills in three different greys.
+
+**Choice.** The design's hovers only. Links and run titles: a short orange bar sweeps along the
+underline (`.sat`). Buttons: 12 % brighter, a white bar sweeps along the bottom edge, and the
+arrow slides 3 px right (`.icon-motion`, replacing 0139's per-icon moves). Tabs: the text
+brightens and the same orange bar sweeps (`.sweep`). Table and list rows: a 5 % wash. Quiet
+icon buttons and the info "i": the icon brightens, nothing else. No hover draws a box, a border
+or a fill on a button or link. Reduced motion: the bar shows still, the arrow does not move.
+
+**Also fixed.** On a tour step the outline now follows its target at once while the page scrolls
+(gliding made it lag and land in the wrong place), and shrinks to a line at the screen edge when
+the target is scrolled out of view.
+
+**Consequence.** `.icon-motion`'s keyframes are gone from `transitions.css`.
+
+---
+
 ## 0144 · The onboarding tour follows the designed tour
 
 **Context.** The tour in the app did not match the design's "route stops" tour, and the run page's

@@ -92,8 +92,7 @@ export function ReviewsToolbar({
             variant="outline"
             className={cn(
               'gap-[var(--space-2)]',
-              open &&
-                'border-primary bg-primary-tint text-primary hover:border-primary hover:bg-primary-tint',
+              open && 'border-primary bg-primary-tint text-primary',
             )}
           >
             <SlidersHorizontal aria-hidden className="h-4 w-4" />

@@ -124,7 +124,7 @@ export function ArchiveTable({
           return (
             <TableRow
               key={run.id}
-              className="bg-surface transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-border-subtle"
+              className="transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-text-primary/5"
             >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />
@@ -172,7 +172,7 @@ export function ArchiveTable({
                     size="sm"
                     onClick={() => onNewRun(run.id)}
                     aria-label={`Request a new run: ${run.initiative}`}
-                    className="h-8 hover:border-primary hover:bg-surface hover:text-primary"
+                    className="h-8"
                   >
                     <RotateCw aria-hidden className="h-3.5 w-3.5" />
                     New run
