@@ -2,9 +2,22 @@ import { useState } from 'react'
 import { OnboardingTour } from '../components/OnboardingTour'
 import { MyReviews } from '../features/run/MyReviews'
 import { RunReviewPage } from '../features/run/RunReviewPage'
-import { LIST_TOUR_STEPS, RUN_TOUR_STEPS } from '../features/run/tourSteps'
+import {
+  LIST_TOUR_STEPS,
+  RUN_TOUR_STEPS,
+  TOUR_FINISH,
+  TOUR_TOTAL_STEPS,
+} from '../features/run/tourSteps'
+import { TerrainBackdrop } from '../components/TerrainBackdrop'
 import { shouldShowIntro } from './intro'
-import { markListLegFinished, markTourSeen, shouldShowListTour, shouldShowRunTour } from './tour'
+import {
+  markListLegFinished,
+  markTourSeen,
+  replayRequested,
+  replayTour,
+  shouldShowListTour,
+  shouldShowRunTour,
+} from './tour'
 import { WelcomeIntro } from './WelcomeIntro'
 import { WelcomeModal } from './WelcomeModal'
 
@@ -46,17 +59,19 @@ const runHref = (id: string) => `?run=${encodeURIComponent(id)}`
 
 export default function App() {
   const { runId, delayMs } = currentParams()
-  const [showIntro, setShowIntro] = useState(shouldShowIntro)
-  // On the home page the welcome modal waits for the intro to finish first, so the two never
-  // overlap — it starts out false here whenever the intro is about to show, and `WelcomeIntro`'s
-  // own `onDone` turns it on.
+  // The welcome: the animated map, with the welcome dialog opening over its last frame. Only on
+  // the home page, once per visit. A visit that already saw the intro but never answered the
+  // dialog gets the dialog alone.
+  const [showIntro, setShowIntro] = useState(() => !runId && shouldShowIntro())
   const [showWelcomeModal, setShowWelcomeModal] = useState(
-    () => !runId && !shouldShowIntro() && shouldShowListTour(),
+    () => !runId && !shouldShowIntro() && shouldShowListTour() && !replayRequested(),
   )
   // Leg 1 (My reviews) only ever starts from the welcome modal's "Take the tour", never on its
   // own. Leg 2 (a run page) has no modal of its own — it is already a continuation of a choice
   // the visitor made on My reviews — so it still starts automatically.
-  const [showTour, setShowTour] = useState(() => (runId ? shouldShowRunTour() : false))
+  const [showTour, setShowTour] = useState(() =>
+    runId ? shouldShowRunTour() : replayRequested() && shouldShowListTour(),
+  )
 
   function dismissTour(reason: 'skip' | 'escape' | 'finished' | 'navigated') {
     setShowTour(false)
@@ -74,18 +89,22 @@ export default function App() {
           applies to every screen now, run page included. The slowly drifting ambient colour
           (0116, rebuilt in 0117) is part of `bg-bg` itself now — more `radial-gradient()`
           layers on the same utility, not a separate positioned element. */}
-      <main className="min-h-screen bg-bg">
+      <TerrainBackdrop>
         {runId ? (
           <RunReviewPage runId={runId} getRunOptions={delayMs ? { delayMs } : undefined} />
         ) : (
           <MyReviews runHref={runHref} options={delayMs ? { delayMs } : undefined} />
         )}
-      </main>
-      {showIntro && !runId && (
+      </TerrainBackdrop>
+      {showIntro && (
         <WelcomeIntro
-          onDone={() => {
+          onStartTour={() => {
             setShowIntro(false)
-            setShowWelcomeModal(shouldShowListTour())
+            setShowTour(true)
+          }}
+          onSkip={() => {
+            setShowIntro(false)
+            markTourSeen()
           }}
         />
       )}
@@ -102,7 +121,14 @@ export default function App() {
         />
       )}
       {showTour && (
-        <OnboardingTour steps={runId ? RUN_TOUR_STEPS : LIST_TOUR_STEPS} onDismiss={dismissTour} />
+        <OnboardingTour
+          steps={runId ? RUN_TOUR_STEPS : LIST_TOUR_STEPS}
+          stepOffset={runId ? LIST_TOUR_STEPS.length : 0}
+          totalSteps={TOUR_TOTAL_STEPS}
+          finish={runId ? TOUR_FINISH : undefined}
+          onReplay={replayTour}
+          onDismiss={dismissTour}
+        />
       )}
     </>
   )

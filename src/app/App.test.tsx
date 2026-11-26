@@ -32,10 +32,7 @@ describe('App', () => {
     window.history.pushState({}, '', `/?run=${runClean.id}`)
     render(<App />)
     expect(await screen.findByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Back to the reviews list' })).toHaveAttribute(
-      'href',
-      '/',
-    )
+    expect(screen.getByRole('link', { name: 'My reviews' })).toHaveAttribute('href', '/')
   })
 
   it('loads the run named by ?run=', async () => {
@@ -63,12 +60,12 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'My reviews' })).toBeVisible()
   })
 
-  it("hands off to the page's own loading state when a skip beats a slow load", async () => {
+  it("hands off to the page's own loading state when the welcome is skipped before a slow load", async () => {
     window.sessionStorage.clear()
-    window.sessionStorage.setItem(TOUR_SEEN_KEY, 'seen')
-    window.history.pushState({}, '', '/?delay=100')
+    window.history.pushState({}, '', '/?delay=1500')
     render(<App />)
     fireEvent.keyDown(window, { key: 'Escape' })
+    fireEvent.click(await screen.findByRole('button', { name: /^Skip, I'll look around/ }))
     expect(screen.queryByTestId('welcome-intro')).not.toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Loading reviews')
     expect(await screen.findByRole('heading', { name: 'My reviews' })).toBeVisible()
@@ -84,7 +81,7 @@ describe('App', () => {
     window.history.pushState({}, '', `/?run=${runMessyPending.id}`)
     render(<App />)
     expect(screen.queryByTestId('welcome-intro')).not.toBeInTheDocument()
-    expect(await screen.findByText(runMessyPending.id)).toBeVisible()
+    expect(await screen.findByText(`Run ${runMessyPending.id}`)).toBeVisible()
   })
 
   describe('the welcome modal and the onboarding tour', () => {
@@ -108,7 +105,7 @@ describe('App', () => {
       expect(
         screen.queryByRole('heading', { name: 'Welcome to Review agent runs' }),
       ).not.toBeInTheDocument()
-      expect(await screen.findByText('Step 1 of 5')).toBeVisible()
+      expect(await screen.findByText('Step 1 of 10')).toBeVisible()
     })
 
     it('skipping the modal opens neither the modal nor the tour, and remembers it', async () => {
@@ -117,14 +114,14 @@ describe('App', () => {
       expect(
         screen.queryByRole('heading', { name: 'Welcome to Review agent runs' }),
       ).not.toBeInTheDocument()
-      expect(screen.queryByText('Step 1 of 5')).not.toBeInTheDocument()
+      expect(screen.queryByText('Step 1 of 10')).not.toBeInTheDocument()
       expect(window.sessionStorage.getItem(TOUR_SEEN_KEY)).not.toBeNull()
     })
 
     it('does not offer the welcome modal on a direct run link', async () => {
       window.history.pushState({}, '', `/?run=${runMessyPending.id}`)
       render(<App />)
-      await screen.findByText(runMessyPending.id)
+      await screen.findByText(`Run ${runMessyPending.id}`)
       expect(
         screen.queryByRole('heading', { name: 'Welcome to Review agent runs' }),
       ).not.toBeInTheDocument()

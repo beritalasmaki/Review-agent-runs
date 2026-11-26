@@ -23,7 +23,7 @@ export interface StoryTimelineProps {
 }
 
 const DOT: Record<StoryStepTone, string> = {
-  key: 'bg-text-primary',
+  key: 'bg-primary-strong',
   plain: 'bg-border',
   attention: 'bg-status-waived',
 }
@@ -57,7 +57,7 @@ function Step({
           dotClassName,
         )}
       />
-      <span className="text-meta font-medium font-body leading-none text-text-secondary">
+      <span className="text-meta font-medium font-body leading-none text-primary">
         {time} · {label}
       </span>
       {children}

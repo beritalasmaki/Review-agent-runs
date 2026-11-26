@@ -55,7 +55,7 @@ const STATES: {
     skipInitialHeading: true,
     open: async (page) => {
       await page.getByRole('button', { name: 'Take the tour' }).click()
-      await expect(page.getByText('Step 1 of 5')).toBeVisible()
+      await expect(page.getByText('Step 1 of 10')).toBeVisible()
     },
   },
   {
@@ -167,13 +167,14 @@ function ownContrast(page: Page, selector: string) {
     // take the one in a floating layer, not the first one in the page behind it.
     const matches = Array.from(document.querySelectorAll(sel))
     const isFloating = (el: Element): boolean =>
-      getComputedStyle(el).position === 'fixed' ||
+      ['fixed', 'sticky'].includes(getComputedStyle(el).position) ||
       (!!el.parentElement && isFloating(el.parentElement))
     const element = matches.find(isFloating) ?? matches[0] ?? null
     // Only for text in a layer that floats above the page: an open modal dialog, or a
     // fixed-position element such as the toast. Anything else stays undecided and fails.
     const floating = (el: Element | null): boolean =>
-      !!el && (getComputedStyle(el).position === 'fixed' || floating(el.parentElement))
+      !!el &&
+      (['fixed', 'sticky'].includes(getComputedStyle(el).position) || floating(el.parentElement))
     if (!element || !(element.closest('dialog[open]') || floating(element))) return 0
     // getComputedStyle returns legacy `rgb(r g b / a)` (0-255 channels) for most colours, but
     // `color-mix()` (every glass token) computes to CSS Color 4's `color(srgb r g b / a)`
@@ -229,6 +230,8 @@ async function measuredBackgroundContrast(page: Page, selector: string) {
   const info = await page.evaluate((sel) => {
     const el = document.querySelector(sel)
     if (!el) return null
+    // A screenshot only holds what is on screen, so bring the element into view first.
+    el.scrollIntoView({ block: 'center', behavior: 'instant' })
     const rect = el.getBoundingClientRect()
     const cx = rect.x + rect.width / 2
     const cy = rect.y + rect.height / 2
@@ -310,12 +313,12 @@ async function measuredBackgroundContrast(page: Page, selector: string) {
   )
 }
 
-for (const scheme of ['light', 'dark'] as const) {
-  test.describe(`${scheme} theme`, () => {
+{
+  test.describe('dark theme', () => {
     for (const state of STATES) {
       test(`${state.name}: no WCAG A/AA violations, contrast included`, async ({ page }) => {
         // Reduced motion, so nothing is mid-transition when axe reads colours.
-        await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
+        await page.emulateMedia({ reducedMotion: 'reduce' })
         if (state.skipTourBypass) {
           await page.addInitScript(() => sessionStorage.removeItem('ledger:tour-seen'))
         }
@@ -326,7 +329,7 @@ for (const scheme of ['light', 'dark'] as const) {
         await state.open?.(page)
 
         const lightness = await backgroundLightness(page)
-        expect(scheme === 'light' ? lightness > 200 : lightness < 60).toBe(true)
+        expect(lightness).toBeLessThan(60)
 
         const results = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])

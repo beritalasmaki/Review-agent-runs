@@ -16,16 +16,11 @@ export function ActorIcon({ icon: Icon, className }: ActorIconProps) {
   return (
     <span
       className={cn(
-        // Border only, no fill: this sits on `bg-surface`, `bg-surface-raised` and
-        // `bg-surface-raised` again (the waiver callout, evaluated-by line and decided-view
-        // panel) — a filled circle would only read against some of those. `border-border`
-        // (not the subtler `border-border-subtle` most row borders use) so the ring itself
-        // stays visible on every one of them.
-        'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border',
+        'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pill-icon',
         className,
       )}
     >
-      <Icon aria-hidden className="h-3 w-3 text-text-secondary" />
+      <Icon aria-hidden className="h-3 w-3 text-text-primary" />
     </span>
   )
 }

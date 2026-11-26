@@ -56,28 +56,17 @@ const tabsTriggerVariants = cva(
         segmented: [
           'flex flex-1 justify-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-3)]',
           'text-item-title font-semibold font-body text-text-secondary underline-offset-4',
-          'bg-surface-raised transition-colors duration-[var(--motion-duration-fast)] hover:underline',
+          'bg-surface-raised transition-colors duration-[var(--motion-duration-fast)] hover:text-text-primary',
           'data-[state=active]:bg-surface data-[state=active]:text-text-primary',
           'focus-visible:relative focus-visible:z-10 focus-visible:outline-offset-[-2px]',
         ],
         pill: [
-          't-tab inline-flex gap-[var(--space-2)] px-[var(--space-4)] py-[var(--space-3)]',
-          'text-meta font-semibold font-heading leading-none text-primary',
-          // An inactive tab reads as an available choice, not a disabled one — brand-tinted at
-          // full strength, not the plain grey `text-text-secondary` a disabled control would
-          // use, and not a reduced-opacity version of the brand colour either (tried first; it
-          // read as faded/inconsistent rather than a deliberate colour, and the translucency
-          // also dropped the measured contrast below 4.5:1 in several states — real pixel
-          // measurement caught it, not assumed). The active tab (`text-text-primary`, the
-          // strongest contrast on the page) and the sliding pill behind it still carry the
-          // "selected" signal on their own.
-          //
-          // aria-selected, not data-[state=active]: a pill trigger with a tooltip is wrapped in
-          // Radix's Tooltip via `asChild` (components/Tabs.tsx's PillTrigger), which ends up
-          // writing its own data-state (tooltip open/closed) onto the same DOM node — it wins,
-          // so a selector keyed on data-state never matches once Tooltip's state settles.
-          // aria-selected is Radix Tabs' own attribute; nothing else touches it.
-          'hover:text-primary-hover aria-selected:text-text-primary focus-visible:outline-offset-2',
+          't-tab inline-flex min-h-[var(--size-tab)] gap-[9px] rounded-[4px] px-[14px] py-[9px]',
+          'text-body font-medium font-body leading-tight text-text-secondary',
+          // The pressed tab is brighter and bolder; the sliding underline behind it
+          // (components/Tabs.tsx) carries the orange. aria-selected, not data-state: a trigger
+          // wrapped in Radix's Tooltip gets that tooltip's own data-state on the same node.
+          'sweep hover:text-text-primary aria-selected:font-semibold aria-selected:text-text-primary focus-visible:outline-offset-2',
         ],
         // No -mb-px onto the list's rule: the list scrolls sideways, which clips anything below
         // its edge, and that clipped the selected tab's underline to nothing. No colour
@@ -90,7 +79,7 @@ const tabsTriggerVariants = cva(
         line: [
           'inline-flex gap-[var(--space-3)] border-b-2 border-transparent px-[var(--space-5)] py-[var(--space-4)]',
           'text-body font-semibold font-heading leading-none text-text-secondary',
-          'hover:border-border hover:text-text-primary',
+          'sweep hover:text-text-primary',
           'data-[state=active]:text-text-primary',
           'focus-visible:outline-offset-[-2px]',
         ],

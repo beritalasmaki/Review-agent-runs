@@ -223,19 +223,19 @@ function TokensShowcase() {
         <SectionTitle>Type</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.5rem' }}>
-            Raleway 700 — heading
+            Chakra Petch 700 — heading
           </div>
           <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.125rem' }}>
-            Raleway 600 — heading / button label
+            Chakra Petch 600 — heading / button label
           </div>
           <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, fontSize: '1rem' }}>
-            Raleway 500 — heading / wordmark
+            Chakra Petch 500 — heading / wordmark
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 400, fontSize: '0.9375rem' }}>
-            Montserrat 400 — body text. "Two files changed, 14 tests added, all passing."
+            Hanken Grotesk 400 — body text. "Two files changed, 14 tests added, all passing."
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: '0.8125rem' }}>
-            Montserrat 500 — table / data text. Evaluated by policy-engine v2.3.
+            Hanken Grotesk 500 — table / data text. Evaluated by policy-engine v2.3.
           </div>
         </div>
       </section>

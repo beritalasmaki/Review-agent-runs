@@ -32,7 +32,7 @@ export function ActorName({ name, className }: ActorNameProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-[var(--space-2)] rounded-full border border-border-subtle bg-surface-raised py-[var(--space-1)] pl-[var(--space-1)] pr-[var(--space-3)]',
+        'inline-flex w-fit max-w-full items-center gap-[var(--space-2)] rounded-full border border-pill-edge bg-pill py-px pl-[2px] pr-[11px]',
         className,
       )}
     >

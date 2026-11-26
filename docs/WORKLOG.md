@@ -37,6 +37,190 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-26 · Living background and the run page as designed
+
+**Goal**
+Make the background alive (coordinates that come and go, drifting mist) and the run page match the design, top bar first.
+
+**What changed**
+- `TerrainBackdrop.tsx`, `index.css`, `tokens.css`: mist and fourteen fading readings in an `aria-hidden` layer; the baked-in coordinates left the image.
+- `MyReviews.tsx`: the arc and the flying dot on the top panel.
+- `TopBar.tsx`, `RunReviewPage.tsx`: "Open audit log" after "Reviewing as"; `OpenItemsNotice.tsx`, `DecisionPanel.tsx`: the count moved into the decision panel.
+- `RunDetails.tsx`: heading, labels, orange environment; Reject run small.
+- Hover set (0145) and the tour outline fix.
+- `docs/DECISIONS.md` 0145, 0146.
+
+**Steps, in order**
+1. Compared the run page with Main, listing differences. 2. Rebuilt the backdrop as a CSS-only layer. 3. Moved the open-items count. 4. Restyled Run details and Reject. 5. Ran the full check.
+
+**Why it was done this way**
+See 0146.
+
+**How to do this by hand**
+Open Main in the artifact and the run page side by side; list each difference, change the shared style first.
+
+**Verification**
+`npm run check`; screenshots of the list and run page.
+
+**Open questions / next**
+The design's grid texture on the run overview and its "What the agent did" panel are not built (the app's story already says it).
+
+---
+
+### 2026-11-26 · Tour, run tabs and person pills fixed to the design
+
+**Goal**
+Make the onboarding tour, the story tabs and the person pills match the design.
+
+**What changed**
+- `OnboardingTour.tsx`, `transitions.css`: orange gliding spotlight, stops, arc and dot, closing card; `app/tour.ts` (replay), `features/run/tourSteps.ts` (copy, "Open a run", closing text), `App.tsx`.
+- `RunViewTabs.tsx`, `RunReviewPage.tsx`: view name left, tabs right; the tour target moved to the bar.
+- `ActorName.tsx`, `ActorIcon.tsx`, `tokens.css`: `w-fit` pills with opaque steel tokens.
+- Tests: tour unit tests, e2e tour (ten steps, closing card, replay), App test.
+- `docs/DECISIONS.md` 0144.
+
+**Steps, in order**
+1. Rendered the tour artifact step by step and compared with the app. 2. Rewrote the tour's render and CSS. 3. Added the cross-leg count, "Open a run", the closing card and replay. 4. Moved the tour target to the tab bar (a tall target pushed the bubble off screen). 5. Fixed replay being cancelled by the page-leave dismissal.
+
+**Why it was done this way**
+See 0144.
+
+**How to do this by hand**
+Open the tour artifact and the app side by side; walk all ten steps in both, then the closing card.
+
+**Verification**
+`npm run check` (see the pull request) and screenshots of the list, tour steps and the in-progress list.
+
+**Open questions / next**
+Exact pixel pass on the run page; the amber open-items square in the table.
+
+---
+
+### 2026-11-26 · Remove the old UI and make the site match the design
+
+**Goal**
+Remove everything left of the old interface and make the app, and above all the intro, match the design.
+
+**What changed**
+- `src/styles/tokens.css`, `index.css`, `transitions.css`: rewritten for one dark theme; `.panel`, `.foil`, `.lbl`, `.sat`, the terrain `::before`.
+- Removed: `ThemeToggle`, `theme.ts`, `RunPageNav`, `SignatureMark`, the `brand` button variant, glass and gradient tokens, unused tokens.
+- Added: `features/run/TopBar.tsx`, `app/IntroScene.tsx`; rewrote `WelcomeIntro.tsx`, `intro.css`, `WelcomeModal.tsx`.
+- Restyled: Button, Badge, StatusBadge, Tabs, Table, Dialog, My reviews header, run overview and decision panel.
+- Tests: intro, modal, App, badge; e2e accessibility (one theme, sticky counts as a floating layer), keyboard (theme test removed), approve flow.
+- `docs/DECISIONS.md` 0143; READMEs.
+
+**Steps, in order**
+1. Compared the artifact with the app side by side in screenshots. 2. Rewrote the tokens and global CSS. 3. Replaced the first row with a top bar. 4. Restyled the shared controls, then the page headers. 5. Ported the intro scene's SVG and CSS from the artifact, with the drawing colours as `--art-*` tokens. 6. Ran `npm run check` and fixed what axe and the keyboard spec found: gradients on panels and the plate (axe cannot decide), a focus outline cut off by `clip-path`, a muted badge scrolled off screen by the overview step.
+
+**Why it was done this way**
+See 0143.
+
+**How to do this by hand**
+Open the artifact and the app at 1440 px side by side; change tokens first, then shared controls, then screens, checking the Playwright axe spec after each step.
+
+**Verification**
+`npm run check` passes (unit tests, Playwright with axe and the keyboard specs). Screenshots of the list, run page, tour and intro were compared with the artifact by eye.
+
+**Open questions / next**
+Tabs in the story panel's header as drawn; the audit log link; an exact pixel pass on the run page; whether to keep the design's gradients and check contrast by measuring.
+
+---
+
+### 2026-11-26 · Satellite design ported to src (theme, backdrop, intro, buttons, fonts)
+
+**Goal**
+Port the rest of the approved satellite design from the artifact into the app.
+
+**What changed**
+- `src/styles/tokens.css`, `index.css`, `transitions.css`: dark by default, warm black and orange palette (`--brand-*`), terrain image token, link sweep duration, amber dark tint.
+- `src/components/theme.ts`, `ThemeToggle.tsx`: no system-preference following; dark unless light is chosen.
+- `src/components/TerrainBackdrop.tsx` (+ story, test): the page `<main>` with the backdrop.
+- `src/components/ui/button.tsx`: chamfered default, new `brand` variant, sweeping underline on `link`.
+- `src/app/WelcomeIntro.tsx`, `intro.ts`, `intro.css`: new route intro; `WelcomeModal.tsx`: Replay the intro; `App.tsx` wiring.
+- `index.html`: Chakra Petch and Hanken Grotesk. `OnboardingTour.tsx`: focus fix.
+- Tests: theme, intro, modal, backdrop; e2e theme switch and accessibility choose light explicitly; `scripts/check-theme-bridge.mjs` light variant uses `data-theme="light"`.
+- READMEs and `docs/DECISIONS.md` 0142.
+
+**Steps, in order**
+1. Merged the two dark token blocks into `:root:not([data-theme='light'])` and swapped the values. 2. Renamed indigo to brand. 3. Changed fonts in `index.html` and tokens. 4. Added the backdrop, first as elements, then as `::before` after axe could not decide contrast under dialogs. 5. Restyled Button; the first orange default broke the no-brand-on-Approve rule, so it became a separate `brand` variant. 6. Rewrote the intro and added Replay. 7. Ran `npm run check`, fixed the amber tint contrast and the flaky tour focus.
+
+**Why it was done this way**
+See 0142 for each trade-off.
+
+**How to do this by hand**
+Edit the dark values in `tokens.css`, set `data-theme` default in `theme.ts`, swap the Google Fonts link, add the backdrop class to `main`, then run the check and look at each failing axe node.
+
+**Verification**
+`npm run check` passes: unit tests, Playwright with axe in light and dark, keyboard specs. Not done: a visual comparison against the artifact on a real screen; the intro's timing and look were checked by tests only.
+
+**Open questions / next**
+Orange Approve (needs a rule change), the "Article 14" wording, whether the intro should show the characters' faces as in the artifact, and a visual pass in a browser.
+
+---
+
+### 2026-11-26 · Overview steps in the onboarding tour
+
+**Goal**
+Port the first approved piece of the satellite design: tour steps that explain the page before the details.
+
+**What changed**
+- `src/components/OnboardingTour.tsx`: new `overview` step flag (no cutout, no ring, bubble mid-screen).
+- `src/features/run/tourSteps.ts`: "Your review list" (Leg 1) and "One run on one page" (Leg 2).
+- `MyReviews.tsx`, `RunReviewPage.tsx`: `data-tour` markers `list-page` and `run-page`.
+- Tests: `OnboardingTour.test.tsx`, `App.test.tsx`, `e2e/onboarding-tour.spec.ts` (6 and 4 steps).
+- `docs/DECISIONS.md` 0141.
+
+**Steps, in order**
+1. Added the two steps and markers. 2. The bubble fell outside the viewport for a page-sized target, so added the `overview` flag. 3. Updated step counts and headings in tests. 4. Ran `npx vitest run` and `npx playwright test e2e/onboarding-tour.spec.ts --trace off`.
+
+**Why it was done this way**
+See 0141. Only the tour is ported; the theme, terrain backdrop and new intro are larger and need their own contrast checks.
+
+**How to do this by hand**
+Add a step object with `overview: true` to `tourSteps.ts`, put a matching `data-tour` on the page wrapper, update the "Step n of N" expectations.
+
+**Verification**
+Unit tests pass (293 before the new one, then 11 in the tour file). The tour e2e spec passes (5 tests). `npm run check`: all pass except one accessibility spec that still expected 5 steps; fixed and re-run (axe clean in both themes).
+
+**Open questions / next**
+Dark default and tokens (reverses 0001), terrain backdrop, new intro with replay in the welcome modal, button style, fonts (needs a decision on adding a font source).
+
+---
+
+### 2026-11-26 · Satellite-themed design of the review screen (artifact)
+
+**Goal**
+Make a dark, satellite-themed version of the run review screen as a design sample.
+
+**What changed**
+- No code in `src/`. A Design artifact, "Run Review Agents – Satellite Theme", holds one artboard
+  (`Main.dc.html`) and its index (`canvas.json`).
+- `docs/DECISIONS.md` 0140.
+
+**Steps, in order**
+1. Read `AGENTS.md`, `docs/spec-review-screen.md`, the worklog and decisions format.
+2. Created the artifact from the Design type and wrote the artboard: three columns under a sticky
+   bar, sample data from the "blocked" case, terrain contours as inline SVG, coordinates as
+   fading `aria-hidden` text, metal panels, gold foil hairline, solar-cell grid on the overview.
+3. Link and button hover: a 1 px track plus a 2 px bright segment that slides left to right in 3.4 s.
+4. Published to the artifact.
+
+**Why it was done this way**
+See 0140. No real company name is used in the design.
+
+**How to do this by hand**
+In Figma, build the three columns, set the page fill to near-black blue, add contour lines as
+vector strokes at 15% opacity, and prototype the underline as a looping smart animate.
+
+**Verification**
+Not run: no browser render, no contrast check, no `npm run check` (nothing in `src/` changed).
+
+**Open questions / next**
+- Does the author want this ported into `src/styles/tokens.css`, replacing 0137 and 0139?
+- Fixtures are invented for the artifact and not read from `src/fixtures/`.
+
+---
+
 ### 2026-11-18 · Icon motion on the remaining icons
 
 **Goal**

@@ -100,9 +100,10 @@ describe('DecisionPanel', () => {
     expect(within(rejectDialog).getByLabelText('Why is this rejected?')).toBeVisible()
   })
 
-  it('names who is deciding', () => {
+  it('says who is deciding in text for assistive technology, not as a visible line', () => {
     render(<DecisionPanel run={runClean} onRunUpdated={vi.fn()} />)
-    expect(screen.getByText('Juhani Virtaleppäsoutu')).toBeVisible()
+    expect(screen.queryByText('Deciding as')).not.toBeInTheDocument()
+    expect(screen.getByText(/Juhani Virtaleppäsoutu/)).toHaveClass('sr-only')
   })
 
   it('links each open item to where it is shown in full', async () => {

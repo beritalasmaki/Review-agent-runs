@@ -1,5 +1,5 @@
-import { Info } from 'lucide-react'
-import { Badge } from '../../components/ui/badge'
+import { ChevronRight } from 'lucide-react'
+import { InfoTip } from '../../components/InfoTip'
 import type { Ref } from 'react'
 import { confidenceLevel, resolveConfidenceAreas } from '../../lib/confidence'
 import {
@@ -43,29 +43,32 @@ const ENVIRONMENT = {
   dev: { dot: 'bg-status-not-applicable', help: 'A developer copy. No real customers use it.' },
 } as const
 
-const LABEL = 'text-caption font-normal font-body leading-none text-text-secondary'
+const LABEL = 'lbl leading-none'
 const VALUE = 'text-body font-medium font-body leading-snug text-text-primary'
-const HELP = 'text-caption font-normal font-body leading-relaxed text-text-secondary'
+const HELP = 'text-meta font-normal font-body leading-relaxed text-text-secondary'
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+function Field({
+  label,
+  tip,
+  children,
+}: {
+  label: string
+  /** The plain line that explains this field, behind a small "i" beside its label. */
+  tip?: string
+  children: React.ReactNode
+}) {
   return (
-    <section aria-label={title} className="flex flex-col">
-      <h3 className="pb-[var(--space-2)] text-caption font-semibold font-heading tracking-wide text-text-secondary uppercase">
-        {title}
-      </h3>
-      <dl className="flex flex-col">{children}</dl>
-    </section>
-  )
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-[var(--space-1)] py-[var(--space-3)]">
-      <dt className={LABEL}>{label}</dt>
+    <div className="flex flex-col gap-[var(--space-2)] py-[var(--space-3)]">
+      <dt className="flex items-center gap-[var(--space-1)]">
+        <span className={LABEL}>{label}</span>
+        {tip && <InfoTip label={label.toLowerCase()}>{tip}</InfoTip>}
+      </dt>
       <dd className="flex flex-col items-start gap-[var(--space-1)]">{children}</dd>
     </div>
   )
 }
+
+const capitalise = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 
 export function RunDetails({ run, className, tabIndex, ref }: RunDetailsProps) {
   const released = run.decision?.outcome === 'approved'
@@ -82,116 +85,115 @@ export function RunDetails({ run, className, tabIndex, ref }: RunDetailsProps) {
     .filter((area) => !area.missing)
     .sort((a, b) => (a.missing || b.missing ? 0 : a.value - b.value))[0]
 
+  const duration = run.finishedAt
+    ? formatElapsed(new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime())
+    : 'Still running'
+
   return (
     <section
       ref={ref}
       tabIndex={tabIndex}
       aria-labelledby="run-details-heading"
-      className={cn(
-        'flex flex-col gap-[var(--space-4)] rounded-lg border border-border-subtle bg-surface p-[var(--space-4)] shadow-card',
-        className,
-      )}
+      className={cn('flex flex-col gap-[var(--space-2)] panel p-[var(--space-5)]', className)}
     >
-      <h2
-        id="run-details-heading"
-        className="flex items-center gap-[var(--space-2)] text-item-title font-semibold font-heading text-text-primary"
-      >
-        <Info aria-hidden className="h-4 w-4 text-text-primary" />
+      <h2 id="run-details-heading" className="lbl pb-[var(--space-2)]">
         Run details
       </h2>
 
-      <Group title="The change">
-        <Field label={released ? 'Where it went' : 'Where it would go'}>
-          <span className={VALUE}>{run.target.system}</span>
-          <Badge
-            variant="outline"
-            size="sm"
-            className="py-[var(--space-1)] leading-none font-heading tracking-wide uppercase"
-          >
-            <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', env.dot)} />
-            {run.target.environment}
-          </Badge>
-          <span className={HELP}>{env.help}</span>
-        </Field>
-        <Field label={released ? 'What was released' : 'What would be released'}>
-          <span className={cn(VALUE, 'font-mono')}>{run.decision?.revision ?? run.revision}</span>
-          <span className={HELP}>
-            {decided
-              ? 'The exact version of the code this decision applied to.'
-              : 'The exact version this decision applies to.'}
+      <dl className="flex flex-col">
+        <Field label="Environment" tip={env.help}>
+          <span className="text-section-heading leading-tight font-semibold font-heading text-primary">
+            {capitalise(run.target.environment)}
           </span>
         </Field>
-        <Field label="Run reference">
-          <span className={cn(VALUE, 'font-mono')}>{run.id}</span>
-          <span className={HELP}>Quote this to find the review again later.</span>
+        <Field label={released ? 'Target system' : 'Target system'}>
+          <span className={VALUE}>{run.target.system}</span>
         </Field>
-      </Group>
-
-      <Group title="The run">
         <Field label="Requested by">
           <ActorName name={run.requestedBy} className={cn(VALUE, 'whitespace-nowrap')} />
         </Field>
-        <Field label="Agent">
-          <span className={VALUE}>
-            {run.agent.name} {run.agent.version}
-          </span>
-          <span className="font-mono text-caption text-text-secondary">{run.agent.model}</span>
-        </Field>
         <Field label="Ran">
-          <span className={VALUE}>{formatCalendarDate(run.startedAt)}</span>
           <span className={VALUE}>
+            {formatCalendarDate(run.startedAt)} ·{' '}
             {run.finishedAt
               ? formatClockRange(run.startedAt, run.finishedAt)
               : `from ${formatClock(run.startedAt)}`}{' '}
             ({formatUtcOffset(new Date(run.startedAt))})
           </span>
-          <span className={HELP}>
-            {run.finishedAt
-              ? formatElapsed(
-                  new Date(run.finishedAt).getTime() - new Date(run.startedAt).getTime(),
-                )
-              : 'Still running'}
-          </span>
+          <span className={HELP}>Duration {duration}</span>
         </Field>
-        <Field label="Checks">
-          <span className={VALUE}>
-            {passed} passed
-            {failed > 0 && <span className="text-status-fail-tint-fg"> · {failed} failed</span>}
-            {notRun > 0 && (
-              <span className="text-status-waived-tint-fg">
-                {' '}
-                · {notRun} {noResultLabel(run.status)}
+        <Field
+          label={released ? 'Released revision' : 'Revision'}
+          tip={
+            decided
+              ? 'The exact version of the code this decision applied to.'
+              : 'The exact version this decision applies to.'
+          }
+        >
+          <span className={cn(VALUE, 'font-mono')}>{run.decision?.revision ?? run.revision}</span>
+        </Field>
+      </dl>
+
+      <details className="group">
+        <summary className="sat cursor-pointer list-none text-meta font-medium">
+          <ChevronRight
+            aria-hidden
+            className="mr-[var(--space-1)] inline h-4 w-4 align-[-3px] transition-transform group-open:rotate-90"
+          />
+          More details
+        </summary>
+        <dl className="flex flex-col pt-[var(--space-2)]">
+          <Field label="Run reference" tip="Quote this to find the review again later.">
+            <span className={cn(VALUE, 'font-mono')}>{run.id}</span>
+          </Field>
+          <Field label="Agent">
+            <span className={VALUE}>
+              {run.agent.name} {run.agent.version}
+            </span>
+            <span className="font-mono text-caption text-text-secondary">{run.agent.model}</span>
+          </Field>
+          <Field label="Checks">
+            <span className={VALUE}>
+              {passed} passed
+              {failed > 0 && <span className="text-status-fail-tint-fg"> · {failed} failed</span>}
+              {notRun > 0 && (
+                <span className="text-status-waived-tint-fg">
+                  {' '}
+                  · {notRun} {noResultLabel(run.status)}
+                </span>
+              )}
+            </span>
+            {(waived > 0 || notApplicable > 0) && (
+              <span className={HELP}>
+                {[
+                  waived > 0 ? formatCount(waived, 'exception') : null,
+                  notApplicable > 0 ? `${notApplicable} does not apply` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
               </span>
             )}
-          </span>
-          {(waived > 0 || notApplicable > 0) && (
-            <span className={HELP}>
-              {[
-                waived > 0 ? formatCount(waived, 'exception') : null,
-                notApplicable > 0 ? `${notApplicable} does not apply` : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </span>
-          )}
-        </Field>
-        <Field label="Lowest score">
-          {lowest && !lowest.missing ? (
-            <span className={VALUE}>
-              {formatConfidenceAreaLabel(lowest.area)} ·{' '}
-              <span
-                className={
-                  confidenceLevel(lowest.value) === 'low' ? 'text-status-waived-tint-fg' : undefined
-                }
-              >
-                {formatConfidencePercent(lowest.value)}
+          </Field>
+          <Field label="Lowest score">
+            {lowest && !lowest.missing ? (
+              <span className={VALUE}>
+                {formatConfidenceAreaLabel(lowest.area)} ·{' '}
+                <span
+                  className={
+                    confidenceLevel(lowest.value) === 'low'
+                      ? 'text-status-waived-tint-fg'
+                      : undefined
+                  }
+                >
+                  {formatConfidencePercent(lowest.value)}
+                </span>
               </span>
-            </span>
-          ) : (
-            <span className={VALUE}>No scores reported</span>
-          )}
-        </Field>
-      </Group>
+            ) : (
+              <span className={VALUE}>No scores reported</span>
+            )}
+          </Field>
+        </dl>
+      </details>
     </section>
   )
 }

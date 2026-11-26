@@ -89,7 +89,7 @@ export function ColumnHeader<K extends string>({
       scope="col"
       aria-sort={dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined}
       className={cn(
-        'px-[var(--space-2)] py-[var(--space-3)] text-left align-middle font-normal first:pl-[var(--space-5)] last:pr-[var(--space-5)]',
+        'h-[var(--size-thead)] px-[var(--space-2)] first:pl-[var(--space-5)] last:pr-[var(--space-5)]',
         className,
       )}
     >
@@ -99,9 +99,7 @@ export function ColumnHeader<K extends string>({
         <span
           className={cn('flex items-center gap-[var(--space-2)]', align === 'end' && 'justify-end')}
         >
-          <span className="text-caption leading-snug font-semibold font-heading whitespace-nowrap text-text-secondary">
-            {label}
-          </span>
+          <span className="leading-snug whitespace-nowrap">{label}</span>
           {info && (
             <InfoTip label={label} align={tipAlign}>
               {info}
@@ -115,8 +113,8 @@ export function ColumnHeader<K extends string>({
               aria-label={`Order by ${label.toLowerCase()}: ${nextText}`}
               title={`Order by ${label.toLowerCase()}: ${nextText}`}
               className={cn(
-                'h-5 w-5 rounded-sm hover:bg-border-subtle hover:text-text-primary focus-visible:outline-offset-1',
-                active ? 'bg-primary-tint text-primary' : 'text-text-secondary',
+                'h-5 w-5 rounded-sm bg-transparent hover:bg-transparent hover:text-text-primary focus-visible:outline-offset-1',
+                active ? 'text-primary' : 'text-text-secondary',
               )}
             >
               <MorphIcon icon={sortIcon} className="h-3 w-3" strokeWidth={2.5} />
@@ -141,7 +139,7 @@ export function DetailsButton({ run, onClick }: { run: Run; onClick: () => void 
       aria-haspopup="dialog"
       aria-label={`Decision details: ${run.initiative}`}
       title="Show decision details"
-      className="h-7 w-7 text-text-secondary hover:bg-primary-tint "
+      className="h-7 w-7 text-text-secondary"
     >
       <FileText aria-hidden className="h-3.5 w-3.5" />
     </Button>
@@ -188,7 +186,11 @@ function OpenItemsCell({ run }: { run: Run }) {
     )
   }
   return (
-    <Badge variant="warning" size="sm" className={chip}>
+    <Badge
+      variant="warning"
+      size="sm"
+      className="h-7 min-w-8 rounded-[4px] border-status-waived bg-status-waived-tint-bg px-[var(--space-2)] text-body font-semibold text-text-primary"
+    >
       {count}
     </Badge>
   )
@@ -266,7 +268,7 @@ export function ReviewsTable({
         <col className="w-36" />
         <col className="w-28" />
       </colgroup>
-      <TableHeader className="border-b border-border-subtle bg-surface-raised">
+      <TableHeader>
         <TableRow>
           <ColumnHeader label="Details" />
           <ColumnHeader label="Select" hiddenLabel="Select" />
@@ -327,7 +329,7 @@ export function ReviewsTable({
             <TableRow
               key={run.id}
               data-tour={index === 0 ? 'first-run-row' : undefined}
-              className="bg-surface transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-border-subtle"
+              className="transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-text-primary/5 [&>td]:h-[var(--size-row)]"
             >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />

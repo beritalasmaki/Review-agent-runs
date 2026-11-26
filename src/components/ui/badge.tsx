@@ -17,19 +17,18 @@ const badgeVariants = cva(
         default: 'border-border bg-surface-raised text-text-primary',
         outline: 'border-border bg-transparent text-text-primary',
         /** A quiet count beside a label: "Archive 4". */
-        muted: 'border-transparent bg-surface-raised text-text-secondary',
+        muted: 'border-transparent bg-chip text-text-primary',
         /** A count that belongs to the selection or a filter. */
         primary: 'border-transparent bg-primary text-primary-foreground',
         'primary-tint': 'border-transparent bg-primary-tint text-primary',
-        success: 'border-transparent bg-status-pass-tint-bg text-status-pass-tint-fg',
-        warning: 'border-transparent bg-status-waived-tint-bg text-status-waived-tint-fg',
-        danger: 'border-transparent bg-status-fail-tint-bg text-status-fail-tint-fg',
-        info: 'border-transparent bg-status-info-tint-bg text-status-info-tint-fg',
+        success: 'border-status-pass/60 bg-status-pass-tint-bg text-status-pass-tint-fg',
+        warning: 'border-status-waived/60 bg-status-waived-tint-bg text-status-waived-tint-fg',
+        danger: 'border-status-fail/60 bg-status-fail-tint-bg text-status-fail-tint-fg',
+        info: 'border-status-unknown/50 bg-status-info-tint-bg text-status-info-tint-fg',
       },
       size: {
-        default:
-          'px-[var(--space-3)] py-[var(--space-1)] text-badge-label font-heading [&>svg]:h-4 [&>svg]:w-4',
-        sm: 'px-[var(--space-2)] py-px text-caption font-body',
+        default: 'py-[3px] pr-[11px] pl-[6px] text-badge-label font-body [&>svg]:h-4 [&>svg]:w-4',
+        sm: 'h-5 min-w-[22px] justify-center px-[7px] text-caption font-semibold font-body',
       },
     },
     defaultVariants: {

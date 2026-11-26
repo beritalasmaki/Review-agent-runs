@@ -24,15 +24,26 @@ import type { Run } from '../../lib/types'
  */
 export interface RunViewTabsProps {
   run: Run
+  /** The view now open, named at the left of the bar (decoration: the view has its own heading). */
+  view: 'story' | 'evidence' | 'steps'
   ref?: Ref<HTMLDivElement>
 }
 
-export function RunViewTabs({ run, ref }: RunViewTabsProps) {
+const VIEW_NAME = { story: 'Story', evidence: 'Evidence', steps: 'All steps' } as const
+
+export function RunViewTabs({ run, view, ref }: RunViewTabsProps) {
   return (
     <div
       ref={ref}
-      className="sticky top-0 z-10 rounded-t-lg bg-surface px-[var(--space-3)] py-[var(--space-2)]"
+      data-tour="run-tabs-view"
+      className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-x-[var(--space-5)] gap-y-[var(--space-2)] rounded-t-[inherit] border-b border-border-subtle bg-surface px-[var(--space-5)] py-[var(--space-3)]"
     >
+      <span
+        aria-hidden
+        className="text-section-heading leading-tight font-semibold font-heading text-text-primary"
+      >
+        {VIEW_NAME[view]}
+      </span>
       <TabsList variant="pill" label="Views of this run">
         <TabsTrigger
           variant="pill"

@@ -1,8 +1,6 @@
-import { prefersReducedMotion } from '../lib/motion'
-
 /**
  * The welcome intro's once-per-visit logic and timing (WelcomeIntro.tsx, docs/DECISIONS.md
- * 0048 and 0049). A visit is a browser session: the intro plays again whenever someone opens
+ * 0048, 0049 and 0142). A visit is a browser session: the intro plays again whenever someone opens
  * the site in a new tab or window, or comes back after closing it — but not on the page loads
  * inside one visit (the breadcrumb and "My reviews" links reload the page).
  * Kept apart from the component so `App.tsx` can decide whether to show it without importing
@@ -11,13 +9,8 @@ import { prefersReducedMotion } from '../lib/motion'
 export const INTRO_SEEN_KEY = 'ledger:intro-seen'
 
 export const INTRO_TIMING = {
-  draw: 900,
-  resolve: 200,
-  perChar: 40,
-  betweenLines: 160,
-  madeBy: 300,
-  hold: 400,
-  fade: 500,
+  /** How long the animation plays before the welcome dialog opens, in ms. */
+  total: 14000,
 } as const
 
 function readSeen(): boolean {
@@ -40,7 +33,8 @@ export function markIntroSeen() {
   }
 }
 
-/** Whether this page load should show the intro: not yet seen in this visit, and motion is OK. */
+/** Whether this page load should show the intro: not yet seen in this visit. (With reduced
+ * motion it still shows, as its last frame, so the welcome dialog has its backdrop.) */
 export function shouldShowIntro(): boolean {
-  return !prefersReducedMotion() && !readSeen()
+  return !readSeen()
 }

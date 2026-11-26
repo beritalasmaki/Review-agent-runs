@@ -54,7 +54,7 @@ export function EvidenceTab({ run, onOpenStep }: EvidenceTabProps) {
         <section
           key={group.id}
           aria-labelledby={`evidence-${group.id}`}
-          className="overflow-hidden rounded-lg border border-border-subtle bg-surface shadow-card"
+          className="overflow-hidden panel"
         >
           <div className="flex flex-wrap items-baseline justify-between gap-[var(--space-2)] border-b border-border-subtle bg-surface-raised px-[var(--space-4)] py-[var(--space-3)]">
             <h3
@@ -79,7 +79,7 @@ export function EvidenceTab({ run, onOpenStep }: EvidenceTabProps) {
                 className={cn(
                   'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)] border-b border-border-subtle px-[var(--space-4)] py-[var(--space-3)] last:border-b-0',
                   'md:grid-cols-[7rem_minmax(0,1fr)_3.5rem_3.5rem]',
-                  row.attention ? 'bg-status-waived-tint-bg/60' : 'hover:bg-bg',
+                  row.attention ? 'bg-status-waived-tint-bg' : 'hover:bg-text-primary/5',
                 )}
               >
                 <span

@@ -1,55 +1,75 @@
 /*
- * The one-time welcome intro (WelcomeIntro.tsx, docs/DECISIONS.md 0048). Timings are
- * variables so the sequence reads in one place; the component's own timeline uses the same
- * numbers (INTRO_TIMING in WelcomeIntro.tsx).
+ * The welcome intro (WelcomeIntro.tsx, IntroScene.tsx, docs/DECISIONS.md 0143). Timed in seconds
+ * from the moment it starts: the camera pulls back over 3.4 s, the route draws from 1.2 s to
+ * 11.2 s, and each station and its card appear as the route reaches them (4.3 s, 7.8 s, 11.2 s).
+ * `[data-done]` shows the last frame at once (skip, replay's end, reduced motion).
  */
-:root {
-  --intro-draw-dur: 900ms;
-  --intro-resolve-dur: 200ms;
-  --intro-made-by-dur: 300ms;
-  --intro-fade-dur: 500ms;
-}
-
 .intro-overlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  /* The same vivid gradient the rest of the app uses behind glass (tokens.css,
-   * docs/DECISIONS.md, 0100), fixed to the light variant regardless of theme — the intro's own
-   * scrim/ink colours are already theme-independent by design (a fixed "signature" moment, not
-   * themed chrome), so the colour behind it should be too. */
-  background-color: var(--color-intro-scrim);
-  background-image: var(--page-gradient-light);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  color: var(--color-intro-ink);
-  opacity: 1;
-  cursor: pointer;
-  transition: opacity var(--intro-fade-dur) ease;
+  z-index: 40;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
 }
-.intro-overlay[data-phase='fade'] {
-  opacity: 0;
+.intro-cam {
+  position: absolute;
+  inset: 0;
+  transform-origin: 320px 560px;
+  transform: scale(1.35);
+  animation:
+    intro-zin 3.4s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+    intro-zout 2.2s ease-in-out 11.2s forwards;
+}
+.intro-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1440px;
+  height: 900px;
+  transform: translate(-50%, -50%) scale(var(--intro-fit, 1));
+  transform-origin: center;
+}
+@keyframes intro-zin {
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes intro-zout {
+  from {
+    transform: scale(1);
+    transform-origin: 1120px 520px;
+  }
+  to {
+    transform: scale(1.05);
+    transform-origin: 1120px 520px;
+  }
 }
 
-/* 1. The outline draws itself in orange; 2. then the line becomes the logo — the stroke and
- * the fill resolve to solid ink together. Same path throughout, no swap to a second SVG. */
-.intro-mark path {
-  fill: transparent;
-  stroke: var(--color-signature);
-  stroke-width: 0.9;
-  stroke-linejoin: round;
+.intro-grid {
+  fill: none;
+  stroke: var(--terrain-line);
+  stroke-opacity: 0.12;
+  stroke-dasharray: 2 8;
+}
+.intro-route-base {
+  fill: none;
+  stroke: var(--art-steel-edge);
+  stroke-opacity: 0.4;
+  stroke-width: 2;
+  stroke-dasharray: 3 9;
+  stroke-linecap: round;
+}
+.intro-route {
+  fill: none;
+  stroke: var(--color-primary-strong);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.intro-rev {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: intro-draw var(--intro-draw-dur) ease-out forwards;
-  transition:
-    fill var(--intro-resolve-dur) ease,
-    stroke var(--intro-resolve-dur) ease;
-}
-.intro-mark[data-resolved] path {
-  fill: var(--color-intro-ink);
-  stroke: var(--color-intro-ink);
+  animation: intro-draw 10s linear 1.2s forwards;
 }
 @keyframes intro-draw {
   to {
@@ -57,27 +77,461 @@
   }
 }
 
-/* 3. The typed lines. A blinking block cursor while typing. */
-.intro-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 0.9em;
-  margin-left: 2px;
-  vertical-align: -0.1em;
-  background: currentColor;
-  animation: intro-blink 1s steps(1) infinite;
+/* The satellite: a glowing dot that rides the route while it is drawn. */
+.intro-sat {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 4px rgb(244 91 34 / 0.25);
+  offset-path: path(
+    'M-40 700C100 640 200 590 320 560C480 520 560 440 720 420C880 400 960 480 1120 520'
+  );
+  offset-rotate: 0deg;
+  offset-distance: 0%;
+  opacity: 0;
+  animation: intro-fly 10s linear 1.2s forwards;
 }
-@keyframes intro-blink {
-  50% {
+@keyframes intro-fly {
+  0% {
+    opacity: 1;
+    offset-distance: 0%;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
     opacity: 0;
+    offset-distance: 100%;
   }
 }
 
-/* 4. "Made by" fades in to the left of the mark. */
-.intro-made-by {
+.intro-cov {
+  fill: none;
+  stroke-dasharray: 4 7;
+  stroke-opacity: 0.5;
   opacity: 0;
-  transition: opacity var(--intro-made-by-dur) ease;
+  animation: intro-fade-in 0.6s ease-out forwards;
 }
-.intro-made-by[data-shown] {
+.intro-cov-ink {
+  stroke: var(--color-text-primary);
+}
+.intro-cov-brand {
+  stroke: var(--color-primary-strong);
+}
+@keyframes intro-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+.intro-ping {
+  fill: none;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: intro-ping 1.5s ease-out 1;
+}
+.intro-ping-ink {
+  stroke: var(--color-text-primary);
+}
+.intro-ping-brand {
+  stroke: var(--color-primary-strong);
+}
+@keyframes intro-ping {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(4.2);
+  }
+}
+.intro-face {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: intro-facein 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) forwards;
+}
+@keyframes intro-facein {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Captions and the drawings' colours. */
+.intro-cap {
+  font: 700 20px var(--font-heading);
+  letter-spacing: 0.04em;
+  fill: var(--art-white);
+  stroke: var(--art-black);
+  stroke-width: 5px;
+  paint-order: stroke;
+  stroke-linejoin: round;
+}
+.intro-cap-sm {
+  font-size: 15px;
+  stroke-width: 4px;
+}
+.intro-cap-hm {
+  font-size: 22px;
+}
+.art-face {
+  fill: url(#intro-emoji);
+  stroke: var(--art-gold-edge);
+  stroke-width: 2;
+}
+.art-brow {
+  fill: none;
+  stroke: var(--art-brow);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.art-eye {
+  fill: var(--art-eye);
+}
+.art-mouth {
+  fill: none;
+  stroke: var(--art-mouth);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.art-mouth-thin {
+  stroke-width: 3;
+}
+.art-black {
+  fill: var(--art-black);
+}
+.art-white {
+  fill: var(--art-white);
+}
+.art-steel {
+  fill: var(--art-steel);
+  stroke: var(--art-steel-edge);
+  stroke-width: 2;
+}
+.art-steel-big {
+  stroke-width: 2.5;
+}
+.art-antenna-stem {
+  fill: none;
+  stroke: var(--terrain-line);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.intro-ant {
+  fill: var(--color-primary-strong);
+  animation: intro-ant 1.6s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes intro-ant {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
+}
+.art-screen {
+  fill: var(--art-screen);
+}
+.art-glow {
+  fill: var(--art-glow);
+}
+.art-mouth-line {
+  fill: none;
+  stroke: var(--art-glow);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.art-desk {
+  fill: var(--art-desk);
+  stroke: var(--art-desk-edge);
+  stroke-width: 2;
+}
+.art-desk-dot {
+  fill: var(--art-desk-dot);
+}
+.art-hand {
+  fill: var(--art-hand);
+  stroke: var(--art-steel-edge);
+  stroke-width: 1.5;
+}
+.art-thought {
+  fill: var(--color-text-primary);
+  opacity: 0.8;
+}
+.art-tag {
+  fill: rgb(142 153 160 / 0.22);
+  stroke: rgb(142 153 160 / 0.6);
+}
+.art-tag-text {
+  font: 600 11.5px var(--font-body);
+  fill: var(--color-text-primary);
+  letter-spacing: 0.05em;
+}
+.intro-think {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: intro-tilt 2.6s ease-in-out infinite alternate;
+}
+@keyframes intro-tilt {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(4deg);
+  }
+}
+.intro-shades {
+  transform: translateY(-110px);
+  animation: intro-drop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) forwards;
+  animation-delay: calc(var(--t) + 0.35s);
+}
+@keyframes intro-drop {
+  to {
+    transform: translateY(0);
+  }
+}
+.intro-hand {
+  animation: intro-type 0.24s ease-in-out infinite alternate;
+}
+.intro-hand-2 {
+  animation-delay: 0.12s;
+}
+@keyframes intro-type {
+  to {
+    transform: translateY(5px);
+  }
+}
+.intro-eyes {
+  animation: intro-look 1.6s ease-in-out infinite alternate;
+}
+@keyframes intro-look {
+  to {
+    transform: translateX(3px);
+  }
+}
+.intro-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: intro-bl 3.2s ease-in-out infinite;
+}
+@keyframes intro-bl {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* The cards. */
+.intro-card {
+  position: absolute;
+  width: 320px;
+  box-sizing: border-box;
+  padding: 0 20px 18px;
+  background: rgb(26 24 23 / 0.92);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 20px 50px -20px rgb(0 0 0 / 0.9),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+  opacity: 0;
+  transform: translateY(14px);
+  animation: intro-cin 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes intro-cin {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.intro-card-foil {
+  margin: 0 -20px 14px;
+}
+.intro-card-hd {
+  margin-bottom: 12px;
+  font: 600 12px var(--font-heading);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+.intro-card-msg {
+  margin: 0 0 14px;
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+}
+.intro-bar {
+  height: 8px;
+  margin: 0 0 14px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgb(239 236 232 / 0.14);
+}
+.intro-bar i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary-strong);
+  transform-origin: left;
+  transform: scaleX(0.08);
+  animation: intro-bar 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes intro-bar {
+  to {
+    transform: scaleX(1);
+  }
+}
+.intro-st {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+.intro-spin {
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: 2.5px solid rgb(239 236 232 / 0.2);
+  border-top-color: var(--color-primary-strong);
+  border-radius: 50%;
+  animation: intro-sp 1s linear infinite;
+}
+@keyframes intro-sp {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.intro-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.intro-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  opacity: 0;
+  transform: scale(0.6);
+  animation: intro-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+}
+@keyframes intro-pop {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.intro-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  opacity: 0;
+  animation: intro-fade-in 0.5s ease-out forwards;
+}
+
+/* Replay and skip, top right, above the scene and the welcome dialog's scrim. */
+.intro-skip {
+  position: absolute;
+  top: 40px;
+  right: 48px;
+  z-index: 70;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+}
+
+/* The last frame, at once: skip, or reduced motion. */
+.intro-overlay[data-done] .intro-cam {
+  animation: none;
+  transform: scale(1.05);
+  transform-origin: 1120px 520px;
+}
+.intro-overlay[data-done] .intro-rev {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+.intro-overlay[data-done] .intro-sat {
+  animation: none;
+  opacity: 0;
+}
+.intro-overlay[data-done] .intro-cov,
+.intro-overlay[data-done] .intro-card,
+.intro-overlay[data-done] .intro-face,
+.intro-overlay[data-done] .intro-chips span,
+.intro-overlay[data-done] .intro-btns {
+  animation: none;
   opacity: 1;
+  transform: none;
+}
+.intro-overlay[data-done] .intro-shades {
+  animation: none;
+  transform: none;
+}
+.intro-overlay[data-done] .intro-bar i {
+  animation: none;
+  transform: none;
+}
+.intro-overlay[data-done] .intro-ping {
+  animation: none;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-cam,
+  .intro-rev,
+  .intro-sat,
+  .intro-cov,
+  .intro-card,
+  .intro-face,
+  .intro-shades,
+  .intro-chips span,
+  .intro-btns,
+  .intro-bar i,
+  .intro-ping,
+  .intro-ant,
+  .intro-blink,
+  .intro-think,
+  .intro-eyes,
+  .intro-hand,
+  .intro-spin {
+    animation: none;
+  }
+  .intro-cam {
+    transform: scale(1.05);
+    transform-origin: 1120px 520px;
+  }
+  .intro-card,
+  .intro-cov,
+  .intro-face,
+  .intro-chips span,
+  .intro-btns {
+    opacity: 1;
+    transform: none;
+  }
+  .intro-shades,
+  .intro-bar i {
+    transform: none;
+  }
+  .intro-rev {
+    stroke-dashoffset: 0;
+  }
 }

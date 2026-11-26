@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, RotateCcw } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Button } from '../components/ui/button'
 
@@ -13,29 +13,47 @@ import { Button } from '../components/ui/button'
 export interface WelcomeModalProps {
   onStartTour: () => void
   onSkip: () => void
+  /** Plays the intro again. Left out, or with reduced motion on, there is no replay button. */
+  onReplayIntro?: () => void
 }
 
-export function WelcomeModal({ onStartTour, onSkip }: WelcomeModalProps) {
+export function WelcomeModal({ onStartTour, onSkip, onReplayIntro }: WelcomeModalProps) {
   return (
-    <Modal title="Welcome to Review agent runs" onClose={onSkip} className="max-w-[32rem]">
-      <p className="text-body leading-relaxed text-text-primary">
+    <Modal title="Welcome to Review agent runs" onClose={onSkip} className="max-w-[35rem]">
+      <p className="text-lead leading-relaxed text-text-secondary">
         This is where a reviewer looks at what an AI agent did to a piece of software, and decides
         whether to approve it, send it back, or reject it.
       </p>
-      <p className="text-body leading-relaxed text-text-primary">
-        It was built by Berit Alasmäki, a UX and product designer. She kept seeing teams bring in AI
-        agents faster than anyone could keep track of what those agents were actually doing, and
-        wanted to try designing an interface for that — not for any one company, just an idea worth
-        testing.
+      <p className="text-lead leading-relaxed text-text-secondary">
+        The idea is based on the EU AI Act, which asks that people can oversee what an AI system
+        does (Article 14, human oversight). As agents take on more work, a person has to stay in the
+        loop on what they are doing.
       </p>
-      <div className="flex flex-wrap items-center justify-end gap-[var(--space-3)]">
-        <Button variant="outline" onClick={onSkip}>
-          Skip, I'll look around myself
-        </Button>
-        <Button onClick={onStartTour}>
-          Take the tour
-          <ArrowRight aria-hidden className="h-4 w-4" />
-        </Button>
+      <p className="text-lead leading-relaxed text-text-secondary">
+        It was built by Berit Alasmäki, a UX and product designer, to test how an interface for that
+        could work. It is not for any one company, and it is not a compliance tool.
+      </p>
+      <div className="flex flex-wrap items-center justify-between gap-[var(--space-3)]">
+        {onReplayIntro ? (
+          <Button variant="link" size="inline" onClick={onReplayIntro}>
+            <RotateCcw aria-hidden className="h-4 w-4" />
+            Replay intro
+          </Button>
+        ) : (
+          <span />
+        )}
+        <div className="flex flex-wrap items-center gap-[var(--space-3)]">
+          <Button variant="outline" onClick={onSkip}>
+            Skip, I'll look around myself
+          </Button>
+          <Button onClick={onStartTour} autoFocus>
+            Take the tour
+            <ArrowRight
+              aria-hidden
+              className="h-4 w-4 transition-transform group-hover:translate-x-[3px]"
+            />
+          </Button>
+        </div>
       </div>
     </Modal>
   )

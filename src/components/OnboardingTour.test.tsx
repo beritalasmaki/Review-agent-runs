@@ -37,11 +37,18 @@ const TWO_STEPS: TourStep[] = [
 ]
 
 describe('OnboardingTour', () => {
+  it('shows an overview step without a highlight ring', async () => {
+    const steps: TourStep[] = [{ ...TWO_STEPS[0], overview: true }, TWO_STEPS[1]]
+    const { container } = render(<Page steps={steps} onDismiss={vi.fn()} />)
+    expect(await screen.findByRole('heading', { name: 'First step' })).toBeVisible()
+    expect(container.ownerDocument.querySelector('.tour-spot')).not.toBeNull()
+  })
+
   it('shows the first step, with no Back button', async () => {
     render(<Page steps={TWO_STEPS} onDismiss={vi.fn()} />)
     expect(await screen.findByRole('heading', { name: 'First step' })).toBeVisible()
     expect(screen.getByText('Step 1 of 2')).toBeVisible()
-    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled()
   })
 
   it('moves to the next step on Next, and back again on Back', async () => {
@@ -136,10 +143,44 @@ describe('OnboardingTour', () => {
     render(<Page steps={TWO_STEPS} onDismiss={vi.fn()} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Next' })) // now on step 2
     const done = await screen.findByRole('button', { name: 'Done' })
-    const back = screen.getByRole('button', { name: 'Back' })
+    const skip = screen.getByRole('button', { name: 'Skip tour' })
     done.focus()
     const controls = done.closest('div')!
     fireEvent.keyDown(controls, { key: 'Tab' })
-    expect(back).toHaveFocus()
+    expect(skip).toHaveFocus()
+  })
+
+  it('counts steps across legs, and ends on a closing card when given one', async () => {
+    const onDismiss = vi.fn()
+    const onReplay = vi.fn()
+    render(
+      <>
+        <button type="button" data-tour="one">
+          First target
+        </button>
+        <OnboardingTour
+          steps={[TWO_STEPS[0]]}
+          stepOffset={6}
+          totalSteps={10}
+          finish={{
+            label: 'Tour complete',
+            title: 'All done',
+            body: 'Go on.',
+            startLabel: 'Start',
+            replayLabel: 'Replay',
+          }}
+          onReplay={onReplay}
+          onDismiss={onDismiss}
+        />
+      </>,
+    )
+    expect(await screen.findByText('Step 7 of 10')).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(onDismiss).not.toHaveBeenCalled()
+    expect(await screen.findByRole('heading', { name: 'All done' })).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Replay' }))
+    expect(onReplay).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }))
+    expect(onDismiss).toHaveBeenCalledWith('finished')
   })
 })

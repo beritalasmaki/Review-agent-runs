@@ -16,7 +16,7 @@ not affiliated with any company, and every run in it is fictional.
 
 ## What the screen does
 
-- **First row:** a link back to _My reviews_, the theme switch and, before a decision,
+- **First row:** a link back to _My reviews_ and, before a decision,
   how many things are left to solve, with a link that jumps to them and briefly spotlights
   them. The browser tab's icon gets an amber dot while there are things to solve.
 - **Three columns:**

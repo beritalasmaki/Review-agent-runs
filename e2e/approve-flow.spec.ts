@@ -28,7 +28,7 @@ test('review a run, approve it, and undo inside the window', async ({ page }) =>
   // Sign off every open item, then give the required reason.
   // The native checkbox is visually hidden behind its styled box, so tick by clicking the
   // label, as a person does.
-  const openItems = page.getByRole('group', { name: /Confirm each open item/ })
+  const openItems = page.getByRole('group', { name: /Open items/ })
   await expect(openItems.getByRole('checkbox')).toHaveCount(3)
   for (const label of await openItems.locator('label').all()) await label.click()
   for (const box of await openItems.getByRole('checkbox').all()) await expect(box).toBeChecked()
@@ -74,7 +74,7 @@ test('a decline made after undoing an approval stays declined, in My reviews too
   await dialog.getByRole('button', { name: 'Reject run' }).click()
   await expect(page.getByRole('heading', { name: 'Rejected' })).toBeVisible()
 
-  await page.getByRole('link', { name: 'Back to the reviews list' }).click()
+  await page.getByRole('link', { name: 'My reviews', exact: true }).click()
   await page.getByRole('tab', { name: /Declined/ }).click()
   await page.getByRole('button', { name: /^Decision details: Move refund processing/ }).click()
   await expect(page.getByRole('dialog')).toContainText('The refund rounding is wrong.')

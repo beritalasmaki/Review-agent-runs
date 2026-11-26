@@ -10,7 +10,9 @@ import { extendTailwindMerge } from 'tailwind-merge'
  */
 const TYPE_SCALE = [
   'page-title',
+  'run-title',
   'section-heading',
+  'aside-heading',
   'item-title',
   'body',
   'meta',

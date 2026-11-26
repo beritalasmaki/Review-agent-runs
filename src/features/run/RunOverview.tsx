@@ -1,7 +1,7 @@
-import { Activity, Info } from 'lucide-react'
-import { Badge } from '../../components/ui/badge'
+import { Clock } from 'lucide-react'
 import { StatusBadge } from '../../components/StatusBadge'
 import { formatRunStatusLabel } from '../../lib/format'
+import { testsPassing } from '../../lib/timeline'
 import { describeDecision, describePendingRun } from '../../lib/story'
 import type { Run, RunStatus } from '../../lib/types'
 import { cn } from '../../lib/utils'
@@ -17,18 +17,15 @@ export interface RunOverviewProps {
   run: Run
 }
 
-/** Colour of the small dot in a neutral status pill. `approved` and `changes_requested` use
+/** Colour of the clock in a plain status line. `approved` and `changes_requested` use
  * `StatusBadge` instead (docs/DECISIONS.md, 0029). */
-const STATUS_DOT: Partial<Record<RunStatus, string>> = {
-  running: 'bg-status-not-applicable',
-  checks_running: 'bg-status-not-applicable',
-  blocked: 'bg-status-fail',
-  awaiting_review: 'bg-status-waived',
-  rejected: 'bg-status-fail',
+const STATUS_ICON: Partial<Record<RunStatus, string>> = {
+  running: 'text-status-not-applicable',
+  checks_running: 'text-status-not-applicable',
+  blocked: 'text-status-fail',
+  awaiting_review: 'text-status-waived',
+  rejected: 'text-status-fail',
 }
-
-const EYEBROW =
-  'flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading leading-none tracking-wide uppercase text-text-primary'
 
 function StatusPill({ status }: { status: RunStatus }) {
   if (status === 'approved')
@@ -36,45 +33,60 @@ function StatusPill({ status }: { status: RunStatus }) {
   if (status === 'changes_requested')
     return <StatusBadge tone="warning" label={formatRunStatusLabel(status)} />
   return (
-    <Badge>
-      <span aria-hidden className={cn('h-2 w-2 rounded-full', STATUS_DOT[status])} />
+    <span className="inline-flex items-center gap-[var(--space-2)] text-body font-medium text-text-primary">
+      <Clock aria-hidden className={cn('h-4 w-4', STATUS_ICON[status])} />
       {formatRunStatusLabel(status)}
-    </Badge>
+    </span>
+  )
+}
+
+/** One of the numbers under "What the agent did": a big figure and what it counts. */
+function Figure({ n, label, tone }: { n: number | string; label: string; tone?: string }) {
+  return (
+    <li className="flex items-baseline gap-[var(--space-2)] text-meta text-text-secondary">
+      <span
+        className={cn('text-section-heading leading-none font-heading text-text-primary', tone)}
+      >
+        {n}
+      </span>
+      {label}
+    </li>
   )
 }
 
 export function RunOverview({ run }: RunOverviewProps) {
+  const files = run.timeline.filter((event) => event.type === 'file_change').length
+  const tests = testsPassing(run.timeline)
+  const passed = run.gates.filter((gate) => gate.result === 'pass').length
+  const failed = run.gates.filter((gate) => gate.result === 'fail').length
+  const lookAt = run.gates.filter((gate) => gate.result === 'unknown').length
   return (
-    <header className="flex flex-col gap-[var(--space-5)] rounded-lg border border-border-subtle bg-surface p-[var(--space-5)] shadow-card">
-      <div className="self-start">
-        <StatusPill status={run.status} />
-      </div>
-      <h1
-        id="run-heading"
-        className="text-page-title leading-tight font-bold font-heading text-pretty text-text-primary"
-      >
-        {run.initiative}
-      </h1>
+    <header className="panel overflow-hidden">
+      <div aria-hidden className="foil" />
+      <div className="flex flex-col gap-[var(--space-4)] p-[var(--space-5)]">
+        <div className="flex flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)]">
+          <StatusPill status={run.status} />
+          <span className="lbl text-primary">{run.target.environment}</span>
+        </div>
+        <h1
+          id="run-heading"
+          className="text-run-title leading-tight font-semibold font-heading text-pretty text-text-primary"
+        >
+          {run.initiative}
+        </h1>
 
-      {run.assignment && (
-        <div className="flex flex-col gap-[var(--space-2)]">
-          <span className={EYEBROW}>
-            <Info aria-hidden className="h-4 w-4" />
-            Why the agent was asked
-          </span>
-          <p className="text-body font-normal font-body leading-relaxed text-text-primary md:text-item-title">
+        {run.assignment && (
+          <p className="text-body leading-relaxed font-normal font-body text-text-primary">
+            <span className="sr-only">Why the agent was asked: </span>
             {run.assignment.context} <ActorName name={run.assignment.by} className="align-middle" />{' '}
             gave the change to the agent because {run.assignment.reason}
           </p>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="flex flex-col gap-[var(--space-2)] pt-[var(--space-5)]">
-        <span className={EYEBROW}>
-          <Activity aria-hidden className="h-4 w-4" />
-          Where the run is now
-        </span>
-        <p className="text-body font-normal font-body leading-relaxed text-text-secondary md:text-item-title">
+      <div className="flex flex-col gap-[var(--space-3)] border-t border-border-subtle p-[var(--space-5)]">
+        <h2 className="lbl">What the agent did</h2>
+        <p className="text-body leading-relaxed font-normal font-body text-text-primary">
           {run.decision ? (
             <>
               <ActorName name={run.decision.by} className="align-middle text-text-primary" />{' '}
@@ -84,6 +96,13 @@ export function RunOverview({ run }: RunOverviewProps) {
             describePendingRun(run)
           )}
         </p>
+        <ul className="flex flex-wrap gap-x-[var(--space-6)] gap-y-[var(--space-2)] pt-[var(--space-2)]">
+          <Figure n={files} label="files changed" />
+          {tests != null && <Figure n={tests} label="tests passing" />}
+          <Figure n={passed} label="checks passed" tone="text-status-pass" />
+          {failed > 0 && <Figure n={failed} label="failed" tone="text-status-fail" />}
+          {lookAt > 0 && <Figure n={lookAt} label="need a look" tone="text-status-waived" />}
+        </ul>
       </div>
     </header>
   )

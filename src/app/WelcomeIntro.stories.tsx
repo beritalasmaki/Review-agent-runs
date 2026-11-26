@@ -3,29 +3,37 @@ import { useState } from 'react'
 import { WelcomeIntro } from './WelcomeIntro'
 
 /*
- * The intro plays once and then calls `onDone`; this story replays it on demand. Playing it
- * here also sets the real `ledger:intro-seen` flag for this tab's visit, so the app itself will
- * skip it until the tab is closed.
+ * The intro plays once and then opens the welcome dialog over its last frame; both of the
+ * dialog's choices unmount it. This story can bring it back with a button, and says which choice
+ * was made. Playing it here also sets the real `ledger:intro-seen` flag for this tab's visit.
  */
 function Replayable() {
-  const [run, setRun] = useState(0)
   const [playing, setPlaying] = useState(true)
+  const [last, setLast] = useState<string | null>(null)
   return (
     <div style={{ minHeight: '100vh', padding: 'var(--space-6)' }}>
       <p className="text-body text-text-secondary">
-        The page underneath. Click, tap or press any key during the intro to skip it.
+        The page underneath. {last ? `Last choice: ${last}.` : 'Choose in the welcome dialog.'}
       </p>
       <button
         type="button"
         className="mt-[var(--space-4)] rounded-md border border-border px-[var(--space-4)] py-[var(--space-2)] text-body"
-        onClick={() => {
-          setRun((n) => n + 1)
-          setPlaying(true)
-        }}
+        onClick={() => setPlaying(true)}
       >
-        Replay the intro
+        Show the welcome
       </button>
-      {playing && <WelcomeIntro key={run} onDone={() => setPlaying(false)} />}
+      {playing && (
+        <WelcomeIntro
+          onStartTour={() => {
+            setLast('Take the tour')
+            setPlaying(false)
+          }}
+          onSkip={() => {
+            setLast('Skip')
+            setPlaying(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -34,7 +42,7 @@ const meta = {
   title: 'App/WelcomeIntro',
   component: WelcomeIntro,
   parameters: { layout: 'fullscreen' },
-  args: { onDone: () => {} },
+  args: { onStartTour: () => {}, onSkip: () => {} },
 } satisfies Meta<typeof WelcomeIntro>
 
 export default meta

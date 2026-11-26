@@ -23,12 +23,15 @@ export type StatusBadgeTone = 'success' | 'danger' | 'warning' | 'neutral' | 'in
 const TONE = {
   success: {
     icon: CircleCheckBig,
-    className: 'border-transparent bg-status-pass-tint-bg text-status-pass-tint-fg',
+    className: 'border-status-pass/60 bg-status-pass-tint-bg text-status-pass-tint-fg',
   },
-  danger: { icon: CircleX, className: 'text-status-fail border-status-fail' },
+  danger: {
+    icon: CircleX,
+    className: 'border-status-fail/60 bg-status-fail-tint-bg text-status-fail-tint-fg',
+  },
   warning: {
     icon: TriangleAlert,
-    className: 'border-transparent bg-status-waived-tint-bg text-status-waived-tint-fg',
+    className: 'border-status-waived/60 bg-status-waived-tint-bg text-status-waived-tint-fg',
   },
   neutral: {
     icon: CircleMinus,
@@ -51,7 +54,7 @@ export function StatusBadge({ tone, label, className }: StatusBadgeProps) {
 
   return (
     <Badge className={cn(toneClassName, className)}>
-      <Icon aria-hidden />
+      <Icon aria-hidden className="fill-current stroke-bg" />
       {label}
     </Badge>
   )

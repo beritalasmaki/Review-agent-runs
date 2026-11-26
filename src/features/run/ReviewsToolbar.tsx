@@ -72,7 +72,7 @@ export function ReviewsToolbar({
 
   return (
     <div className="flex flex-wrap items-center gap-[var(--space-3)] p-[var(--space-5)]">
-      <label className="relative flex w-full items-center sm:w-[21.25rem]">
+      <label className="relative flex w-full items-center sm:w-[26.25rem]">
         <span className="sr-only">{searchLabel}</span>
         <Search
           aria-hidden
@@ -83,7 +83,7 @@ export function ReviewsToolbar({
           value={filters.query}
           onChange={(event) => onFilters({ query: event.target.value })}
           placeholder={searchPlaceholder}
-          className="py-[var(--space-3)] pl-[calc(var(--space-6)+var(--space-1))]"
+          className="h-[var(--size-field)] py-0 pl-[calc(var(--space-6)+var(--space-1))]"
         />
       </label>
       <Popover open={open} onOpenChange={(next) => next !== open && onToggleOpen()}>
@@ -91,9 +91,8 @@ export function ReviewsToolbar({
           <Button
             variant="outline"
             className={cn(
-              'gap-[var(--space-2)]',
-              open &&
-                'border-primary bg-primary-tint text-primary hover:border-primary hover:bg-primary-tint',
+              'h-[var(--size-field)] min-h-0 gap-[var(--space-2)]',
+              open && 'border-primary bg-primary-tint text-primary',
             )}
           >
             <SlidersHorizontal aria-hidden className="h-4 w-4" />

@@ -86,7 +86,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         tabIndex={focused ? -1 : undefined}
         className={cn(
           'text-meta font-normal font-body text-text-primary',
-          attention ? 'bg-status-waived-tint-bg/60' : nested ? 'bg-bg' : 'hover:bg-bg',
+          attention ? 'bg-status-waived-tint-bg' : nested ? 'bg-bg' : 'hover:bg-text-primary/5',
           focused && 'outline-2 -outline-offset-2 outline-focus-ring',
           nested && 'text-text-secondary',
         )}
@@ -135,10 +135,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
           No steps yet. This run started at {formatClock(run.startedAt)}.
         </p>
       ) : (
-        <Table
-          containerClassName="rounded-lg border border-border-subtle bg-surface shadow-card"
-          className="min-w-[40rem] table-fixed"
-        >
+        <Table containerClassName="panel" className="min-w-[40rem] table-fixed">
           <colgroup>
             <col className="w-[5.5rem]" />
             <col className="w-[4.5rem]" />
@@ -199,7 +196,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
                         type="button"
                         aria-expanded={state !== 'closed'}
                         onClick={toggle}
-                        className="flex w-full cursor-pointer items-center gap-[var(--space-2)] text-left hover:underline"
+                        className="flex w-full cursor-pointer items-center gap-[var(--space-2)] sat text-left"
                       >
                         <MorphIcon
                           icon={state !== 'closed' ? ChevronUp : ChevronDown}

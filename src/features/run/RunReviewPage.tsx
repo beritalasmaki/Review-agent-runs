@@ -11,12 +11,11 @@ import type { Run } from '../../lib/types'
 import { DecisionPanel } from './DecisionPanel'
 import { EvidenceTab } from './EvidenceTab'
 import { InProgressBox } from './InProgressBox'
-import { OpenItemsNotice } from './OpenItemsNotice'
 import { checkCardId, scoreCardId } from './openItemTargets'
 import { RunDetails } from './RunDetails'
 import { RunOverview } from './RunOverview'
 import { RunShape } from './RunShape'
-import { RunPageNav } from './RunPageNav'
+import { TopBar } from './TopBar'
 import { RunViewTabs } from './RunViewTabs'
 import { StepsTab } from './StepsTab'
 import { StoryTimeline } from './StoryTimeline'
@@ -239,12 +238,31 @@ export function RunReviewPage({
          * of a long page. No top bar (0135): the way back and the theme switch are the first row
          * of the page, and the columns start at one height under it.
          */}
-        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-4)] px-[var(--space-4)] pt-[var(--space-4)] pb-[var(--space-7)] md:px-[var(--space-6)]">
-          <RunPageNav
-            reviewsHref={reviewsHref}
-            end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
-          />
-          <div className="grid grid-cols-1 items-start gap-[var(--space-4)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
+        <TopBar
+          trail={
+            <>
+              <a href={reviewsHref} className="sat font-medium">
+                My reviews
+              </a>
+              <span aria-hidden className="text-text-secondary">
+                /
+              </span>
+              <span aria-current="page" className="text-meta text-text-secondary">
+                Run {run.id}
+              </span>
+            </>
+          }
+          end={
+            <button type="button" className="sat font-medium" onClick={() => chooseView('steps')}>
+              Open audit log
+            </button>
+          }
+        />
+        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-4)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-8)]">
+          <div
+            data-tour="run-page"
+            className="grid grid-cols-1 items-start gap-[var(--space-5)] md:grid-cols-[minmax(0,1fr)_340px] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[260px_minmax(0,1fr)_340px] xl:grid-rows-[auto_1fr]"
+          >
             <div
               className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
               data-tour="run-overview"
@@ -301,16 +319,8 @@ export function RunReviewPage({
               />
             </div>
 
-            <div
-              data-tour="run-tabs-view"
-              className="min-w-0 rounded-lg border border-border-subtle bg-surface pb-[var(--space-4)] pl-[var(--space-4)] shadow-card md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
-            >
-              {/* No top/right padding on the wrapper above, on purpose: RunViewTabs' own
-                `rounded-t-lg` corner sits flush against this card's top-right corner instead of
-                floating with a gap around it, so the tab strip reads as this card's own attached
-                header rather than a separate element — the pill tabs and the content below both
-                keep their own `px-[var(--space-5)]`, so nothing touches the true edge. */}
-              <RunViewTabs ref={tabsRef} run={run} />
+            <div className="min-w-0 panel md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2">
+              <RunViewTabs ref={tabsRef} run={run} view={view} />
               <div className="px-[var(--space-5)] pt-[var(--space-5)] pb-[var(--space-5)]">
                 <TabsContent value="story">
                   <StoryTimeline run={run} onShowSteps={showStep} />

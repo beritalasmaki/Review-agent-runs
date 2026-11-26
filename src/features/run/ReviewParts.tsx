@@ -71,7 +71,7 @@ export function RunCell({ run, href }: { run: Run; href: string }) {
       <a
         href={href}
         title={run.initiative}
-        className="truncate text-body leading-snug font-semibold font-body text-text-primary no-underline hover:text-primary hover:underline"
+        className="truncate text-body leading-snug font-semibold font-body text-text-primary max-w-full underline decoration-text-primary/30 underline-offset-[6px] hover:decoration-text-primary"
       >
         {run.initiative}
       </a>

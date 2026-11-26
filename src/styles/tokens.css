@@ -1,350 +1,171 @@
 /*
- * Design tokens.
+ * Design tokens — dark only (docs/DECISIONS.md, 0143, replacing the light/dark pair of 0063).
  *
- * Layer 1 — primitives: plain custom properties. Deliberately NOT inside @theme,
- *   so they never become Tailwind utilities. Components must not use them.
- * Layer 2 — semantic tokens: declared in @theme, so each one becomes a Tailwind
- *   utility (`--color-surface-raised` -> `bg-surface-raised`). This is the only
- *   layer components are allowed to touch.
+ * Layer 1 — primitives: plain custom properties. Deliberately NOT inside @theme, so they never
+ *   become Tailwind utilities. Components must not use them.
+ * Layer 2 — semantic tokens: declared in @theme, so each one becomes a Tailwind utility
+ *   (`--color-surface-raised` -> `bg-surface-raised`). The only layer components may touch.
  *
- * Light is the default. Dark is applied either by system preference (unless the
- * document opts out with data-theme="light") or explicitly with data-theme="dark".
- *
- * Usage rules for the brand and status colours below live in src/styles/README.md —
- * read them before using --color-primary, --color-accent or any --color-status-*
- * value in a component.
+ * The palette is the satellite design's: warm black, one signal orange, steel, and four status
+ * colours. Usage rules live in src/styles/README.md.
  */
 
 :root {
-  /*
-   * Neutral ramp, lightest to darkest, a cool-tinted grey (docs/DECISIONS.md, 0096 — a partial
-   * reversal of 0073, which had gone true/untinted; by request, "replace white with #F9FAFB,
-   * and the other colours and black should match it in tones"). --neutral-0 is exactly
-   * #F9FAFB; every other step keeps 0073's own lightness value (so relative contrast between
-   * steps is preserved) but is retinted to the same ~210° cool-blue hue, at a saturation
-   * curve shaped like production cool-grey scales (Tailwind's `slate`, sampled and scaled down
-   * to match #F9FAFB's own subtlety at the lightest step — slate itself reads bolder). Numbered
-   * by position rather than an evenly spaced scale — these are exactly the values the
-   * product's neutral tokens need, not a generated palette. Several are shared between the two
-   * themes on purpose (--neutral-1 is both light bg and dark text-primary; --neutral-12 is
-   * both light text-primary and dark surface).
-   */
-  --neutral-0: #f9fafb;
-  --neutral-1: #f6f8fa;
-  --neutral-2: #f3f5f7;
-  --neutral-3: #e6e8ec;
-  --neutral-4: #cdd2d9;
-  --neutral-5: #afb6bf;
-  --neutral-6: #9aa1ac;
-  --neutral-7: #6f7783;
-  --neutral-8: #5b626d;
-  --neutral-9: #444b56;
-  --neutral-10: #353b45;
-  --neutral-11: #2a303a;
-  --neutral-12: #21262f;
-  --neutral-13: #171b25;
-
-  /*
-   * The page behind the cards: the flat `background-color` fallback under the gradient below,
-   * and what every `bg-bg` utility resolves to for an element that doesn't want the gradient
-   * (StepsTab, RunTopBar, ReviewDialogs, ...) — a gradient is not a valid `background-color`
-   * value. Matches the cool-tinted neutral ramp's own family (docs/DECISIONS.md, 0096) rather
-   * than the flat true-grey 0073 originally gave this.
-   */
-  --page-light: #f3f5f7;
-  --page-dark: #161a22;
-  /* Dark theme surfaces, text and lines, lifted brighter than the shared neutral ramp so the
-   * dark page reads clearly rather than muddy (docs/DECISIONS.md, 0136). Own values, because
-   * the ramp's dark steps double as the light theme's text colours. Contrast checked with the
-   * WCAG formula: text 13.8:1, secondary 9.8:1 on the surface; the line 3:1. */
-  --dark-surface: #222836;
-  --dark-surface-raised: #2d3445;
-  --dark-border-subtle: #4a5368;
-  --dark-border: #74809a;
-  --dark-text-secondary: #cdd3dd;
-  --dark-text-disabled: #8a93a3;
-
-  /*
-   * The page-wide gradient wash (docs/DECISIONS.md, 0089 introduced it, My reviews only; 0097
-   * made it app-wide and considerably more saturated). Applied as `background-image` on `body`
-   * (styles/index.css) *underneath* the flat `--page-light`/`--page-dark` colour above. Several
-   * soft, feathered blobs rather than one hard linear sweep, so it reads as a blurred texture,
-   * not a flat colour band.
-   *
-   * Pushed noticeably more vivid than the original pastel version (0097): a glass surface's
-   * `backdrop-blur` can only reveal colour that is actually there to blur — the original wash
-   * was so close to the flat page colour that buttons and pills sitting on it read as plain
-   * solid surfaces, not glass (the same root cause 0095 fixed for stacked opacity, from the
-   * other direction). A richer backdrop fixes both at once.
-   */
-  --page-gradient-light:
-    radial-gradient(
-      circle at 12% 18%,
-      color-mix(in srgb, #7fb8f0 42%, var(--page-light)) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at 88% 12%,
-      color-mix(in srgb, #6fd9bc 42%, var(--page-light)) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at 50% 92%,
-      color-mix(in srgb, #c7a8f0 42%, var(--page-light)) 0%,
-      transparent 60%
-    );
-  --page-gradient-dark:
-    radial-gradient(
-      circle at 12% 18%,
-      color-mix(in srgb, #2a5d94 55%, var(--page-dark)) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      circle at 88% 12%,
-      color-mix(in srgb, #1a6b5c 55%, var(--page-dark)) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      circle at 50% 92%,
-      color-mix(in srgb, #4a3380 55%, var(--page-dark)) 0%,
-      transparent 65%
-    );
-
-  /* Brand — indigo-blue (primary), replacing 0092's neutral black/white (docs/DECISIONS.md,
-   * 0094). Shifted toward violet (~248°) and away from the existing status-blue's hue (~210-
-   * 215°, --status-blue-* and --mark-blue): a brand colour that reads as the same hue as the
-   * "Requested for change"/"unknown" status would break the README's "status is a separate
-   * palette, never reused for non-status UI" rule in spirit even if the literal values differ. */
-  --indigo-light: #4338ca;
-  --indigo-light-hover: #332d9e;
-  --indigo-dark: #b3b7ff;
-  --indigo-dark-hover: #c4c7ff;
-  /* Deeper, for fills and underlines only, not text: 4.75:1 on the dark surfaces, matching
-   * 0073's precedent for this token's old (magenta) value. */
-  --indigo-dark-strong: #9a9fff;
-
-  /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
-  --lime-light: #427000;
-  --lime-light-hover: #3c6600;
-  --lime-dark: #a8e063;
-  --lime-dark-hover: #cdeba2;
-
-  /*
-   * Status — a separate system from brand (src/styles/README.md). One value per
-   * status per theme: this is a foreground colour for an icon and a border, not a
-   * fill — see the README before using one as a background or as text colour.
-   */
-  --status-green-light: #1e8a5a;
-  --status-green-dark: #6ff0a8;
-  --status-red-light: #b3261e;
-  --status-red-dark: #ff9e95;
-  --status-amber-light: #8a5a00;
-  --status-amber-dark: #ffc233;
-  --status-slate-light: #6b7280;
-  --status-slate-dark: #bcc3ce;
-  --status-blue-light: #3d5a80;
-  --status-blue-dark: #a8cdf6;
-
-  /*
-   * Status "tint" pair — a light fill plus its own foreground, for the one deliberate
-   * exception to "status colour is never a fill, never the text" (docs/DECISIONS.md):
-   * a filled StatusBadge (`success`/`warning` tones only — see StatusBadge.tsx). Contrast
-   * verified with the WCAG relative-luminance formula (docs/DECISIONS.md, same method as
-   * 0005), not eyeballed.
-   *
-   * Only one genuinely new colour here: --status-green-tint-fg-light. --status-green-light
-   * itself cannot be reused as on-tint text — it already tops out at ~4.3:1 on any light
-   * background (src/styles/README.md's own documented limit), which is mathematically the
-   * *best* case (pure white); no tint can do better. --status-amber-light and the two
-   * dark-theme status colours all had enough headroom to reuse directly (4.8–7.9:1 against
-   * their tints below), so only green needed a dedicated darker shade.
-   */
-  --status-green-tint-bg-light: #e6f6ec;
-  --status-green-tint-fg-light: #1a7a3e; /* 4.81:1 on the tint above — new, see comment */
-  --status-green-tint-bg-dark: #255438; /* paired with --status-green-dark: 6.2:1 */
-  --status-amber-tint-bg-light: #fdf3d9; /* paired with --status-amber-light: 5.36:1 */
-  --status-amber-tint-bg-dark: #534215; /* paired with --status-amber-dark: 6.0:1 */
-  /* Red tint — the Low confidence chip and Reject run's hover (docs/DECISIONS.md, 0039 and
-   * 0041). Both reuse the existing red as foreground: 5.67:1 light, 6.57:1 dark. */
-  --status-red-tint-bg-light: #fcebea;
-  --status-red-tint-bg-dark: #602a28;
-  /* Blue tint for "Requested for change" in My reviews (docs/DECISIONS.md, 0060). */
-  --status-blue-tint-bg-light: #e3ecfb;
-  --status-blue-tint-fg-light: #1f5fbf; /* 5.02:1 on the tint above */
-  --status-blue-tint-bg-dark: #244772; /* paired with --status-blue-dark */
-
-  /* A light wash of the brand indigo: selected rows, the active tab's count (0094). */
-  --indigo-tint-light: #eae9fb;
-  --indigo-tint-border-light: #c9c5f0;
-  --indigo-tint-dark: #363376;
-  --indigo-tint-border-dark: #8a85e0;
-
-  /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */
-  --mark-amber: #f0a04b;
-  --mark-blue: #6f9be0;
-  --mark-red: #e27a73;
-  --mark-green: #5fb07e;
-  /* Deeper and brighter on the dark page, so they don't fade into it (0069). */
-  --mark-amber-dark: #ff9a1f;
-  --mark-blue-dark: #4f8cff;
-  --mark-red-dark: #ff5a5f;
-  --mark-green-dark: #2ec46b;
-
-  /*
-   * The signature's drawing stroke in the one-time welcome intro (src/app/WelcomeIntro.tsx,
-   * docs/DECISIONS.md 0048). A new colour, said out loud rather than borrowed: the brand accent
-   * is teal, and the only warm tone here is amber, which belongs to the status palette and
-   * must not be reused for non-status UI. Decorative only — never text, never a status.
-   */
-  --signature-orange: #e8590c;
+  /* Warm black surfaces, darkest first. */
+  --ink-0: #11100f; /* the page */
+  --ink-1: #1a1817; /* a panel */
+  --ink-2: #231f1d; /* raised: a row, a field */
+  --ink-chip: #3a3735; /* a count pill on a panel */
+  --ink-line: #36312d; /* the hairline between things */
+  --ink-edge: #6b6560; /* a control's own border, 3.1:1 on --ink-1 */
+  /* Text. */
+  --paper: #efece8; /* 15.6:1 on --ink-1 */
+  --paper-muted: #a39b93; /* 6.6:1 on --ink-1 */
+  --paper-off: #8a8179; /* disabled; exempt from 4.5:1 */
+  /* Brand. The fill carries dark text (6.1:1); the lighter one is for text on dark (7.6:1). */
+  --orange: #f45b22;
+  --orange-hi: #ff7a47;
+  --orange-hover: #ff9a70;
+  --orange-ink: #140a04;
+  --orange-tint: #2a1810;
+  --orange-tint-edge: #7a3a1e;
+  /* Steel: people, quiet chrome. */
+  --steel: #8e99a0;
+  --steel-bar: #8e99a0; /* the filled part of a score bar */
+  --steel-pill: #2d2d2d; /* a person's pill: steel at 16% on a panel */
+  --steel-pill-edge: #5a5f62;
+  --steel-pill-icon: #4f5355;
+  /* Status — a separate palette from brand, always beside an icon and a word. */
+  --st-pass: #34e89e;
+  --st-fail: #ff5470;
+  --st-waive: #f2c94c;
+  --st-unknown: #9fb0ba;
+  --st-pass-tint: #10281e;
+  --st-fail-tint: #33121a;
+  --st-waive-tint: #2e260c;
+  --st-info-tint: #1a2630;
+  --st-info-fg: #b8c7d0;
+  --st-pass-ink: #04140c; /* dark text on the green fill, 12:1 */
+  --st-pass-quiet: #9bbfb2; /* disabled approve's text */
+  /* The terrain's own colours: decorative, never text. */
+  --terrain-glow: #ff7a47;
+  --terrain-shade: #11100f;
+  --terrain-line: #6e777d;
+  /* The dashed arc across the top panel (a data URI cannot read tokens: its orange is --orange). */
+  --hero-arc-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1260' height='200' viewBox='0 0 1260 200' fill='none'><path d='M0 100C140 10 280 10 420 100S700 190 840 100 1120 10 1260 100' stroke='%23f45b22' stroke-opacity='.3' stroke-dasharray='3 7'/><circle cx='420' cy='100' r='2.5' fill='%23f45b22' fill-opacity='.5'/><circle cx='840' cy='100' r='2.5' fill='%23f45b22' fill-opacity='.5'/></svg>");
+  /* The welcome intro's illustrations (app/IntroScene.tsx): a round yellow face, and a robot with
+   * a screen face. Decorative drawings, not interface colour. */
+  --art-gold-hi: #ffe27a;
+  --art-gold-lo: #f4b13d;
+  --art-gold-edge: #c98a2a;
+  --art-brow: #7a4a10;
+  --art-eye: #2a1a0a;
+  --art-mouth: #7a3b10;
+  --art-black: #111;
+  --art-white: #fff;
+  --art-steel: #7d8890;
+  --art-steel-edge: #c4ccd1;
+  --art-hand: #9aa5ac;
+  --art-screen: #1b2a36;
+  --art-glow: #e6f4ff;
+  --art-desk: #3a3835;
+  --art-desk-edge: #57534e;
+  --art-desk-dot: #5a5651;
+  --art-lilac: #d6a6f0;
+  /* The page backdrop: relief, parcels, roads, ruler ticks and a few glowing points on long orbits, as one SVG (a data
+   * URI cannot read tokens, so its colours are literal). Used by .terrain-page::before. */
+  --terrain-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1440 1560%22 preserveAspectRatio=%22xMidYMid slice%22%3E%0A%3Cdefs%3E%0A%3Cfilter id=%22reliefr%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22 color-interpolation-filters=%22sRGB%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.005 .009%22 numOctaves=%225%22 seed=%2211%22 result=%22n%22/%3E%3CfeDiffuseLighting in=%22n%22 lighting-color=%22%23c4ccd1%22 surfaceScale=%2211%22 diffuseConstant=%221.15%22%3E%3CfeDistantLight azimuth=%22235%22 elevation=%2236%22/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%0A%3Cfilter id=%22speckr%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.85%22 numOctaves=%222%22 seed=%224%22/%3E%3CfeColorMatrix type=%22matrix%22 values=%220 0 0 0 .85  0 0 0 0 .88  0 0 0 0 .9  2 0 0 0 -.85%22/%3E%3C/filter%3E%0A%3CradialGradient id=%22rgr%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff%22/%3E%3Cstop offset=%221%22 stop-color=%22%23000%22/%3E%3C/radialGradient%3E%0A%3Cmask id=%22mcr%22 maskUnits=%22userSpaceOnUse%22 x=%22-260%22 y=%22-260%22 width=%22520%22 height=%22520%22%3E%3Crect x=%22-260%22 y=%22-260%22 width=%22520%22 height=%22520%22 fill=%22url(%23rgr)%22/%3E%3C/mask%3E%0A%3Cpattern id=%22dotsr%22 width=%2246%22 height=%2246%22 patternUnits=%22userSpaceOnUse%22%3E%3Ccircle cx=%226%22 cy=%229%22 r=%221.1%22 fill=%22%23ff9a3c%22/%3E%3Ccircle cx=%2219%22 cy=%2231%22 r=%22.8%22 fill=%22%23ffc27a%22/%3E%3Ccircle cx=%2233%22 cy=%2214%22 r=%221.4%22 fill=%22%23f45b22%22/%3E%3Ccircle cx=%2240%22 cy=%2238%22 r=%22.9%22 fill=%22%23ffb060%22/%3E%3Ccircle cx=%2226%22 cy=%224%22 r=%22.7%22 fill=%22%23ffd9a8%22/%3E%3Ccircle cx=%2211%22 cy=%2242%22 r=%221%22 fill=%22%23ff9a3c%22/%3E%3C/pattern%3E%0A%3Cpattern id=%22parcelr%22 width=%22260%22 height=%22180%22 patternUnits=%22userSpaceOnUse%22 patternTransform=%22rotate(-14)%22%3E%3Crect width=%22120%22 height=%2280%22 fill=%22rgba(200,210,215,.045)%22 stroke=%22rgba(220,228,232,.08)%22/%3E%3Crect x=%22120%22 width=%22140%22 height=%22110%22 fill=%22rgba(150,160,165,.07)%22 stroke=%22rgba(220,228,232,.08)%22/%3E%3Crect y=%2280%22 width=%2270%22 height=%22100%22 fill=%22rgba(180,190,195,.035)%22 stroke=%22rgba(220,228,232,.08)%22/%3E%3Crect x=%2270%22 y=%2280%22 width=%2250%22 height=%22100%22 fill=%22rgba(170,180,185,.07)%22 stroke=%22rgba(220,228,232,.08)%22/%3E%3Crect x=%22120%22 y=%22110%22 width=%22140%22 height=%2270%22 fill=%22rgba(190,200,205,.04)%22 stroke=%22rgba(220,228,232,.08)%22/%3E%3C/pattern%3E%0A%3Cpattern id=%22gratr%22 width=%22160%22 height=%22160%22 patternUnits=%22userSpaceOnUse%22%3E%3Cpath d=%22M160 0H0V160%22 fill=%22none%22 stroke=%22%238a9399%22 stroke-opacity=%22.1%22 stroke-width=%221%22 stroke-dasharray=%222 6%22/%3E%3C/pattern%3E%0A%3Cpattern id=%22tvr%22 width=%2212%22 height=%22100%22 patternUnits=%22userSpaceOnUse%22%3E%3Cpath d=%22M0 .5H12M0 20.5H5M0 40.5H5M0 60.5H5M0 80.5H5%22 stroke=%22%23a9b4bb%22 stroke-opacity=%22.6%22/%3E%3C/pattern%3E%0A%3Cpattern id=%22thr%22 width=%22100%22 height=%2212%22 patternUnits=%22userSpaceOnUse%22%3E%3Cpath d=%22M.5 0V12M20.5 0V5M40.5 0V5M60.5 0V5M80.5 0V5%22 stroke=%22%23a9b4bb%22 stroke-opacity=%22.6%22/%3E%3C/pattern%3E%0A%3CradialGradient id=%22vg%22 cx=%2250%25%22 cy=%2230%25%22 r=%2275%25%22%3E%3Cstop offset=%22.4%22 stop-color=%22%2311100f%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%2311100f%22 stop-opacity=%22.5%22/%3E%3C/radialGradient%3E%3CradialGradient id=%22ob%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff%22/%3E%3Cstop offset=%22.35%22 stop-color=%22%23ffe6d0%22/%3E%3Cstop offset=%221%22 stop-color=%22%23ff7a47%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E%3C/defs%3E%0A%3Crect width=%221440%22 height=%221560%22 fill=%22url(%23parcelr)%22/%3E%0A%3Crect width=%221440%22 height=%221560%22 filter=%22url(%23reliefr)%22 opacity=%22.24%22/%3E%0A%3Crect width=%221440%22 height=%221560%22 fill=%22url(%23gratr)%22/%3E%0A%3Cg fill=%22none%22 stroke-linecap=%22round%22%3E%0A%3Cpath d=%22M1150 296C1060 421 960 452 880 577S690 718 560 842S250 936 80 967%22 stroke=%22rgba(200,212,220,.12)%22 stroke-width=%227%22/%3E%0A%3Cpath d=%22M1150 296C1060 421 960 452 880 577S690 718 560 842S250 936 80 967%22 stroke=%22%2307080a%22 stroke-width=%223.2%22/%3E%0A%3Cpath d=%22M130 1030C250 1123 400 1201 520 1279S800 1342 1000 1373%22 stroke=%22rgba(200,212,220,.12)%22 stroke-width=%226%22/%3E%0A%3Cpath d=%22M130 1030C250 1123 400 1201 520 1279S800 1342 1000 1373%22 stroke=%22%2307080a%22 stroke-width=%222.6%22/%3E%0A%3Cpath d=%22M-20 468C200 515 330 624 470 593S780 468 1000 530S1300 780 1460 718%22 stroke=%22rgba(220,228,232,.16)%22 stroke-width=%221%22/%3E%0A%3Cpath d=%22M700 -10C690 156 760 343 720 530S640 780 700 967S840 1248 790 1570%22 stroke=%22rgba(220,228,232,.14)%22 stroke-width=%221%22 stroke-dasharray=%2214 5 2 5%22/%3E%0A%3C/g%3E%0A%3Cg transform=%22translate(1190 780)%22 mask=%22url(%23mcr)%22%3E%3Crect x=%22-260%22 y=%22-260%22 width=%22520%22 height=%22520%22 fill=%22url(%23dotsr)%22/%3E%3C/g%3E%0A%3Cg transform=%22translate(250 1232)%22 mask=%22url(%23mcr)%22%3E%3Crect x=%22-260%22 y=%22-260%22 width=%22520%22 height=%22520%22 fill=%22url(%23dotsr)%22/%3E%3C/g%3E%0A%3Cg transform=%22translate(700 1513)%22 mask=%22url(%23mcr)%22%3E%3Crect x=%22-260%22 y=%22-260%22 width=%22520%22 height=%22520%22 fill=%22url(%23dotsr)%22/%3E%3C/g%3E%0A%3Crect width=%221440%22 height=%221560%22 filter=%22url(%23speckr)%22 opacity=%22.11%22/%3E%0A%3Crect width=%2212%22 height=%221560%22 fill=%22url(%23tvr)%22/%3E%3Crect width=%221440%22 height=%2212%22 fill=%22url(%23thr)%22/%3E%0A%0A%3Crect width=%221440%22 height=%221560%22 fill=%22url(%23vg)%22/%3E%3Cstyle%3E.o%7Banimation-timing-function:linear;animation-iteration-count:infinite%7D.l%7Bfill:none;stroke:%23a9c4de;stroke-opacity:.07;stroke-width:1;stroke-dasharray:2 9%7D%40keyframes o0%7B0.00%25%7Btransform:translate(-120px,340px)%7D4.17%25%7Btransform:translate(-57px,287px)%7D8.33%25%7Btransform:translate(7px,247px)%7D12.50%25%7Btransform:translate(73px,219px)%7D16.67%25%7Btransform:translate(139px,202px)%7D20.83%25%7Btransform:translate(206px,194px)%7D25.00%25%7Btransform:translate(275px,195px)%7D29.17%25%7Btransform:translate(344px,202px)%7D33.33%25%7Btransform:translate(413px,216px)%7D37.50%25%7Btransform:translate(484px,233px)%7D41.67%25%7Btransform:translate(554px,255px)%7D45.83%25%7Btransform:translate(626px,278px)%7D50.00%25%7Btransform:translate(698px,302px)%7D54.17%25%7Btransform:translate(770px,327px)%7D58.33%25%7Btransform:translate(842px,349px)%7D62.50%25%7Btransform:translate(914px,369px)%7D66.67%25%7Btransform:translate(987px,384px)%7D70.83%25%7Btransform:translate(1059px,395px)%7D75.00%25%7Btransform:translate(1132px,399px)%7D79.17%25%7Btransform:translate(1204px,395px)%7D83.33%25%7Btransform:translate(1276px,383px)%7D87.50%25%7Btransform:translate(1348px,361px)%7D91.67%25%7Btransform:translate(1419px,327px)%7D95.83%25%7Btransform:translate(1490px,280px)%7D100.00%25%7Btransform:translate(1560px,220px)%7D%7D.o0%7Banimation-name:o0;animation-duration:95s;animation-delay:0s%7D%40keyframes o1%7B0.00%25%7Btransform:translate(1580px,980px)%7D4.17%25%7Btransform:translate(1507px,1038px)%7D8.33%25%7Btransform:translate(1434px,1084px)%7D12.50%25%7Btransform:translate(1361px,1118px)%7D16.67%25%7Btransform:translate(1287px,1142px)%7D20.83%25%7Btransform:translate(1214px,1157px)%7D25.00%25%7Btransform:translate(1140px,1164px)%7D29.17%25%7Btransform:translate(1066px,1165px)%7D33.33%25%7Btransform:translate(992px,1159px)%7D37.50%25%7Btransform:translate(918px,1149px)%7D41.67%25%7Btransform:translate(844px,1136px)%7D45.83%25%7Btransform:translate(771px,1121px)%7D50.00%25%7Btransform:translate(698px,1105px)%7D54.17%25%7Btransform:translate(625px,1089px)%7D58.33%25%7Btransform:translate(552px,1074px)%7D62.50%25%7Btransform:translate(480px,1062px)%7D66.67%25%7Btransform:translate(408px,1054px)%7D70.83%25%7Btransform:translate(337px,1051px)%7D75.00%25%7Btransform:translate(267px,1053px)%7D79.17%25%7Btransform:translate(197px,1063px)%7D83.33%25%7Btransform:translate(128px,1081px)%7D87.50%25%7Btransform:translate(59px,1109px)%7D91.67%25%7Btransform:translate(-8px,1147px)%7D95.83%25%7Btransform:translate(-74px,1197px)%7D100.00%25%7Btransform:translate(-140px,1260px)%7D%7D.o1%7Banimation-name:o1;animation-duration:120s;animation-delay:-40s%7D%40keyframes o2%7B0.00%25%7Btransform:translate(-100px,1500px)%7D4.17%25%7Btransform:translate(-48px,1419px)%7D8.33%25%7Btransform:translate(8px,1349px)%7D12.50%25%7Btransform:translate(67px,1289px)%7D16.67%25%7Btransform:translate(130px,1239px)%7D20.83%25%7Btransform:translate(195px,1197px)%7D25.00%25%7Btransform:translate(263px,1163px)%7D29.17%25%7Btransform:translate(334px,1135px)%7D33.33%25%7Btransform:translate(406px,1113px)%7D37.50%25%7Btransform:translate(480px,1094px)%7D41.67%25%7Btransform:translate(555px,1079px)%7D45.83%25%7Btransform:translate(631px,1067px)%7D50.00%25%7Btransform:translate(708px,1055px)%7D54.17%25%7Btransform:translate(784px,1044px)%7D58.33%25%7Btransform:translate(861px,1032px)%7D62.50%25%7Btransform:translate(938px,1018px)%7D66.67%25%7Btransform:translate(1014px,1001px)%7D70.83%25%7Btransform:translate(1089px,980px)%7D75.00%25%7Btransform:translate(1163px,954px)%7D79.17%25%7Btransform:translate(1235px,923px)%7D83.33%25%7Btransform:translate(1305px,884px)%7D87.50%25%7Btransform:translate(1373px,838px)%7D91.67%25%7Btransform:translate(1438px,782px)%7D95.83%25%7Btransform:translate(1501px,717px)%7D100.00%25%7Btransform:translate(1560px,640px)%7D%7D.o2%7Banimation-name:o2;animation-duration:150s;animation-delay:-90s%7D%40keyframes o3%7B0.00%25%7Btransform:translate(700px,-120px)%7D4.17%25%7Btransform:translate(659px,-44px)%7D8.33%25%7Btransform:translate(629px,31px)%7D12.50%25%7Btransform:translate(611px,103px)%7D16.67%25%7Btransform:translate(602px,175px)%7D20.83%25%7Btransform:translate(601px,244px)%7D25.00%25%7Btransform:translate(608px,313px)%7D29.17%25%7Btransform:translate(621px,382px)%7D33.33%25%7Btransform:translate(640px,450px)%7D37.50%25%7Btransform:translate(663px,517px)%7D41.67%25%7Btransform:translate(689px,585px)%7D45.83%25%7Btransform:translate(716px,654px)%7D50.00%25%7Btransform:translate(745px,722px)%7D54.17%25%7Btransform:translate(773px,792px)%7D58.33%25%7Btransform:translate(801px,863px)%7D62.50%25%7Btransform:translate(825px,936px)%7D66.67%25%7Btransform:translate(847px,1010px)%7D70.83%25%7Btransform:translate(863px,1087px)%7D75.00%25%7Btransform:translate(874px,1165px)%7D79.17%25%7Btransform:translate(879px,1246px)%7D83.33%25%7Btransform:translate(875px,1330px)%7D87.50%25%7Btransform:translate(862px,1418px)%7D91.67%25%7Btransform:translate(840px,1508px)%7D95.83%25%7Btransform:translate(806px,1602px)%7D100.00%25%7Btransform:translate(760px,1700px)%7D%7D.o3%7Banimation-name:o3;animation-duration:110s;animation-delay:-20s%7D%40keyframes o4%7B0.00%25%7Btransform:translate(-120px,760px)%7D4.17%25%7Btransform:translate(-44px,797px)%7D8.33%25%7Btransform:translate(31px,823px)%7D12.50%25%7Btransform:translate(103px,839px)%7D16.67%25%7Btransform:translate(174px,846px)%7D20.83%25%7Btransform:translate(243px,846px)%7D25.00%25%7Btransform:translate(311px,839px)%7D29.17%25%7Btransform:translate(378px,827px)%7D33.33%25%7Btransform:translate(444px,810px)%7D37.50%25%7Btransform:translate(510px,789px)%7D41.67%25%7Btransform:translate(575px,766px)%7D45.83%25%7Btransform:translate(640px,742px)%7D50.00%25%7Btransform:translate(705px,718px)%7D54.17%25%7Btransform:translate(770px,694px)%7D58.33%25%7Btransform:translate(836px,672px)%7D62.50%25%7Btransform:translate(902px,652px)%7D66.67%25%7Btransform:translate(969px,637px)%7D70.83%25%7Btransform:translate(1037px,627px)%7D75.00%25%7Btransform:translate(1106px,622px)%7D79.17%25%7Btransform:translate(1177px,625px)%7D83.33%25%7Btransform:translate(1249px,635px)%7D87.50%25%7Btransform:translate(1324px,655px)%7D91.67%25%7Btransform:translate(1400px,685px)%7D95.83%25%7Btransform:translate(1479px,726px)%7D100.00%25%7Btransform:translate(1560px,780px)%7D%7D.o4%7Banimation-name:o4;animation-duration:135s;animation-delay:-70s%7D%40media (prefers-reduced-motion:reduce)%7B.o%7Banimation:none%7D%7D%3C/style%3E%3Cpath class=%22l%22 d=%22M-120 340C380 -140 1000 760 1560 220%22/%3E%3Ccircle class=%22o o0%22 r=%2210.2%22 fill=%22url(%23ob)%22/%3E%3Cpath class=%22l%22 d=%22M1580 980C1000 1500 380 700 -140 1260%22/%3E%3Ccircle class=%22o o1%22 r=%228.3%22 fill=%22url(%23ob)%22/%3E%3Cpath class=%22l%22 d=%22M-100 1500C300 800 1100 1300 1560 640%22/%3E%3Ccircle class=%22o o2%22 r=%227.0%22 fill=%22url(%23ob)%22/%3E%3Cpath class=%22l%22 d=%22M700 -120C320 500 1180 900 760 1700%22/%3E%3Ccircle class=%22o o3%22 r=%229.0%22 fill=%22url(%23ob)%22/%3E%3Cpath class=%22l%22 d=%22M-120 760C500 1100 900 300 1560 780%22/%3E%3Ccircle class=%22o o4%22 r=%226.4%22 fill=%22url(%23ob)%22/%3E%3C/svg%3E');
 }
 
 @theme {
   /* Surfaces */
-  --color-bg: var(--page-light);
-  --color-surface: var(--neutral-0);
-  --color-surface-raised: var(--neutral-2);
+  --color-bg: var(--ink-0);
+  --color-surface: var(--ink-1);
+  --color-surface-raised: var(--ink-2);
 
   /* Lines */
-  --color-border-subtle: var(--neutral-3);
-  --color-border: var(--neutral-4);
+  --color-chip: var(--ink-chip);
+  --color-steel-bar: var(--steel-bar);
+  --color-pill: var(--steel-pill);
+  --color-pill-edge: var(--steel-pill-edge);
+  --color-pill-icon: var(--steel-pill-icon);
+  --color-border-subtle: var(--ink-line);
+  --color-border: var(--ink-edge);
 
-  /* Text. Primary and secondary clear 4.5:1 on every surface above. Disabled does
-   * not (it is not required to: WCAG 1.4.3 exempts inactive UI text) — see the
-   * README for the numbers. */
-  --color-text-primary: var(--neutral-12);
-  --color-text-secondary: var(--neutral-8);
-  --color-text-disabled: var(--neutral-6);
+  /* Text */
+  --color-text-primary: var(--paper);
+  --color-text-secondary: var(--paper-muted);
+  --color-text-disabled: var(--paper-off);
 
-  /*
-   * Brand. Primary and accent are never used on Approve / Request changes / Reject
-   * — see src/styles/README.md, "Usage rules". *-foreground is the text/icon
-   * colour for a filled primary or accent surface — it flips per theme (white in
-   * light, near-black in dark).
-   *
-   * Primary is an indigo-blue (docs/DECISIONS.md, 0094 — reversing 0092's neutral, by request):
-   * shifted toward violet and away from the existing status-blue's hue, so a brand-coloured
-   * focus ring, link or active-tab badge never reads as the "Requested for change"/"unknown"
-   * status colour. Vivid colour also stays on the status palette below for its own reason —
-   * that was already the only thing actually signalling urgency.
-   */
-  --color-primary: var(--indigo-light);
-  --color-primary-hover: var(--indigo-light-hover);
-  --color-primary-foreground: var(--neutral-0);
-  /* The brand as a fill or an underline — progress bars, the selected tab. Same as primary in
-   * light; deeper in dark, where text-safe primary has to stay light (0073's precedent). */
-  --color-primary-strong: var(--indigo-light);
-  --color-accent: var(--lime-light);
-  --color-accent-hover: var(--lime-light-hover);
-  --color-accent-foreground: var(--neutral-13);
+  /* Brand. Never on Approve, Request changes or Reject (README). */
+  --color-primary: var(--orange-hi);
+  --color-primary-hover: var(--orange-hover);
+  --color-primary-foreground: var(--orange-ink);
+  --color-primary-strong: var(--orange);
+  --color-focus-ring: var(--orange-hi);
+  --color-primary-tint: var(--orange-tint);
+  --color-primary-tint-border: var(--orange-tint-edge);
 
-  --color-focus-ring: var(--color-primary);
+  /* Status: icon and border colour; the label beside it uses text colours. */
+  --color-status-pass: var(--st-pass);
+  --color-status-pass-ink: var(--st-pass-ink);
+  --color-status-pass-quiet: var(--st-pass-quiet);
+  --color-status-fail: var(--st-fail);
+  --color-status-waived: var(--st-waive);
+  --color-status-not-applicable: var(--st-unknown);
+  --color-status-unknown: var(--st-unknown);
+  --color-status-waived-dot: var(--st-waive);
+  --color-status-pass-tint-bg: var(--st-pass-tint);
+  --color-status-pass-tint-fg: var(--st-pass);
+  --color-status-waived-tint-bg: var(--st-waive-tint);
+  --color-status-waived-tint-fg: var(--st-waive);
+  --color-status-fail-tint-bg: var(--st-fail-tint);
+  --color-status-fail-tint-fg: var(--st-fail);
+  --color-status-info-tint-bg: var(--st-info-tint);
+  --color-status-info-tint-fg: var(--st-info-fg);
 
-  /*
-   * Status — a separate palette from brand, never reused for non-status UI
-   * (src/styles/README.md). Icon and border colour only; the label next to it
-   * uses --color-text-primary or --color-text-secondary, never the status colour
-   * itself — several of these fall below 4.5:1 as text on light surfaces.
-   */
-  --color-status-pass: var(--status-green-light);
-  --color-status-fail: var(--status-red-light);
-  --color-status-waived: var(--status-amber-light);
-  --color-status-not-applicable: var(--status-slate-light);
-  --color-status-unknown: var(--status-blue-light);
-  /* A decorative dot beside text that says the same thing (OpenItemsNotice.tsx). Not text,
-   * so the brighter amber, in both themes; it holds 3:1 against the dark surface, and the
-   * label next to it carries the meaning on the light one (docs/DECISIONS.md, 0053). */
-  --color-status-waived-dot: var(--status-amber-dark);
+  /* The coloured marks behind the My reviews tab icons. */
+  --color-mark-pending: var(--st-waive);
+  --color-mark-requested: var(--st-unknown);
+  --color-mark-declined: var(--st-fail);
+  --color-mark-approved: var(--st-pass);
+  --color-mark-glyph: var(--ink-0);
+  --color-art-lilac: var(--art-lilac);
 
-  /* The filled-badge exception only (StatusBadge.tsx's success/warning tones) — see the
-   * primitives above for the contrast reasoning. Every other status usage stays icon/border
-   * only, unchanged. */
-  --color-status-pass-tint-bg: var(--status-green-tint-bg-light);
-  --color-status-pass-tint-fg: var(--status-green-tint-fg-light);
-  --color-status-waived-tint-bg: var(--status-amber-tint-bg-light);
-  --color-status-waived-tint-fg: var(--status-amber-light);
-  --color-status-fail-tint-bg: var(--status-red-tint-bg-light);
-  --color-status-fail-tint-fg: var(--status-red-light);
+  --color-toast-bg: var(--ink-2);
+  --color-toast-fg: var(--paper);
+  --color-toast-link: var(--orange-hi);
+  --color-toast-icon: var(--st-pass);
 
-  /* My reviews (docs/DECISIONS.md, 0060). */
-  --color-status-info-tint-bg: var(--status-blue-tint-bg-light);
-  --color-status-info-tint-fg: var(--status-blue-tint-fg-light);
-  /* A light wash of the brand indigo (0094) — the Filters button open, the active sort icon,
-   * the selected tab's count badge. */
-  --color-primary-tint: var(--indigo-tint-light);
-  --color-primary-tint-border: var(--indigo-tint-border-light);
-  --color-mark-pending: var(--mark-amber);
-  --color-mark-requested: var(--mark-blue);
-  --color-mark-declined: var(--mark-red);
-  --color-mark-approved: var(--mark-green);
-  --color-mark-glyph: var(--neutral-0);
-  /* A toast is the inverse of the page: dark on light, light on dark. */
-  --color-toast-bg: var(--neutral-12);
-  --color-toast-fg: var(--neutral-1);
-  /* The opposite theme's primary-equivalent indigo, same reasoning as --color-toast-fg above:
-   * visible against the toast's own inverted background (0094). */
-  --color-toast-link: var(--indigo-dark);
-  --color-toast-icon: var(--status-green-dark);
+  /* The spotlight and modal scrims. */
+  --color-spotlight-scrim: rgb(0 0 0 / 0.6);
+  --color-modal-scrim: rgb(0 0 0 / 0.65);
 
-  /*
-   * The welcome intro's overlay, the same in both themes on purpose: the signature is black
-   * ink on a white, frosted sheet, like the logo itself (docs/DECISIONS.md, 0048).
-   */
-  --color-signature: var(--signature-orange);
-  --color-intro-scrim: rgb(255 255 255 / 0.8);
-  --color-intro-ink: var(--neutral-13);
-  --color-intro-muted: var(--neutral-8);
-  /* The spotlight's dimmed surroundings, the same in both themes (docs/DECISIONS.md, 0056). */
-  --color-spotlight-scrim: rgb(0 0 0 / 0.5);
-  /* Behind a dialog: dims the page in both themes, never lightens it (0070). */
-  --color-modal-scrim: rgb(20 24 40 / 0.45);
+  /* Corners: the design's, nearly square. */
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 3px;
+  --radius-xs: 2px;
 
-  /* Radius. A flat 10px everywhere a corner rounds — cards, dialogs, buttons and fields alike
-   * — replacing the old per-size scale (4px/8px/14px) that read as "really round" at the
-   * card size. `rounded-full` on a genuinely circular or stadium-shaped control (a toggle, a
-   * dot, a status badge) is untouched: those are circular by design, not a rounded corner. Two
-   * call sites had drifted from this rule into their own full-pill shape despite sitting on a
-   * rectangular surface — the glass outline button (`btn-glass`) and the tabs' sliding
-   * indicator (`.t-tabs-pill`, `components/Tabs.tsx`) — both brought back to this same flat
-   * 10px in 0133 ("make all the corner radius 10px including cards and buttons"). */
-  --radius-sm: 0.625rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.625rem;
-  /* A small fixed corner for controls too small for the flat scale above: at 16px, a 10px
-   * radius exceeds half the box and renders as a full circle — indistinguishable from a radio
-   * button on `Checkbox` (0087). Keeps the old pre-flattening value for this one case only. */
-  --radius-xs: 0.25rem;
+  /* A panel's lift: a lit top edge and a long soft shadow. */
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 24px 50px -26px rgb(0 0 0 / 0.85);
 
-  /* A card's lift off the page: faint and flat, true black, not tinted (0073 — the flat
-   * neutral replaces 0068's page-tinted shadow along with the rest of that palette). */
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
+  /* Type. Chakra Petch for headings, labels and buttons; Hanken Grotesk for body and data. */
+  --font-heading: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
 
-  /*
-   * Type. Raleway for headings, buttons and the wordmark; Montserrat for body and
-   * table/data text. Both loaded via Google Fonts — see index.html. Weights are
-   * requested, not assumed: Raleway 500/600/700, Montserrat 400/500.
-   */
-  --font-heading: 'Raleway', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
-
-  /*
-   * Type scale. Exact sizes, weights and fonts, decided once — see src/styles/README.md,
-   * "Type scale", for the worked example of each. `--text-*` is Tailwind's own font-size
-   * namespace, so each of these is also a real utility (`text-item-title`). A Tailwind
-   * utility can only carry a font-size, not a weight or family, so both are written here as
-   * a comment and applied alongside via `font-bold`/`font-semibold`/`font-normal` and
-   * `font-heading`/`font-body` wherever a size below is used — every component using one of
-   * these sizes uses the full combination, never the size alone.
-   */
-  --text-page-title: 28px; /* 700 · font-heading (Raleway) — the page identity element */
-  --text-section-heading: 18px; /* 600 · font-heading (Raleway) — one per region */
-  --text-item-title: 15px; /* 600 · font-body (Montserrat) — e.g. a gate's rule name */
-  --text-body: 14px; /* 400 · font-body (Montserrat) — descriptions, sentences */
-  --text-meta: 13px; /* 400 · font-body (Montserrat) — always --color-text-secondary */
-  --text-badge-label: 13px; /* 600 · font-heading (Raleway) — StatusBadge's label text */
-  --text-lead: 16px; /* 400 · font-body (Montserrat) — the story's running prose */
-  --text-caption: 12px; /* 400 · font-body — field labels and helper text under a control */
-  --text-score: 22px; /* 600 · font-heading — a confidence percentage, the undo countdown */
+  /* Type scale: sizes only; weight and family are applied beside them. */
+  --text-page-title: 46px; /* 700 · font-heading — the page identity element */
+  --text-run-title: 30px; /* 600 · font-heading — a run's title */
+  --text-section-heading: 20px; /* 600 · font-heading — one per region */
+  --text-aside-heading: 18px; /* 600 · font-heading — the heading of a side panel */
+  --text-item-title: 16px; /* 600 · font-body */
+  --text-body: 15px; /* 400 · font-body */
+  --text-meta: 13px; /* 400 · font-body — always --color-text-secondary */
+  --text-badge-label: 13px; /* 600 · font-body — a status pill's label */
+  --text-lead: 17px; /* 400 · font-body — running prose */
+  --text-caption: 12px; /* 500 · font-heading, uppercase, tracked — labels */
+  --text-score: 24px; /* 600 · font-heading — a percentage, the undo countdown */
 }
 
 /*
@@ -367,129 +188,6 @@
 }
 
 /*
- * Glass pilot support values that aren't semantic colours (docs/DECISIONS.md, 0089). Plain
- * custom properties, not inside @theme, the same reasoning as --space- and --motion- above:
- * `--page-gradient` is consumed directly in styles/index.css's `body` rule, never through a
- * Tailwind utility, and `--blur-glass` through Tailwind's arbitrary-value syntax
- * (`backdrop-blur-[var(--blur-glass)]`) rather than registering a `--blur-*` theme scale this
- * app has no other use for.
- */
-:root {
-  --page-gradient: var(--page-gradient-light);
-}
-
-/*
- * Dark theme. Same semantic names, different values, so no component changes.
- * The :not([data-theme="light"]) guard lets an explicit light choice win over
- * the system preference. Type tokens are theme-independent and stay in @theme.
- */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --color-bg: var(--page-dark);
-    --color-surface: var(--dark-surface);
-    --color-surface-raised: var(--dark-surface-raised);
-
-    --color-border-subtle: var(--dark-border-subtle);
-    --color-border: var(--dark-border);
-
-    --color-text-primary: var(--neutral-1);
-    --color-text-secondary: var(--dark-text-secondary);
-    --color-text-disabled: var(--dark-text-disabled);
-
-    --color-primary: var(--indigo-dark);
-    --color-primary-hover: var(--indigo-dark-hover);
-    --color-primary-strong: var(--indigo-dark-strong);
-    --color-primary-foreground: var(--dark-surface);
-    --color-accent: var(--lime-dark);
-    --color-accent-hover: var(--lime-dark-hover);
-    --color-accent-foreground: var(--dark-surface);
-
-    --color-status-pass: var(--status-green-dark);
-    --color-status-fail: var(--status-red-dark);
-    --color-status-waived: var(--status-amber-dark);
-    --color-status-not-applicable: var(--status-slate-dark);
-    --color-status-unknown: var(--status-blue-dark);
-
-    --color-status-pass-tint-bg: var(--status-green-tint-bg-dark);
-    --color-status-pass-tint-fg: var(--status-green-dark);
-    --color-status-waived-tint-bg: var(--status-amber-tint-bg-dark);
-    --color-status-waived-tint-fg: var(--status-amber-dark);
-    --color-status-fail-tint-bg: var(--status-red-tint-bg-dark);
-    --color-status-fail-tint-fg: var(--status-red-dark);
-    --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
-    --color-status-info-tint-fg: var(--status-blue-dark);
-    --color-primary-tint: var(--indigo-tint-dark);
-    --color-primary-tint-border: var(--indigo-tint-border-dark);
-    --color-toast-bg: var(--neutral-2);
-    --color-toast-fg: var(--neutral-12);
-    --color-toast-link: var(--indigo-light);
-    --color-toast-icon: var(--status-green-light);
-    --color-mark-pending: var(--mark-amber-dark);
-    --color-mark-requested: var(--mark-blue-dark);
-    --color-mark-declined: var(--mark-red-dark);
-    --color-mark-approved: var(--mark-green-dark);
-    --color-mark-pending: var(--mark-amber-dark);
-    --color-mark-requested: var(--mark-blue-dark);
-    --color-mark-declined: var(--mark-red-dark);
-    --color-mark-approved: var(--mark-green-dark);
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-    --color-modal-scrim: rgb(0 0 0 / 0.6);
-
-    --page-gradient: var(--page-gradient-dark);
-  }
-}
-
-:root[data-theme='dark'] {
-  --color-bg: var(--page-dark);
-  --color-surface: var(--dark-surface);
-  --color-surface-raised: var(--dark-surface-raised);
-
-  --color-border-subtle: var(--dark-border-subtle);
-  --color-border: var(--dark-border);
-
-  --color-text-primary: var(--neutral-1);
-  --color-text-secondary: var(--dark-text-secondary);
-  --color-text-disabled: var(--dark-text-disabled);
-
-  --color-primary: var(--indigo-dark);
-  --color-primary-hover: var(--indigo-dark-hover);
-  --color-primary-strong: var(--indigo-dark-strong);
-  --color-primary-foreground: var(--dark-surface);
-  --color-accent: var(--lime-dark);
-  --color-accent-hover: var(--lime-dark-hover);
-  --color-accent-foreground: var(--dark-surface);
-
-  --color-status-pass: var(--status-green-dark);
-  --color-status-fail: var(--status-red-dark);
-  --color-status-waived: var(--status-amber-dark);
-  --color-status-not-applicable: var(--status-slate-dark);
-  --color-status-unknown: var(--status-blue-dark);
-
-  --color-status-pass-tint-bg: var(--status-green-tint-bg-dark);
-  --color-status-pass-tint-fg: var(--status-green-dark);
-  --color-status-waived-tint-bg: var(--status-amber-tint-bg-dark);
-  --color-status-waived-tint-fg: var(--status-amber-dark);
-  --color-status-fail-tint-bg: var(--status-red-tint-bg-dark);
-  --color-status-fail-tint-fg: var(--status-red-dark);
-  --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
-  --color-status-info-tint-fg: var(--status-blue-dark);
-  --color-primary-tint: var(--indigo-tint-dark);
-  --color-primary-tint-border: var(--indigo-tint-border-dark);
-  --color-toast-bg: var(--neutral-2);
-  --color-toast-fg: var(--neutral-12);
-  --color-toast-link: var(--indigo-light);
-  --color-toast-icon: var(--status-green-light);
-  --color-mark-pending: var(--mark-amber-dark);
-  --color-mark-requested: var(--mark-blue-dark);
-  --color-mark-declined: var(--mark-red-dark);
-  --color-mark-approved: var(--mark-green-dark);
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-  --color-modal-scrim: rgb(0 0 0 / 0.6);
-
-  --page-gradient: var(--page-gradient-dark);
-}
-
-/*
  * Motion. Functional only: state changes, data arriving, focus. These stay plain
  * custom properties because they are used through arbitrary values, e.g.
  * `duration-[var(--motion-duration-fast)]`.
@@ -498,6 +196,8 @@
   --motion-duration-instant: 80ms;
   --motion-duration-fast: 140ms;
   --motion-duration-base: 220ms;
+  /* The link underline's left-to-right sweep (0142). */
+  --motion-duration-sweep: 650ms;
   --motion-ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
   --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
 
@@ -517,7 +217,17 @@
     --motion-duration-instant: 1ms;
     --motion-duration-fast: 1ms;
     --motion-duration-base: 1ms;
+    --motion-duration-sweep: 1ms;
     --motion-duration-open: 1ms;
     --motion-duration-close: 1ms;
   }
+}
+
+/* Sizes taken from the design by measuring it (docs/DECISIONS.md, 0147): a table row, the table's
+ * header row, a tab and a field. They are not on the 4 px spacing scale. */
+:root {
+  --size-row: 87px;
+  --size-thead: 47px;
+  --size-tab: 48px;
+  --size-field: 40px;
 }

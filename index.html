@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <!--
       A theme the viewer chose (components/ThemeToggle.tsx) is applied before the first paint,
-      so the page never flashes the other theme. No choice: the system setting decides.
+      so the page never flashes the other theme. No choice: dark (docs/DECISIONS.md, 0142).
     -->
     <script>
       try {
@@ -16,14 +16,14 @@
       } catch (e) {}
     </script>
     <!--
-      Raleway (headings, buttons, wordmark) and Montserrat (body, table/data text) —
+      Chakra Petch (headings, buttons, wordmark) and Hanken Grotesk (body, table/data text) —
       see --font-heading / --font-body in src/styles/tokens.css. Only the weights
       actually used are requested.
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600;700&family=Montserrat:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
   </head>

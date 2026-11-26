@@ -49,8 +49,8 @@ function TooltipContent({
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
         className={cn(
-          'z-50 w-max max-w-[18rem] rounded-md border border-border-subtle bg-surface px-[var(--space-3)] py-[var(--space-2)] shadow-card',
-          'text-caption leading-relaxed font-normal font-body text-text-primary',
+          'z-50 w-max max-w-[230px] rounded-[4px] border border-border bg-bg px-[12px] py-[8px] shadow-[0_14px_30px_-8px_rgb(0_0_0/0.85)]',
+          'text-meta leading-snug font-normal font-body tracking-normal text-text-primary normal-case',
           'origin-(--radix-tooltip-content-transform-origin) animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 motion-reduce:animate-none',
           className,
         )}

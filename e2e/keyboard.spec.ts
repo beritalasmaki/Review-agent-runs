@@ -43,10 +43,12 @@ test('the whole review, keyboard only', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const keys = page.keyboard
 
-  // The top bar's jump lands on the first item left to tick (0059).
-  await tabTo(page, /^Jump to the open items/)
-  await keys.press('Enter')
-  const boxes = page.getByRole('group', { name: /Confirm each open item/ }).getByRole('checkbox')
+  // Tab on from the top bar until the first item left to tick has focus.
+  const boxes = page.getByRole('group', { name: /Open items/ }).getByRole('checkbox')
+  for (let i = 0; i < 60; i++) {
+    if (await boxes.first().evaluate((el) => el === document.activeElement)) break
+    await keys.press('Tab')
+  }
   await expect(boxes.first()).toBeFocused()
 
   // Tick all three: Space ticks, Tab passes each item's "Show the …" link.
@@ -120,10 +122,6 @@ test('My reviews, keyboard only', async ({ page }) => {
   )
   await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused()
 
-  // An info tip shows on keyboard focus.
-  await tabTo(page, /^About Status$/)
-  await expect(page.getByRole('tooltip', { name: /Where the run stands overall/ })).toBeVisible()
-
   // Tick the approved run with Space, then archive it from its row.
   await tabTo(page, /^Select “Move refund/)
   await keys.press('Space')
@@ -158,24 +156,4 @@ test('My reviews, keyboard only', async ({ page }) => {
   await tabTo(page, /^My reviews$/, 60)
   await keys.press('Enter')
   await expect(page.getByRole('heading', { level: 1, name: 'My reviews' })).toBeFocused()
-})
-
-test('the theme switch works from the keyboard and is remembered', async ({ page }) => {
-  await page.emulateMedia({ colorScheme: 'light' })
-  await page.goto('/')
-  // Tab only once the list has loaded: while it loads, the page has nothing to focus.
-  await expect(page.getByRole('button', { name: /^Archive/ })).toBeVisible()
-  await tabTo(page, /^Dark theme$/)
-  await page.keyboard.press('Space')
-  await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
-    'aria-checked',
-    'true',
-  )
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await page.reload()
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
-    'aria-checked',
-    'true',
-  )
 })

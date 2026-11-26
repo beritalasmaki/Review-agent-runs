@@ -4,75 +4,11 @@
 @import './transitions.css';
 
 /*
- * A `dark:` variant for the rare case that a component needs more than a token
- * swap. Tokens handle the normal case on their own, so reach for this sparingly.
- */
-/* `dark:` follows the page's theme, not only the system's: an explicit data-theme="dark", or
-   the system's dark mode when the viewer hasn't chosen light (ThemeToggle, 0063). */
-@custom-variant dark {
-  &:where([data-theme='dark'], [data-theme='dark'] *) {
-    @slot;
-  }
-  @media (prefers-color-scheme: dark) {
-    &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) {
-      @slot;
-    }
-  }
-}
-
-/*
- * shadcn/ui bridge.
- *
- * shadcn components are written against a fixed set of names — bg-background,
- * text-muted-foreground, border-border, ring-ring. Rather than keep a second
- * palette alive next to ours, each of those names is mapped onto a semantic token
- * from tokens.css. One source of truth, and shadcn components theme themselves.
- *
- * shadcn's own "accent" (a quiet hover surface) has no mapping here on purpose:
- * --color-accent now names a real, visible brand colour (docs/DECISIONS.md), and
- * one CSS custom property cannot mean both. The first shadcn component that
- * actually needs a hover surface should be patched by hand to use
- * --color-surface-raised instead of bg-accent/accent-foreground.
- *
- * shadcn's own "border" is the same kind of collision, caught later (docs/DECISIONS.md,
- * 0008): this block used to redeclare --color-border to equal --color-border-subtle,
- * silently overriding tokens.css's own --color-border wherever anything used it —
- * border-border/bg-border/text-border were all silently getting the subtle value
- * instead of the real one. Not mapped here for the same reason as accent.
- *
- * shadcn's "primary"/"primary-foreground" were a THIRD instance of this, worse than the
- * first two (docs/DECISIONS.md 0014, correcting 0008's original reasoning): this block used
- * to "mirror" tokens.css's own --color-primary/--color-primary-foreground by redeclaring
- * them as `var(--color-primary)`/`var(--color-primary-foreground)` — i.e. referencing their
- * own name. Tailwind merges an `@theme` name with a same-named `@theme inline` one into a
- * single registry entry, the later (bridge) declaration winning outright, not layered — so
- * that "mirror" was actually a self-reference, a guaranteed-invalid CSS cycle: `bg-primary`
- * silently resolved to nothing, and `--color-focus-ring` (tokens.css: `var(--color-primary)`)
- * broke with it, making every `:focus-visible` outline on the site invisible in light theme.
- * There is no safe way to redeclare a colliding name here, mirrored or not — the only fix is
- * to leave it out, same as accent and border. All bridge names below were re-audited against
- * every tokens.css name for this exact pattern; none of the remaining ones collide.
- *
- * Verified against the first three real components (Button, Checkbox, Dialog — since removed
- * as unused, but the bridge stays for the next shadcn component — fetched
- * directly from the shadcn-ui/ui GitHub source, since ui.shadcn.com itself is blocked by
- * this session's egress policy). One more thing turned up, beyond the name collisions above:
- *
- * - Tailwind v4's preflight sets bare `border`/`border-*` width utilities with no colour
- *   of their own (`border: 0 solid`), so without a colour they render as `currentColor`,
- *   not any theme token. shadcn's own template papers over this with a global
- *   `* { @apply border-border }` reset; this project didn't have one, so it's added below.
- * - shadcn's fixed `accent`/`accent-foreground` vocabulary (dropped from this bridge in
- *   0007) is used by real components for hover surfaces (Button's outline/ghost variants,
- *   Dialog's close button). Each occurrence was hand-patched to `surface-raised`/
- *   `foreground`, per 0007's own instruction, rather than left pointing at nothing.
- *
- * These collisions were all found by hand, after the fact. `npm run check` now runs
- * scripts/check-theme-bridge.mjs, which fails the build if any name in this block ever again
- * shares a token's name at all (no "but it mirrors the value" exception any more — that
- * exception is exactly what let the primary/focus-ring bug through), and separately builds
- * the real CSS and checks every semantic token resolves to a non-empty computed value in a
- * real browser, in light and dark — see docs/DECISIONS.md 0009 and 0014.
+ * shadcn/ui bridge. shadcn components are written against a fixed set of names —
+ * bg-background, text-muted-foreground, border-border, ring-ring. Each is mapped onto a
+ * semantic token from tokens.css, so there is one palette. Names that would collide with a
+ * token's own (accent, border, primary) are left out on purpose: see docs/DECISIONS.md, 0008,
+ * 0009 and 0014, and scripts/check-theme-bridge.mjs, which fails the build on a collision.
  */
 @theme inline {
   --color-background: var(--color-bg);
@@ -100,38 +36,32 @@
 
 @layer base {
   html {
-    color-scheme: light dark;
+    color-scheme: dark;
   }
 
-  /*
-   * In-page jumps (a `#` link, or `scrollIntoView` when a tab or an open item's link moves the
-   * reader) scroll smoothly — the browser applies scroll-behavior on the scrolling box (html)
-   * to both. Scoped to `no-preference` rather than set unconditionally plus overridden under
-   * `reduce`, so a reduced-motion visitor gets the browser's ordinary instant jump with no
-   * motion code running at all, not an animation that's merely shortened. Targets keep clear
-   * of the sticky top bar and view tabs with their own `scroll-margin-top`.
-   */
+  /* In-page jumps scroll smoothly, but only when motion is welcome. */
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
     }
   }
 
-  /*
-   * Tailwind v4 preflight leaves border-width utilities with no colour of their own
-   * (border-color: currentColor). Every bare `border` in a shadcn component assumes the
-   * classic reset this restores — see the shadcn/ui bridge comment above.
-   */
+  /* Tailwind v4's preflight gives bare border utilities `currentColor`; use the token. */
   *,
   ::after,
-  ::before {
-    border-color: var(--color-border);
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border-subtle);
   }
 
   body {
+    margin: 0;
     background-color: var(--color-bg);
     color: var(--color-text-primary);
     font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.55;
   }
 
   h1,
@@ -141,6 +71,7 @@
   h5,
   h6 {
     font-family: var(--font-heading);
+    letter-spacing: 0.01em;
   }
 
   /* Focus must always be visible — see the accessibility rule in AGENTS.md. */
@@ -151,10 +82,238 @@
 }
 
 /*
- * Scrolls without showing a scrollbar: the sticky "Run details" card (docs/DECISIONS.md, 0054).
- * The wheel, trackpad, touch and keyboard (the card is a tab stop while it overflows) still
- * scroll it; the card's cut-off bottom edge shows there is more.
+ * The design's shared surfaces (docs/DECISIONS.md, 0143).
+ *
+ * .panel — a card: warm black (solid, so contrast can be checked), a hairline border, a lit top edge.
+ * .foil  — the thin orange bar on top of a main panel.
+ * .lbl   — a small uppercase label in the display face.
+ * .sat   — a link whose underline is swept by a short orange bar, like a satellite pass.
  */
+@layer components {
+  .panel {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
+  .foil {
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      #9a3410 12%,
+      var(--color-primary-strong) 50%,
+      #9a3410 88%,
+      transparent
+    );
+  }
+  .lbl {
+    font-family: var(--font-heading);
+    font-size: var(--text-caption);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+  }
+  .sat {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 4px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: rgb(239 236 232 / 0.3);
+    text-underline-offset: 6px;
+  }
+  .sat::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    opacity: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--color-primary-strong) 55%,
+        #ffe6d9 92%,
+        transparent
+      )
+      no-repeat;
+    background-size: 34% 100%;
+    background-position: -40% 0;
+  }
+  .sat:hover::after,
+  .sat:focus-visible::after {
+    opacity: 0.55;
+    animation: orbit 5s linear infinite;
+  }
+  /* The same pass along the bottom edge of a tab, on hover and focus. */
+  .sweep {
+    position: relative;
+    overflow: hidden;
+  }
+  .sweep::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--color-primary-strong) 55%,
+        #ffe6d9 92%,
+        transparent
+      )
+      no-repeat;
+    background-size: 34% 100%;
+    background-position: -40% 0;
+  }
+  .sweep:hover::after,
+  .sweep:focus-visible::after {
+    opacity: 0.55;
+    animation: orbit 5s linear infinite;
+  }
+  /* In a table the passing bar is left out: a row is read, not aimed at. */
+  [data-slot='table'] .sat::after,
+  [data-slot='table'] [data-slot='button']::after {
+    display: none;
+  }
+  @keyframes orbit {
+    from {
+      background-position: -40% 0;
+    }
+    to {
+      background-position: 140% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sweep:hover::after,
+    .sweep:focus-visible::after,
+    .sat:hover::after,
+    .sat:focus-visible::after {
+      animation: none;
+      background-size: 100% 100%;
+      background-position: 0 0;
+    }
+  }
+}
+
+/*
+ * The terrain backdrop (components/TerrainBackdrop.tsx): one fixed, non-interactive layer painted
+ * by the page's own `::before`, behind its content, so it is not an element the accessibility
+ * tools have to reason about. Two slow mist patches drift over it.
+ */
+.terrain-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse at 50% 30%, transparent 40%, rgb(17 16 15 / 0.5) 100%),
+    var(--terrain-image);
+  background-size: auto, cover;
+  background-repeat: no-repeat;
+  background-position: center, center;
+}
+/* Mist: two blurred patches drifting slowly over the relief, painted by `::after`. */
+.terrain-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(closest-side, rgb(142 153 160 / 0.14), transparent),
+    radial-gradient(closest-side, rgb(244 91 34 / 0.1), transparent);
+  background-size:
+    900px 700px,
+    900px 700px;
+  background-repeat: no-repeat;
+  background-position:
+    -240px 80px,
+    62% 62%;
+  animation: terrain-drift 45s ease-in-out infinite alternate;
+}
+@keyframes terrain-drift {
+  from {
+    background-position:
+      -240px 80px,
+      62% 62%;
+  }
+  to {
+    background-position:
+      -20px 200px,
+      52% 54%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .terrain-page::after {
+    animation: none;
+  }
+}
+
+/* The arc across the top panel and the small bright dot that flies along it, a satellite pass. Both
+ * are the panel's own pseudo-elements, so no element overlaps the text. */
+.hero-panel::before {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: 18px;
+  width: 1260px;
+  height: 200px;
+  pointer-events: none;
+  background: var(--hero-arc-image) no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 72%);
+  mask-image: linear-gradient(90deg, transparent 30%, #000 72%);
+}
+.hero-panel::after {
+  content: '';
+  position: absolute;
+  right: 1220px;
+  top: 18px;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: #ffe6d9;
+  box-shadow: 0 0 10px 3px color-mix(in srgb, var(--color-primary-strong) 70%, transparent);
+  offset-path: path('M0 100 C140 10 280 10 420 100 S700 190 840 100 S1120 10 1260 100');
+  offset-rotate: 0deg;
+  animation: hero-flyby 70s linear infinite;
+}
+@keyframes hero-flyby {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  0% {
+    offset-distance: 0%;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    offset-distance: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-panel::after {
+    animation: none;
+    offset-distance: 38%;
+  }
+}
+
+/* Scrolls without showing a scrollbar: the sticky "Run details" card (docs/DECISIONS.md, 0054). */
 @utility scrollbar-none {
   scrollbar-width: none;
   &::-webkit-scrollbar {

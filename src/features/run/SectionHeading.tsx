@@ -17,6 +17,8 @@ export interface SectionHeadingProps {
   /** The heading a view's tab moves focus to (`RunReviewPage`). Makes it focusable by script
    * only (`tabIndex={-1}`), and keeps it clear of the sticky top bar and view tabs when scrolled to. */
   focusTarget?: boolean
+  /** The smaller heading of a side panel ("What is not checked"). */
+  aside?: boolean
 }
 
 export function SectionHeading({
@@ -26,6 +28,7 @@ export function SectionHeading({
   iconClassName,
   className,
   focusTarget = false,
+  aside = false,
 }: SectionHeadingProps) {
   return (
     <h2
@@ -33,7 +36,9 @@ export function SectionHeading({
       tabIndex={focusTarget ? -1 : undefined}
       className={cn(
         focusTarget && 'scroll-mt-[calc(var(--run-tabs-height,3.5rem)+var(--space-4))]',
-        'flex items-center gap-[var(--space-3)] text-section-heading leading-tight font-semibold font-heading text-text-primary',
+        'flex items-center gap-[var(--space-3)] leading-tight',
+        aside ? 'text-aside-heading' : 'text-section-heading',
+        'leading-tight font-semibold font-heading text-text-primary',
         className,
       )}
     >

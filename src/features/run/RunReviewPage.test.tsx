@@ -42,7 +42,7 @@ describe('RunReviewPage', () => {
     render(<RunReviewPage runId={runMessyPending.id} getRunOptions={{ delayMs: 0 }} />)
     await screen.findByRole('heading', { level: 1 })
     expect(screen.getByRole('region', { name: 'Run details' })).toBeVisible()
-    expect(screen.getByText('Why the agent was asked')).toBeVisible()
+    expect(screen.getByText('What the agent did')).toBeVisible()
     expect(screen.getByText('3 things to solve')).toBeVisible()
     expect(screen.queryByRole('button', { name: /details/ })).not.toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' }).closest('.fixed')).toBeNull()
@@ -57,7 +57,7 @@ describe('RunReviewPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 2, name: 'Evidence' })).toHaveFocus(),
     )
-    expect(screen.getByText('Why the agent was asked')).toBeVisible()
+    expect(screen.getByText('What the agent did')).toBeVisible()
     expect(screen.getByRole('region', { name: 'Run details' })).toBeVisible()
     expect(screen.getByRole('region', { name: 'Your decision' })).toBeVisible()
 

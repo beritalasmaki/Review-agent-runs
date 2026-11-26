@@ -18,7 +18,7 @@ export function InProgressBox({ run, reviewsHref }: InProgressBoxProps) {
       : 'The agent is still working on the change.'
 
   return (
-    <div className="flex w-full flex-col gap-[var(--space-5)] rounded-lg border border-border-subtle bg-surface p-[var(--space-4)] shadow-card">
+    <div className="flex w-full flex-col gap-[var(--space-5)] panel p-[var(--space-4)]">
       <h2 className="flex items-center gap-[var(--space-2)] text-section-heading leading-none font-semibold font-heading text-text-primary">
         <Loader aria-hidden className="h-5 w-5 text-text-secondary" />
         Not ready for review yet
@@ -32,10 +32,7 @@ export function InProgressBox({ run, reviewsHref }: InProgressBoxProps) {
           approve, send back or reject.
         </p>
       </div>
-      <a
-        href={reviewsHref}
-        className="-mx-[var(--space-2)] -my-[var(--space-1)] inline-block w-fit rounded-xs px-[var(--space-2)] py-[var(--space-1)] text-meta font-semibold font-heading text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover"
-      >
+      <a href={reviewsHref} className="sat w-fit text-meta font-semibold">
         Back to my reviews
       </a>
     </div>

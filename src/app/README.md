@@ -11,15 +11,18 @@ Few files, all short. If you find yourself writing view logic here, it belongs i
 
 - `App.tsx` — reads `?run=` and `?delay=<ms>`. No `?run=` is the home page, "My reviews"; `?run=
   <id>` is that run's review. Lays the welcome intro over the home page only, once per visit;
-  once the intro is done, the welcome modal asks directly whether to take the onboarding tour;
+  once the intro is done, the welcome dialog opens over its last frame and asks directly whether to
+  take the onboarding tour;
   only "Take the tour" opens Leg 1 over the home page, continuing as Leg 2 over a run page if
   the visitor opens one.
-- `WelcomeIntro.tsx`, `intro.ts`, `intro.css`, `SignatureMark.tsx` — the welcome intro, once per
-  visit, over the home page only (docs/DECISIONS.md, 0048, 0049, 0071). `intro.ts` holds the
-  visit flag (`ledger:intro-seen`, in sessionStorage) and the
-  timings. `SignatureMark.tsx` holds the supplied signature path, unchanged.
+- `WelcomeIntro.tsx`, `IntroScene.tsx`, `intro.ts`, `intro.css` — the welcome,
+  once per visit, over the home page only (docs/DECISIONS.md, 0048, 0049, 0071, 0143). A map
+  with one route and three stations — Alpha (a person asks), Beta (the agent works), Omega (you
+  review) — each with a character and a card, timed in CSS; then the welcome dialog opens over its
+  last frame. "Skip intro" and "Replay intro" sit top right. `intro.ts` holds the visit flag
+  (`ledger:intro-seen`, in sessionStorage) and the length.
 - `WelcomeModal.tsx` — what the product is and why it exists, and the explicit choice to take
-  the onboarding tour or skip it (docs/DECISIONS.md, 0079). Built on `components/Modal.tsx`,
+  the onboarding tour or skip it, or replay the intro (docs/DECISIONS.md, 0079, 0142). Built on `components/Modal.tsx`,
   the same as any other confirmation dialog in the app; lives here, not `components/`, because
   its copy is specific to this product.
 - `tour.ts` — the onboarding tour's sequencing (docs/DECISIONS.md, 0078, 0079; the tour

@@ -6,6 +6,282 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0149 · No "i" rings, taller tabs, quieter hovers
+
+**Context.** After 0148 the page was full of small "i" rings, and the author found them distracting. The
+tabs on My reviews looked thin, and the bar that sweeps along links and buttons on hover drew too much
+attention, most of all in the table.
+
+**Choices.**
+- *No "i".* `InfoTip` no longer draws a ring or a tooltip. Its text stays in the page for screen readers
+  (visually hidden) so the plain lines are not lost, but a sighted reader no longer sees them. This
+  reverses the visible part of 0148 and of 0070's `InfoTip`. Cost: someone who wanted the explanation
+  has no way to see it; if that matters, a tooltip on the label itself is the way back.
+- *Taller tabs.* A tab on My reviews is 48 px high (`--size-tab`, was 40) and the track has 8 px above
+  and below. This departs from the measured 40 px of 0147 on purpose.
+- *Quieter sweep.* The bar is 1 px, at about half strength, and a pass takes 5 s (was 2 px, full
+  strength, 3.4 s). On buttons it is a faint white line at 40 %.
+- *None in tables.* In a table (`data-slot="table"`) links and buttons have no sweep. A run's title is a
+  plain underline that brightens on hover.
+
+---
+
+## 0148 · The run page's cards follow the design, and the small print moves behind "i"
+
+**Context.** Even with the right sizes (0147) the run page still showed a lot the design does not: plain
+lines under every label, numbered steps and captions in the decision panel, a "Deciding as" line, links
+under each open item, and an explanation under "What is not checked".
+
+**Choices.**
+- *Behind an "i".* Each plain line sits in a tooltip beside its label or title (environment, revision, run
+  reference, the decision, open items, the reason, Request changes, Reject run, "What is not checked").
+  The tooltip looks as drawn: a small dark box with a thin light border. The "i" is a small thin ring,
+  not a button with a letter. Nothing is removed: a screen reader still gets the text as the button's
+  description.
+- *Decision panel.* "Decision" with an "i"; the open-items badge; "OPEN ITEMS" and the tick count; each
+  item is a boxed line with a plain white square to tick and a small arrow button that shows where the item
+  comes from (it keeps the name "Show the check →"); "REASON FOR APPROVING"; the state line and "Approving
+  releases revision … to production"; the green Approve; Request changes; a dashed divider; a small Reject
+  run. "Deciding as", the step numbers and the captions are gone.
+- *Run details.* Environment (orange), target system, requested by, ran and duration, revision. The rest —
+  run reference, agent, checks, lowest score — is under "More details".
+- *Overview.* Status line with the environment, the title, the reason the agent was asked, then "What the
+  agent did" with the figures: files changed, tests passing, checks passed, failed, need a look.
+- *Scores and checks.* A score is a boxed card: "CONFIDENCE · AREA", "COULD NOT VERIFY" and what, the
+  percentage with its level, a segmented bar, "Based on …", "Why this score". A check that needs attention
+  has the filled status icon.
+- *Not changed.* The words of the product's copy where a test or the spec names them ("Your decision" as
+  the region's name; "Confirm each open item" is now "Open items" in the group's name).
+
+**Consequence.** Tests that read the plain lines now hover the "i" first.
+
+---
+
+## 0147 · Sizes measured from the design
+
+**Context.** The author asked for pixel-exact work. The design was measured in a browser at 1440 px and the
+app at the same width, panel by panel.
+
+**Choices.** Content is 1376 px wide (the page is at most 1440 px with 32 px sides). On a run the columns are
+260 / flexible / 340 px with 24 px gaps, and the panels start 84 px from the top, as in the design. My
+reviews: a table row is 87 px, the header row 47 px, a tab 40 px, a field 40 px, the search 420 px wide, the
+page title 46 px. A run's title is 30 px, section headings 20 px, a side panel's heading 18 px
+(`--text-aside-heading`). Panels are padded 24 px; the design's 22, 26 and 28 px are rounded to the
+spacing scale. The four measured sizes are tokens (`--size-row`, `--size-thead`, `--size-tab`,
+`--size-field`), outside the 4 px scale on purpose.
+
+**Also.** On a run the status is a plain line with a clock, the decision panel has no icon in its heading
+and its "Request changes" has the pencil, and "What is not checked" has the filled question icon, as drawn.
+The My reviews top panel has more room above the title now that its small label lives in the top bar.
+
+---
+
+## 0146 · A living background, and the run page's top bar as designed
+
+**Context.** The backdrop was one static image with its coordinates baked in, so nothing came and
+went; the design's coordinates drift in out of the haze and dissolve, mist moves over the relief, and
+a small bright dot flies along the arc over the top panel. The run page's top bar also differed: the
+design has the breadcrumb, "Reviewing as" and "Open audit log", with the open-items count in the
+decision panel.
+
+**Choices.**
+- *Alive, with no extra elements.* The relief, parcels, roads and ruler ticks, and five small glowing points
+  on long, faint dashed orbits (95 to 150 s a lap, each at its own pace) are one SVG image on the page's
+  `::before`, the motion done by CSS inside the SVG. Two patches of mist drift over it, painted by `::after`.
+  Reduced motion: mist and points stand still. The map coordinates and survey readings the design had were
+  dropped on request: the backdrop should not read as a literal map.
+- *Why not elements.* A first version used a layer of `aria-hidden` spans and divs (the readings); axe treats any element
+  overlapping text as hiding it (`bgOverlap`, `elmPartiallyObscuring`) and the contrast spec failed on every
+  page. Pseudo-elements and an image are not elements, so nothing overlaps.
+- *Arc and dot.* The top panel of My reviews has the dashed arc and a bright dot that flies along it,
+  70 s per pass, as the panel's own `::before` and `::after`. Its small label "Agent run reviews" moved
+  from the panel into the top bar, in place of "My reviews", slightly larger.
+- *Run top bar.* Breadcrumb left; "Reviewing as" and "Open audit log" right. "Open audit log" opens the
+  All steps view (the full record), not a separate page. The open-items count ("3 things to solve") moved
+  into the decision panel under its heading; its "Jump to the open items" link is gone because the list is
+  right below. This changes 0053's placement.
+- *Run details.* A small uppercase heading, uppercase field labels, the environment as an orange label,
+  and Reject run as a small button under Request changes, as drawn.
+
+---
+
+## 0145 · One set of hovers, the design's
+
+**Context.** Hovers had piled up over many rounds: tinted boxes behind links, a border and fill on
+outline buttons, a different move for every icon (0139), row fills in three different greys.
+
+**Choice.** The design's hovers only. Links and run titles: a short orange bar sweeps along the
+underline (`.sat`). Buttons: 12 % brighter, a white bar sweeps along the bottom edge, and the
+arrow slides 3 px right (`.icon-motion`, replacing 0139's per-icon moves). Tabs: the text
+brightens and the same orange bar sweeps (`.sweep`). Table and list rows: a 5 % wash. Quiet
+icon buttons and the info "i": the icon brightens, nothing else. No hover draws a box, a border
+or a fill on a button or link. Reduced motion: the bar shows still, the arrow does not move.
+
+**Also fixed.** On a tour step the outline now follows its target at once while the page scrolls
+(gliding made it lag and land in the wrong place), and shrinks to a line at the screen edge when
+the target is scrolled out of view.
+
+**Consequence.** `.icon-motion`'s keyframes are gone from `transitions.css`.
+
+---
+
+## 0144 · The onboarding tour follows the designed tour
+
+**Context.** The tour in the app did not match the design's "route stops" tour, and the run page's
+view tabs sat above the story instead of in the story panel's header as drawn. A person pill in the
+"runs still in progress" list also stretched across its grid column.
+
+**Choices.**
+- *One tour of ten.* Both legs count together: "Step 7 of 10" on the run page. The stops row
+  fills as the tour goes on. Back is shown but disabled on a leg's first step.
+- *Spotlight.* One orange outline whose large shadow dims the page (replacing 0078's four
+  rectangles); it glides to the next target, and a thin arc with a bright dot joins two targets on
+  the same page. The outline does not block clicks. Reduced motion: no glide, no arc.
+- *Overview steps* outline what is on screen and put the bubble low and central. They no longer
+  scroll the page.
+- *Carrying on.* The last step on My reviews is labelled "Open a run" and opens the first run
+  row, so Leg 2 starts at once. The tour ends on a closing card, "You are ready to review", with
+  "Replay tour" (reloads My reviews and starts again) and "Start reviewing".
+- *Copy* of two steps follows the design.
+- *Tabs.* On a run, the story panel's bar shows the open view's name on the left and the three tabs
+  on the right, as in the design; the tour's "Three ways to read it" outlines just that bar. The
+  tab bar's sliding orange underline (0084) is kept, not the design's static underline.
+- *Pills.* A person's pill is `w-fit`, so it never stretches inside a grid cell or a flex column,
+  and uses opaque steel tokens (so contrast stays checkable).
+
+**Consequence.** `OnboardingTour` takes `stepOffset`, `totalSteps`, `finish` and `onReplay`, and a
+step can set `nextLabel` and `onNext`. E2E counts moved to ten.
+
+---
+
+## 0143 · The app is made to match the design: dark only, no old UI left
+
+**Context.** 0142 ported the first pieces of the satellite design, but the app still carried the
+old interface beside it: a light theme and a switch, glass cards, a plain first row, rounded
+10 px cards, a white-on-dark default button, and an intro that was not the one in the design. The
+author asked that the old UI be removed and the site match the design exactly.
+
+**Choices.**
+- *One theme.* The light theme, `ThemeToggle`, `theme.ts` and the `dark:` variant are gone; the
+  design has no switch. This reverses 0063 and the light half of 0142. Cost: no light mode for
+  anyone who wants it; git history has it if it is ever wanted back.
+- *Tokens.* `tokens.css` was rewritten as the design's palette (warm black, signal orange, steel,
+  four status colours); the neutral ramp, glass gradients and unused tokens (accent lime, the
+  signature and intro colours) were deleted. Corners are 3 to 4 px, cards are `.panel` (a lit top
+  edge, a long shadow) and main ones carry the orange `.foil`.
+- *Approve.* The design's Approve is green, not orange, so AGENTS.md's rule (no brand colour on
+  Approve, Request changes or Reject) holds without the `brand` variant 0142 added; that variant
+  is gone. `default` is the orange chamfered plate (Review, Send to agent, the tour's Next),
+  `approve` the green one, `outline` the quiet one, `destructive` a red outline.
+- *Panels are solid.* The design's faint grain and gradient on cards were left out: axe cannot
+  decide contrast on a gradient, and the e2e spec would have to measure screenshots instead.
+  Likewise the orange plate is a flat fill, not the design's three-stop gradient. The visual
+  difference is a few percent of brightness.
+- *Top bar.* One bar on every screen: breadcrumb left, "Reviewing as" right, replacing 0135's
+  plain row. The design's "Open audit log" link is not built: there is no audit log page.
+- *Intro.* The designed scene is ported as it is: route, three stations, two round faces and a
+  robot, cards, camera, timed in CSS. The welcome dialog opens over its last frame (so it never
+  sits on the table) and has "Replay intro"; "Skip intro" and "Replay intro" are also top right.
+  The author's signature mark is no longer shown, so `SignatureMark.tsx` was deleted (git has it).
+- *Copy.* The dialog now carries the design's text, including that the idea rests on the EU AI
+  Act (Article 14, human oversight). That reference has not been checked against the Act's text.
+- *Left as it was.* Fixtures and run copy (the design uses its own sample runs and reviewer);
+  the Story / Evidence / All steps tabs stay above the story, not in the panel header as drawn.
+
+**Fixed on the way.** The tour's overview step scrolled a page-tall element to the centre,
+scrolling the page away; it now stays put.
+
+**Consequence.** `npm run check` passes with axe in the one theme. Anything that wants colour
+must use a semantic token; the drawing palette (`--art-*`) is for the intro only.
+
+---
+
+## 0142 · Dark by default, signal-orange brand, terrain backdrop and a new welcome intro
+
+**Context.** The approved satellite design (0140) is now ported to `src/`: dark by default, a warm
+black and signal-orange palette, a terrain-map page backdrop, new fonts, a chamfered button and
+a sweeping link underline, and a welcome intro that tells the product story as a route.
+
+**Options and choices.**
+- *Theme.* Dark applies unless the viewer chose light, whatever the system says; the switch
+  remembers the choice. This reverses 0001 (light default). Cost: the system preference no longer
+  decides the first view, and the tests choose light explicitly.
+- *Brand.* Indigo becomes orange (`--indigo-*` renamed `--brand-*`): text-safe `#ff7a47` on dark
+  (7.6:1), `#b8420f` on light (5.9:1), fill `#f45b22`. The amber status tint on dark was darkened
+  (`#534215` to `#3b2f0f`) because orange links on it fell to 3.8:1; they now hold 5.2:1.
+- *Approve stays neutral.* AGENTS.md non-negotiable 2 says the brand colour is never on Approve,
+  Request changes or Reject, and the design's orange Approve would break it. So the neutral
+  `default` Button gets the chamfer, and a new `brand` variant (orange) is used only for the
+  welcome modal's "Take the tour" and the tour's Next and Done. If the author wants an orange
+  Approve, that is a deliberate change to the rule and should be decided first.
+- *Terrain.* Drawn as the page `<main>`'s own `::before`, from one SVG data URI (relief by
+  `feTurbulence` lighting, vignette, fading coordinates), not as DOM elements: as elements, axe
+  could not decide contrast for text under dialogs. Cost: the SVG's colours are literal, since a
+  data URI cannot read tokens; they are kept in `tokens.css` next to the primitives, with a note.
+  Light theme shows no terrain.
+- *Fonts.* Chakra Petch and Hanken Grotesk through the same Google Fonts link as before: no new
+  dependency, and the same network cost as Raleway and Montserrat had.
+- *Intro.* Station Alpha (a run is requested), Beta (an agent works), Omega (you review), then the
+  signature draws. Plain round figures and a square-headed agent; no photos, people or memes. The
+  welcome modal has "Replay the intro", hidden when reduced motion is on.
+- *Link hover.* An underline sweeps in from the left over about 0.65 s (`--motion-duration-sweep`),
+  replacing 0127's fading background; instant under reduced motion.
+
+**Also fixed.** The tour re-focused its heading on every scroll tick, which could pull focus off
+the bubble's buttons mid-step (a flaky Tab test); it now focuses once per step.
+
+**Consequence.** `npm run check` passes in both themes. Deciding the orange-Approve question,
+and checking the "Article 14" wording used in the design artifact against the source, are left to
+the author.
+
+---
+
+## 0141 · The tour opens each leg with a whole-page overview step
+
+**Context.** The approved design starts the tour with "this is the review list" and, inside a run,
+with "this is the page for one run" before any detail. The tour engine could only highlight one
+element, and a page-sized highlight put the bubble outside the viewport.
+
+**Options.** (1) Highlight a large region and let the bubble flip. (2) Add an `overview` flag to a
+step: the page is dimmed evenly, no ring, the bubble sits mid-screen. (3) A separate intro modal.
+
+**Choice.** Option 2. It is a few lines in `OnboardingTour.tsx`, keeps one engine, and keeps focus
+and Tab handling as is. The step still needs a `selector`, so it waits for the page to load.
+
+**Consequence.** Leg 1 is now 6 steps and Leg 2 is 4. Overview steps may be added to any tour.
+The rest of the satellite design (dark default, terrain backdrop, new intro) is not in `src/` yet;
+0140 still applies to it.
+
+---
+
+## 0140 · Satellite theme explored as a design artifact, dark by default
+
+**Context.** The author wants to show the run review screen in a portfolio setting for an
+earth-observation company, as a dark, satellite-themed look: terrain-map background, coordinates
+that fade in like fog, metal and solar-panel colours, and link hovers that are a moving underline
+instead of a highlighted box.
+
+**Options.** (1) Change the app tokens now. (2) Explore it first as a Design artifact and only
+port what is accepted. (3) Skip the theme.
+
+**Choice.** Option 2. The design lives in the artifact "Run Review Agents – Satellite Theme", not in
+`src/`. It uses no company name or logo (AGENTS.md, non-negotiable 5). Dark is default in the
+design, which reverses 0001 (light default) for this variant only.
+
+**Consequence.** Porting it later needs: a dark default in `tokens.css`, a terrain/coordinate
+background layer that stops under `prefers-reduced-motion`, and a satellite-underline link style
+(0137 and 0139 set button hover to a plain fade and icon motion, which this would replace). The
+fog text is decorative and `aria-hidden`; colours must be re-checked with `npm run check` contrast
+tests in both themes. Not yet done: any of the above in code.
+
+**Palette (follow-up).** The theme moved from cold blue-black to warm black and orange: page `#12100e`, warm graphite panels, text `#f5efea`, accent orange `#ff8a1f`. Status colours stay distinct from the accent: failed is red-coral `#ff6b5e`, pending and exception amber `#f2c94c`, passed green `#34e89e`, not run and requested lavender `#b9a6e8`, and people pills sand. Trade-off: orange as the accent sits close to amber and red, so each status keeps its own icon shape and word, not colour alone.
+
+**Palette, second pass.** The warm-black-and-orange palette was replaced by an "authoritative and bold" one from the author's reference: canvas `#11100f`, surface `#1a1817`, border `#2e2a27`, primary orange `#f45b22` (brightened from the reference `#d94e1f`), steel accent `#6e777d`, text `#efece8` and `#a39b93`. The map layer is now cold grey radar imagery with warm city lights; steel replaces blue and lavender for neutral and "not run" states, and people pills. Orange text on dark is lightened to `#ff7a47` to keep 4.5:1. Failed became rose-red `#ff5470`, so it stays apart from the orange primary. Pending stays amber after the blue trial (0140 follow-ups). Not yet checked with the contrast tests.
+
+**Fonts (follow-up).** Two families, not three: Chakra Petch for headings and small labels, Hanken Grotesk for body text and numbers. Numbers use `font-feature-settings: "tnum"` on Hanken instead of a third, monospaced family (Martian Mono). Trade-off: less of a "terminal" feel for figures, one fewer font to load.
+
+---
+
 ## 0139 · Icon motion on button hover
 
 **Context.** After 0137 removed the stripe, buttons had only a colour fade. The user asked for a

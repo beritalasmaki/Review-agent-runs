@@ -7,7 +7,7 @@ import { RunViewTabs } from './RunViewTabs'
 const meta = {
   title: 'Features/Run/RunViewTabs',
   component: RunViewTabs,
-  args: { run: runMessyPending },
+  args: { run: runMessyPending, view: 'story' },
   decorators: [
     (Story) => {
       const [value, setValue] = useState('story')

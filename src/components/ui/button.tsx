@@ -4,83 +4,69 @@ import { cn } from '@/lib/utils'
 import { Slot } from 'radix-ui'
 
 /*
- * shadcn/ui's Button, restyled onto this project's tokens (docs/DECISIONS.md, 0070): the same
- * API — `variant`, `size`, `asChild`, `buttonVariants` — with our type, spacing and colours in
- * place of shadcn's defaults. The colour rules still hold (src/styles/README.md): the decision
- * actions are never the brand colour. A red action is an outline on its own (`destructive`,
- * `DecisionPanel`'s standalone Reject) but a fill beside another button in a modal confirm
- * footer (`destructiveFill`, docs/DECISIONS.md 0113) — two different problems, not a reversal:
- * "never a reflex" next to a caption, "never a second secondary button" next to Cancel.
+ * shadcn/ui's Button, restyled to the satellite design (docs/DECISIONS.md, 0070, 0143): the same
+ * API — `variant`, `size`, `asChild`, `buttonVariants` — with the design's shapes and colours.
  *
- * No colour transition on most variants, on purpose: one on the line tabs made keyboard tests
- * drop key presses (docs/WORKLOG.md, 2026-09-24) — but that was a transition keyed to rapid
- * *automatic-activation* state changes from the keyboard. `outline`'s own hover fade and `link`'s own hover background (0127) are keyed to `:hover`/`:focus-visible`
- * only, pseudo-classes the mouse and keyboard focus set directly, never a cascading React
- * re-render from arrow-key navigation elsewhere, so neither can reproduce that bug — the same
- * reasoning that makes the fade on the other variants safe (0137).
+ * - `default`: the main action, a signal-orange plate with chamfered corners and a double inner
+ *   ring (Review, Send to agent, Create report, Undo, the tour's Next). Never on a decision.
+ * - `approve`: the same plate in status green. "Approve and release" only.
+ * - `outline`: a quiet outlined button (Request changes, Cancel, Filters, Archive).
+ * - `destructive`: Reject run, an outlined red. `destructiveFill`: the confirm footer's filled red.
+ * - `ghost`, `link`: no box; `link` is the underlined link whose underline is swept by a short
+ *   orange bar on hover and focus, a satellite pass (the `.sat` class, styles/index.css).
  *
- * Every variant fades its colours in on hover/focus and nothing else (0137): no travelling stripe
- * and no grow, which lagged. The fade is keyed to `:hover`/`:focus-visible` only.
+ * The chamfer is `clip-path`, which would cut a focus outline off, so the plates draw their focus
+ * outline inside the box (a negative offset). Colours fade; nothing grows or moves but the arrow.
  */
+const PLATE =
+  '[--c:7px] [clip-path:polygon(var(--c)_0,calc(100%-var(--c))_0,100%_var(--c),100%_calc(100%-var(--c)),calc(100%-var(--c))_100%,var(--c)_100%,0_calc(100%-var(--c)),0_var(--c))] border-0 rounded-none hover:brightness-[1.12] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white'
+
+const SWEEP =
+  "after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-[linear-gradient(90deg,transparent,#fff_55%,transparent)] after:bg-[length:34%_100%] after:bg-[position:-40%_0] after:bg-no-repeat after:opacity-0 after:content-[''] hover:enabled:after:animate-[orbit_5s_linear_infinite] hover:enabled:after:opacity-40 focus-visible:after:animate-[orbit_5s_linear_infinite] focus-visible:after:opacity-40 motion-reduce:hover:enabled:after:animate-none motion-reduce:hover:enabled:after:[background-size:100%_100%] motion-reduce:hover:enabled:after:[background-position:0_0]"
+
 const buttonVariants = cva(
   [
-    'icon-motion inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border',
-    'font-semibold font-heading leading-none whitespace-nowrap',
+    'icon-motion relative inline-flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border',
+    'font-semibold font-body leading-tight whitespace-nowrap transition-[filter,background-color,border-color,color] duration-[var(--motion-duration-fast)]',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
-    'disabled:cursor-not-allowed disabled:border-border-subtle disabled:bg-border-subtle disabled:text-text-disabled',
+    'disabled:cursor-not-allowed disabled:border-border-subtle disabled:bg-surface-raised disabled:text-text-disabled disabled:shadow-none disabled:hover:brightness-100',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-']):not([class*='h-'])]:size-4",
   ],
   {
     variants: {
       variant: {
-        /** The page's main action: Approve and release, Review, Undo, Create report. It fades on hover/focus. */
-        default:
-          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-text-primary bg-text-primary text-surface hover:opacity-85',
-        /** The quieter action beside it: Request changes, Cancel, Filters. A plain fade on
-         * hover/focus. */
-        outline:
-          'border-border bg-surface text-text-primary transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:border-text-secondary hover:bg-bg hover:shadow-card active:bg-surface-raised',
-        /** `DecisionPanel`'s own standalone Reject run: a red outline, never a red fill
-         * (docs/DECISIONS.md, 0039) — it sits under Approve with its own caption, not beside
-         * another button, so staying quiet is what keeps Approve the one default-reflex action. */
-        destructive:
-          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-status-fail bg-surface text-status-fail-tint-fg hover:bg-status-fail-tint-bg active:bg-status-fail-tint-bg',
-        /** A modal confirm footer's destructive action (Reject run), beside Cancel: filled, so
-         * it reads as the dialog's one primary action rather than a second secondary button
-         * next to Cancel (docs/DECISIONS.md, 0113 — a narrower exception to 0039, scoped to the
-         * confirm-footer pattern only). `text-destructive-foreground` is the shadcn-bridge pair
-         * for `bg-destructive` (src/styles/index.css) — already defined to flip white-in-light/
-         * near-black-in-dark, verified at 6.25:1 / 7.10:1 against this red. */
+        default: cn(
+          PLATE,
+          SWEEP,
+          'bg-primary-strong text-primary-foreground shadow-[inset_0_0_0_3px_var(--color-primary-strong),inset_0_0_0_4px_rgb(20_10_4/0.38)] disabled:bg-surface-raised',
+        ),
+        approve: cn(
+          PLATE,
+          SWEEP,
+          'bg-status-pass text-status-pass-ink shadow-[inset_0_0_0_3px_var(--color-status-pass),inset_0_0_0_4px_rgb(4_20_12/0.35)] disabled:bg-status-pass/12 disabled:text-status-pass-quiet',
+        ),
+        outline: cn(
+          SWEEP,
+          'border-border bg-transparent font-medium text-text-primary hover:enabled:brightness-[1.12]',
+        ),
+        destructive: cn(
+          SWEEP,
+          'border-status-fail bg-status-fail-tint-bg font-medium text-text-primary hover:enabled:brightness-[1.12]',
+        ),
         destructiveFill:
-          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-destructive bg-destructive text-destructive-foreground hover:opacity-85',
+          'border-status-fail bg-status-fail text-primary-foreground hover:enabled:brightness-110',
         ghost:
-          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
-        /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". A soft
-         * tinted background fades in on hover/focus (0127 — "the link style... looks plain and
-         * simple... background hover with fading animation"), replacing a plain underline: the
-         * same `--color-primary-tint`/`--color-primary-hover` wash already used for a selected
-         * row or the active tab's own count badge, not a new colour. */
-        link: 'rounded-xs border-transparent bg-transparent text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover focus-visible:bg-primary-tint focus-visible:text-primary-hover',
+          'border-transparent bg-transparent font-medium text-text-secondary hover:enabled:text-text-primary',
+        link: 'sat rounded-none border-0 bg-transparent p-0 font-medium text-text-primary',
       },
       size: {
-        default: 'gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] text-body',
-        sm: 'gap-[var(--space-2)] px-[var(--space-3)] py-[var(--space-2)] text-meta',
-        icon: 'h-8 w-8',
-        /** No box at all, for `link` inside running text or under an item — a little padding,
-         * offset by a matching negative margin, so `variant="link"`'s hover background (above)
-         * has room to show without nudging surrounding text (0127). */
-        inline:
-          'gap-[var(--space-1)] border-0 -mx-[var(--space-1)] -my-[var(--space-1)] px-[var(--space-1)] py-[var(--space-1)] text-meta',
+        default: 'min-h-[46px] gap-[9px] px-[18px] py-[10px] text-body',
+        sm: 'min-h-[34px] gap-[7px] px-[14px] py-[6px] text-[14px] [--c:6px]',
+        icon: 'h-8 min-h-0 w-8 p-0',
+        /** No box at all, for `link` inside running text or under an item. */
+        inline: 'min-h-0 gap-[var(--space-1)] border-0 px-0 py-0 pb-[4px] text-meta',
       },
     },
-    compoundVariants: [
-      // An icon-only outline button lights up in the brand colour, like the row actions.
-      {
-        variant: 'outline',
-        size: 'icon',
-        className: 'hover:border-primary hover:bg-surface hover:text-primary',
-      },
-    ],
     defaultVariants: {
       variant: 'default',
       size: 'default',
