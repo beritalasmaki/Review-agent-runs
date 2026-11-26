@@ -45,45 +45,49 @@ function StatusPill({ status }: { status: RunStatus }) {
 
 export function RunOverview({ run }: RunOverviewProps) {
   return (
-    <header className="flex flex-col gap-[var(--space-5)] rounded-lg border border-border-subtle bg-surface p-[var(--space-5)] shadow-card">
-      <div className="self-start">
-        <StatusPill status={run.status} />
-      </div>
-      <h1
-        id="run-heading"
-        className="text-page-title leading-tight font-bold font-heading text-pretty text-text-primary"
-      >
-        {run.initiative}
-      </h1>
+    <header className="panel overflow-hidden">
+      <div aria-hidden className="foil" />
+      <div className="flex flex-col gap-[var(--space-5)] p-[var(--space-5)]">
+        <div className="self-start">
+          <StatusPill status={run.status} />
+        </div>
+        <h1
+          id="run-heading"
+          className="text-run-title leading-tight font-semibold font-heading text-pretty text-text-primary"
+        >
+          {run.initiative}
+        </h1>
 
-      {run.assignment && (
-        <div className="flex flex-col gap-[var(--space-2)]">
+        {run.assignment && (
+          <div className="flex flex-col gap-[var(--space-2)]">
+            <span className={EYEBROW}>
+              <Info aria-hidden className="h-4 w-4" />
+              Why the agent was asked
+            </span>
+            <p className="text-body font-normal font-body leading-relaxed text-text-primary md:text-item-title">
+              {run.assignment.context}{' '}
+              <ActorName name={run.assignment.by} className="align-middle" /> gave the change to the
+              agent because {run.assignment.reason}
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-[var(--space-2)] pt-[var(--space-5)]">
           <span className={EYEBROW}>
-            <Info aria-hidden className="h-4 w-4" />
-            Why the agent was asked
+            <Activity aria-hidden className="h-4 w-4" />
+            Where the run is now
           </span>
-          <p className="text-body font-normal font-body leading-relaxed text-text-primary md:text-item-title">
-            {run.assignment.context} <ActorName name={run.assignment.by} className="align-middle" />{' '}
-            gave the change to the agent because {run.assignment.reason}
+          <p className="text-body font-normal font-body leading-relaxed text-text-secondary md:text-item-title">
+            {run.decision ? (
+              <>
+                <ActorName name={run.decision.by} className="align-middle text-text-primary" />{' '}
+                {describeDecision(run)}
+              </>
+            ) : (
+              describePendingRun(run)
+            )}
           </p>
         </div>
-      )}
-
-      <div className="flex flex-col gap-[var(--space-2)] pt-[var(--space-5)]">
-        <span className={EYEBROW}>
-          <Activity aria-hidden className="h-4 w-4" />
-          Where the run is now
-        </span>
-        <p className="text-body font-normal font-body leading-relaxed text-text-secondary md:text-item-title">
-          {run.decision ? (
-            <>
-              <ActorName name={run.decision.by} className="align-middle text-text-primary" />{' '}
-              {describeDecision(run)}
-            </>
-          ) : (
-            describePendingRun(run)
-          )}
-        </p>
       </div>
     </header>
   )

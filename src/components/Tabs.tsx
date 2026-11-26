@@ -273,10 +273,7 @@ function PillTabsList({
       <span
         ref={indicatorRef}
         aria-hidden
-        className={cn(
-          't-tabs-pill rounded-lg border-2 border-primary bg-primary-tint',
-          indicatorClassName,
-        )}
+        className={cn('t-tabs-pill border-b-2 border-primary-strong', indicatorClassName)}
       />
       {children}
     </UI.TabsList>

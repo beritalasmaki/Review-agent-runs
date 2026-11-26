@@ -54,7 +54,7 @@ export function EvidenceTab({ run, onOpenStep }: EvidenceTabProps) {
         <section
           key={group.id}
           aria-labelledby={`evidence-${group.id}`}
-          className="overflow-hidden rounded-lg border border-border-subtle bg-surface shadow-card"
+          className="overflow-hidden panel"
         >
           <div className="flex flex-wrap items-baseline justify-between gap-[var(--space-2)] border-b border-border-subtle bg-surface-raised px-[var(--space-4)] py-[var(--space-3)]">
             <h3

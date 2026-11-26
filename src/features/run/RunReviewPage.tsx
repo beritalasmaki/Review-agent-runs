@@ -16,7 +16,7 @@ import { checkCardId, scoreCardId } from './openItemTargets'
 import { RunDetails } from './RunDetails'
 import { RunOverview } from './RunOverview'
 import { RunShape } from './RunShape'
-import { RunPageNav } from './RunPageNav'
+import { TopBar } from './TopBar'
 import { RunViewTabs } from './RunViewTabs'
 import { StepsTab } from './StepsTab'
 import { StoryTimeline } from './StoryTimeline'
@@ -239,11 +239,23 @@ export function RunReviewPage({
          * of a long page. No top bar (0135): the way back and the theme switch are the first row
          * of the page, and the columns start at one height under it.
          */}
-        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-4)] px-[var(--space-4)] pt-[var(--space-4)] pb-[var(--space-7)] md:px-[var(--space-6)]">
-          <RunPageNav
-            reviewsHref={reviewsHref}
-            end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
-          />
+        <TopBar
+          trail={
+            <>
+              <a href={reviewsHref} className="sat font-medium">
+                My reviews
+              </a>
+              <span aria-hidden className="text-text-secondary">
+                /
+              </span>
+              <span aria-current="page" className="text-meta text-text-secondary">
+                Run {run.id}
+              </span>
+            </>
+          }
+          end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
+        />
+        <div className="mx-auto flex max-w-[86rem] flex-col gap-[var(--space-4)] px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-8)]">
           <div
             data-tour="run-page"
             className="grid grid-cols-1 items-start gap-[var(--space-4)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]"
@@ -306,7 +318,7 @@ export function RunReviewPage({
 
             <div
               data-tour="run-tabs-view"
-              className="min-w-0 rounded-lg border border-border-subtle bg-surface pb-[var(--space-4)] pl-[var(--space-4)] shadow-card md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
+              className="min-w-0 panel pb-[var(--space-4)] pl-[var(--space-4)] md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
             >
               {/* No top/right padding on the wrapper above, on purpose: RunViewTabs' own
                 `rounded-t-lg` corner sits flush against this card's top-right corner instead of

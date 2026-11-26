@@ -135,10 +135,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
           No steps yet. This run started at {formatClock(run.startedAt)}.
         </p>
       ) : (
-        <Table
-          containerClassName="rounded-lg border border-border-subtle bg-surface shadow-card"
-          className="min-w-[40rem] table-fixed"
-        >
+        <Table containerClassName="panel" className="min-w-[40rem] table-fixed">
           <colgroup>
             <col className="w-[5.5rem]" />
             <col className="w-[4.5rem]" />

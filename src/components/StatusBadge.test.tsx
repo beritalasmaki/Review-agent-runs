@@ -15,7 +15,7 @@ describe('StatusBadge', () => {
 
   it.each([
     ['success', 'text-status-pass-tint-fg'],
-    ['danger', 'text-status-fail'],
+    ['danger', 'text-status-fail-tint-fg'],
     ['warning', 'text-status-waived-tint-fg'],
     ['neutral', 'text-status-not-applicable'],
     ['info', 'text-text-secondary'],

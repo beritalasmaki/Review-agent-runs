@@ -90,7 +90,7 @@ export function UndoBox({
   }
 
   return (
-    <div className="flex w-full flex-col gap-[var(--space-3)] rounded-lg border border-border-subtle bg-surface p-[var(--space-4)] shadow-card">
+    <div className="flex w-full flex-col gap-[var(--space-3)] panel p-[var(--space-4)]">
       <h2
         ref={headingRef}
         tabIndex={-1}

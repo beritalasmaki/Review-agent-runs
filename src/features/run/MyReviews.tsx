@@ -22,7 +22,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '../../components/ui/collapsible'
-import { ThemeToggle } from '../../components/ThemeToggle'
+import { TopBar } from './TopBar'
 import { notify } from '../../components/notify'
 import { Toaster } from '../../components/ui/sonner'
 import { listRuns } from '../../lib/api'
@@ -165,18 +165,18 @@ const TABS: {
   mark?: string
   icon: ComponentType<{ className?: string }>
 }[] = [
-  { value: 'pending', label: 'Pending', mark: 'group-aria-selected:bg-mark-pending', icon: Clock },
+  { value: 'pending', label: 'Pending', mark: 'bg-mark-pending', icon: Clock },
   {
     value: 'requested',
     label: 'Requested for change',
-    mark: 'group-aria-selected:bg-mark-requested',
+    mark: 'bg-mark-requested',
     icon: ArrowRight,
   },
-  { value: 'declined', label: 'Declined', mark: 'group-aria-selected:bg-mark-declined', icon: X },
+  { value: 'declined', label: 'Declined', mark: 'bg-mark-declined', icon: X },
   {
     value: 'approved',
     label: 'Approved',
-    mark: 'group-aria-selected:bg-mark-approved',
+    mark: 'bg-mark-approved',
     icon: Check,
   },
   { value: 'all', label: 'All runs', icon: List },
@@ -404,314 +404,332 @@ function ReviewsBoard({
   )
 
   return (
-    <div
-      data-tour="list-page"
-      className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]"
-    >
-      {!onArchivePage ? (
-        <div className="flex flex-col">
-          {/*
-           * The title card and the "Runs" card below it (0127 — "title area should be attached
-           * to the table to be cohesive and neat"): `border-b-0`/`rounded-b-none` here,
-           * `border-t-0`/`rounded-t-none` on the "Runs" section below, zero gap between them
-           * (this wrapper, not the page's own `gap-[var(--space-5)]` stack) — the same "flush,
-           * matching radii, no gap" attachment `RunViewTabs` already uses against its own card
-           * (docs/DECISIONS.md, 0124), one level up: two cards here, not a tab strip and a card,
-           * fused into one continuous outline rather than a strip meeting a card's own edge.
-           */}
-          <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] overflow-hidden rounded-t-lg rounded-b-none border border-b-0 border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card">
-            <div className="flex flex-col gap-[var(--space-2)]">
-              <PageTitle headingRef={headingRef}>My reviews</PageTitle>
+    <>
+      <TopBar
+        trail={
+          onArchivePage ? (
+            <>
+              <button type="button" onClick={() => openView('main')} className="sat font-medium">
+                My reviews
+              </button>
+              <span aria-hidden className="text-text-secondary">
+                /
+              </span>
+              <span aria-current="page" className="text-meta text-text-secondary">
+                Archive
+              </span>
+            </>
+          ) : (
+            <span aria-current="page" className="font-medium">
+              My reviews
+            </span>
+          )
+        }
+      />
+      <div
+        data-tour="list-page"
+        className="mx-auto flex max-w-[86rem] flex-col gap-[var(--space-5)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-8)]"
+      >
+        {!onArchivePage ? (
+          <div className="flex flex-col">
+            {/*
+             * The title card and the "Runs" card below it (0127 — "title area should be attached
+             * to the table to be cohesive and neat"): `border-b-0`/`rounded-b-none` here,
+             * `border-t-0`/`rounded-t-none` on the "Runs" section below, zero gap between them
+             * (this wrapper, not the page's own `gap-[var(--space-5)]` stack) — the same "flush,
+             * matching radii, no gap" attachment `RunViewTabs` already uses against its own card
+             * (docs/DECISIONS.md, 0124), one level up: two cards here, not a tab strip and a card,
+             * fused into one continuous outline rather than a strip meeting a card's own edge.
+             */}
+            <div className="panel overflow-hidden rounded-b-none border-b-0">
+              <div aria-hidden className="foil" />
+              <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-6)]">
+                <div className="flex flex-col gap-[var(--space-2)]">
+                  <span className="lbl text-primary">Agent run reviews</span>
+                  <PageTitle headingRef={headingRef}>My reviews</PageTitle>
+                  <p className="max-w-[40rem] text-lead leading-relaxed text-text-primary">
+                    Each run is one change made by an AI agent. Nothing is released until you decide
+                    on it. All runs here are fictional sample data.
+                  </p>
+                </div>
+                <div className="flex items-center gap-[var(--space-3)]">
+                  <Badge
+                    variant="warning"
+                    data-tour="needs-review-badge"
+                    className="border-transparent bg-status-waived-dot px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body text-primary-foreground"
+                  >
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-primary-foreground" />
+                    {needsYou} need{needsYou === 1 ? 's' : ''} your review
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    onClick={() => openView('archive')}
+                    aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
+                    data-tour="archive-button"
+                    className="gap-[var(--space-2)]"
+                  >
+                    <Archive aria-hidden className="h-4 w-4" />
+                    Archive
+                    <Badge variant="muted" size="sm">
+                      {archived.length}
+                    </Badge>
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <section
+              aria-label="Runs"
+              className="panel overflow-hidden rounded-t-none border-t border-border-subtle pt-[var(--space-5)]"
+            >
+              <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
+                <div data-tour="run-tabs">
+                  <TabsList
+                    variant="pill"
+                    label="Run types"
+                    className="scrollbar-none w-full max-w-full justify-start overflow-x-auto rounded-[4px] border border-border-subtle bg-bg/60 px-[var(--space-2)]"
+                  >
+                    {TABS.map(({ value, label, mark, icon: Icon }) => (
+                      <TabsTrigger key={value} variant="pill" value={value} className="group">
+                        {mark ? (
+                          <span
+                            aria-hidden
+                            className={cn(
+                              'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full text-mark-glyph',
+                              mark,
+                            )}
+                          >
+                            <Icon className="h-3 w-3" />
+                          </span>
+                        ) : (
+                          <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
+                        )}
+                        {label}
+                        <Badge variant="muted" size="sm">
+                          {counts[value]}
+                        </Badge>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+                <TabsContent value={tab}>
+                  <div data-tour="search-filters">
+                    <ReviewsToolbar
+                      searchLabel="Search runs"
+                      searchPlaceholder="Search runs, also in the archive"
+                      filters={filters}
+                      onFilters={patchFilters}
+                      open={filtersOpen}
+                      onToggleOpen={() => setFiltersOpen((open) => !open)}
+                      timeLabel="Time"
+                      timeOptions={MAIN_TIMES}
+                      type={{
+                        value: tab,
+                        counts: false,
+                        onChange: (value) => chooseTab(value as ReviewTab),
+                        options: [...TABS.filter((t) => t.value !== 'all'), TABS[4]].map((t) => ({
+                          value: t.value,
+                          label: t.value === 'all' ? 'All run types' : t.label,
+                        })),
+                      }}
+                      people={people}
+                      resultLabel={`Showing ${tableRuns.length} of ${plural(active.length, 'active run')}`}
+                      onClear={hasFilters ? clearFilters : undefined}
+                    />
+                  </div>
+                  {selectionBar(
+                    'You can select approved and declined runs, to make a report or to archive them.',
+                    true,
+                  )}
+                  <ReviewsTable
+                    ref={tableRef}
+                    runs={tableRuns}
+                    caption={`${TABS.find((t) => t.value === tab)?.label ?? ''} runs`}
+                    runHref={runHref}
+                    sort={sort}
+                    onSort={(key, dir) => setSort({ key, dir })}
+                    selectable={tab !== 'pending'}
+                    selected={selected}
+                    onToggle={toggle}
+                    manual={manual}
+                    now={now}
+                    onDetails={(id) => setDialog({ type: 'details', id })}
+                    onNewRun={(id) => setDialog({ type: 'newrun', id })}
+                    onArchive={(id) => setDialog({ type: 'archive', ids: [id] })}
+                  />
+                  {tableRuns.length === 0 && (
+                    <div className="flex flex-col items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-7)] text-center">
+                      {/* Nothing to decide here, but work is under way below: say that, not "no
+                        match", which would read as if the tab were empty. */}
+                      <p className="text-item-title font-semibold font-heading text-text-primary">
+                        {inProgress.length > 0 && !hasFilters
+                          ? 'Nothing here needs you yet'
+                          : 'No active runs match these filters'}
+                      </p>
+                      <p className="text-body text-text-secondary">
+                        {inProgress.length > 0 && !hasFilters
+                          ? 'The runs below are still in progress. They move up when they are ready for you.'
+                          : 'Try another tab, time range or requester.'}
+                      </p>
+                      {hasFilters && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={clearFilters}
+                          className="mt-[var(--space-1)] px-[var(--space-4)]"
+                        >
+                          Clear filters
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  {inProgress.length > 0 && (
+                    <InProgress
+                      runs={inProgress}
+                      open={progOpen}
+                      onToggle={() => setProgOpen((o) => !o)}
+                      now={now}
+                    />
+                  )}
+                </TabsContent>
+              </Tabs>
+            </section>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-[var(--space-5)]">
+            <div className="flex items-center justify-between gap-[var(--space-4)]">
+              <Button
+                variant="link"
+                size="inline"
+                onClick={() => openView('main')}
+                className="self-start font-medium font-body"
+              >
+                <ChevronLeft aria-hidden className="h-4 w-4" />
+                My reviews
+              </Button>
+            </div>
+            <div className="flex flex-col gap-[var(--space-5)]">
+              <PageTitle headingRef={headingRef}>Archive</PageTitle>
               <p className="max-w-[55rem] text-lead leading-relaxed text-text-secondary">
-                AI agents now change customers' software faster than anyone can follow. This page is
-                where a person stays in charge: each run below is one change, and nothing is
-                released until you decide on it. Open a pending run to see what the agent did, which
-                checks passed or failed and what it could not verify, then approve it, request
-                changes or reject it. Your earlier decisions are in the archive. All runs here are
-                fictional sample data.
+                Approved and declined runs move here automatically {ARCHIVE_AFTER_MONTHS} months
+                after the decision. You can also archive them yourself from My reviews. The record
+                here never changes; request a new run to fix a mistake.
               </p>
             </div>
-            <div className="flex items-center gap-[var(--space-3)]">
-              <Badge
-                variant="warning"
-                data-tour="needs-review-badge"
-                className="border-transparent px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body dark:bg-status-waived-dot dark:text-surface"
-              >
-                <span
-                  aria-hidden
-                  className="h-2 w-2 rounded-full bg-status-waived-tint-fg dark:bg-surface"
-                />
-                {needsYou} need{needsYou === 1 ? 's' : ''} your review
-              </Badge>
-              <Button
-                variant="outline"
-                onClick={() => openView('archive')}
-                aria-label={`Archive, ${plural(archived.length, 'archived run')}`}
-                data-tour="archive-button"
-                className="gap-[var(--space-2)]"
-              >
-                <Archive aria-hidden className="h-4 w-4" />
-                Archive
-                <Badge variant="muted" size="sm">
-                  {archived.length}
-                </Badge>
-              </Button>
-              <ThemeToggle />
-            </div>
           </div>
-          <section
-            aria-label="Runs"
-            className="overflow-hidden rounded-t-none rounded-b-lg border border-t-0 border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card"
-          >
-            <Tabs value={tab} onValueChange={(value) => chooseTab(value as ReviewTab)}>
-              <div data-tour="run-tabs">
-                <TabsList
-                  variant="pill"
-                  label="Run types"
-                  className="scrollbar-none w-full max-w-full justify-start overflow-x-auto rounded-lg border border-border-subtle bg-surface-raised p-[var(--space-2)]"
-                >
-                  {TABS.map(({ value, label, mark, icon: Icon }) => (
-                    <TabsTrigger key={value} variant="pill" value={value} className="group">
-                      {mark ? (
-                        <span
-                          aria-hidden
-                          className={cn(
-                            'inline-flex h-[1.125rem] w-[1.125rem] items-center justify-center rounded-full bg-surface-raised text-text-secondary transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] group-aria-selected:text-mark-glyph',
-                            mark,
-                          )}
-                        >
-                          <Icon className="h-3 w-3" />
-                        </span>
-                      ) : (
-                        <Icon aria-hidden className="h-4 w-4 text-text-secondary" />
-                      )}
-                      {label}
-                      <Badge variant={tab === value ? 'primary-tint' : 'muted'} size="sm">
-                        {counts[value]}
-                      </Badge>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </div>
-              <TabsContent value={tab}>
-                <div data-tour="search-filters">
-                  <ReviewsToolbar
-                    searchLabel="Search runs"
-                    searchPlaceholder="Search runs, also in the archive"
-                    filters={filters}
-                    onFilters={patchFilters}
-                    open={filtersOpen}
-                    onToggleOpen={() => setFiltersOpen((open) => !open)}
-                    timeLabel="Time"
-                    timeOptions={MAIN_TIMES}
-                    type={{
-                      value: tab,
-                      counts: false,
-                      onChange: (value) => chooseTab(value as ReviewTab),
-                      options: [...TABS.filter((t) => t.value !== 'all'), TABS[4]].map((t) => ({
-                        value: t.value,
-                        label: t.value === 'all' ? 'All run types' : t.label,
-                      })),
-                    }}
-                    people={people}
-                    resultLabel={`Showing ${tableRuns.length} of ${plural(active.length, 'active run')}`}
-                    onClear={hasFilters ? clearFilters : undefined}
-                  />
-                </div>
-                {selectionBar(
-                  'You can select approved and declined runs, to make a report or to archive them.',
-                  true,
-                )}
-                <ReviewsTable
-                  ref={tableRef}
-                  runs={tableRuns}
-                  caption={`${TABS.find((t) => t.value === tab)?.label ?? ''} runs`}
-                  runHref={runHref}
-                  sort={sort}
-                  onSort={(key, dir) => setSort({ key, dir })}
-                  selectable={tab !== 'pending'}
-                  selected={selected}
-                  onToggle={toggle}
-                  manual={manual}
-                  now={now}
-                  onDetails={(id) => setDialog({ type: 'details', id })}
-                  onNewRun={(id) => setDialog({ type: 'newrun', id })}
-                  onArchive={(id) => setDialog({ type: 'archive', ids: [id] })}
-                />
-                {tableRuns.length === 0 && (
-                  <div className="flex flex-col items-center gap-[var(--space-2)] px-[var(--space-5)] py-[var(--space-7)] text-center">
-                    {/* Nothing to decide here, but work is under way below: say that, not "no
-                        match", which would read as if the tab were empty. */}
-                    <p className="text-item-title font-semibold font-heading text-text-primary">
-                      {inProgress.length > 0 && !hasFilters
-                        ? 'Nothing here needs you yet'
-                        : 'No active runs match these filters'}
-                    </p>
-                    <p className="text-body text-text-secondary">
-                      {inProgress.length > 0 && !hasFilters
-                        ? 'The runs below are still in progress. They move up when they are ready for you.'
-                        : 'Try another tab, time range or requester.'}
-                    </p>
-                    {hasFilters && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={clearFilters}
-                        className="mt-[var(--space-1)] px-[var(--space-4)]"
-                      >
-                        Clear filters
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {inProgress.length > 0 && (
-                  <InProgress
-                    runs={inProgress}
-                    open={progOpen}
-                    onToggle={() => setProgOpen((o) => !o)}
-                    now={now}
-                  />
-                )}
-              </TabsContent>
-            </Tabs>
-          </section>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-[var(--space-5)]">
-          <div className="flex items-center justify-between gap-[var(--space-4)]">
+        )}
+
+        {inlineArchive && (
+          <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] pt-[var(--space-2)]">
+            <div className="flex flex-col gap-[var(--space-5)]">
+              <h2 className="flex items-center gap-[var(--space-3)] text-section-heading font-bold font-heading text-text-primary">
+                <Archive aria-hidden className="h-5 w-5 text-text-primary" />
+                Also found in the archive
+                <Badge variant="muted" size="sm">
+                  {archivedRuns.length}
+                </Badge>
+              </h2>
+              <p className="text-body text-text-secondary">
+                Archived runs that match “{filters.query.trim()}”. They are shown here only while
+                you search.
+              </p>
+            </div>
             <Button
               variant="link"
               size="inline"
-              onClick={() => openView('main')}
-              className="self-start font-medium font-body"
+              onClick={() => openView('archive')}
+              className="gap-[var(--space-2)]"
             >
-              <ChevronLeft aria-hidden className="h-4 w-4" />
-              My reviews
+              Open the archive
+              <ArrowRight aria-hidden className="h-3.5 w-3.5" />
             </Button>
-            <ThemeToggle />
           </div>
-          <div className="flex flex-col gap-[var(--space-5)]">
-            <PageTitle headingRef={headingRef}>Archive</PageTitle>
-            <p className="max-w-[55rem] text-lead leading-relaxed text-text-secondary">
-              Approved and declined runs move here automatically {ARCHIVE_AFTER_MONTHS} months after
-              the decision. You can also archive them yourself from My reviews. The record here
-              never changes; request a new run to fix a mistake.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {inlineArchive && (
-        <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] pt-[var(--space-2)]">
-          <div className="flex flex-col gap-[var(--space-5)]">
-            <h2 className="flex items-center gap-[var(--space-3)] text-section-heading font-bold font-heading text-text-primary">
-              <Archive aria-hidden className="h-5 w-5 text-text-primary" />
-              Also found in the archive
-              <Badge variant="muted" size="sm">
-                {archivedRuns.length}
-              </Badge>
-            </h2>
-            <p className="text-body text-text-secondary">
-              Archived runs that match “{filters.query.trim()}”. They are shown here only while you
-              search.
-            </p>
-          </div>
-          <Button
-            variant="link"
-            size="inline"
-            onClick={() => openView('archive')}
-            className="gap-[var(--space-2)]"
+        )}
+        {inlineArchive && (
+          <section
+            aria-label="Also found in the archive"
+            className="overflow-hidden panel pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
           >
-            Open the archive
-            <ArrowRight aria-hidden className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      )}
-      {inlineArchive && (
-        <section
-          aria-label="Also found in the archive"
-          className="overflow-hidden rounded-lg border border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card"
-        >
-          {archiveTable()}
-        </section>
-      )}
+            {archiveTable()}
+          </section>
+        )}
 
-      {onArchivePage && (
-        <section
-          aria-label="Archived runs"
-          className="overflow-hidden rounded-lg border border-border-subtle bg-surface pt-[40px] pr-[32px] pb-[40px] pl-[32px] shadow-card"
-        >
-          <div>
-            <ReviewsToolbar
-              searchLabel="Search the archive"
-              searchPlaceholder="Search the archive"
-              filters={filters}
-              onFilters={patchFilters}
-              open={filtersOpen}
-              onToggleOpen={() => setFiltersOpen((open) => !open)}
-              timeLabel="Decided"
-              timeOptions={ARCHIVE_TIMES}
-              type={{
-                value: archiveType,
-                counts: true,
-                onChange: (value) => setArchiveType(value as typeof archiveType),
-                options: [
-                  { value: 'all', label: 'All run types' },
-                  { value: 'approved', label: 'Approved' },
-                  { value: 'declined', label: 'Declined' },
-                ],
-              }}
-              people={people}
-              resultLabel={`Showing ${archivedRuns.length} of ${plural(archived.length, 'archived run')}`}
-            />
-          </div>
-          {archiveTable()}
-        </section>
-      )}
+        {onArchivePage && (
+          <section
+            aria-label="Archived runs"
+            className="overflow-hidden panel pt-[40px] pr-[32px] pb-[40px] pl-[32px]"
+          >
+            <div>
+              <ReviewsToolbar
+                searchLabel="Search the archive"
+                searchPlaceholder="Search the archive"
+                filters={filters}
+                onFilters={patchFilters}
+                open={filtersOpen}
+                onToggleOpen={() => setFiltersOpen((open) => !open)}
+                timeLabel="Decided"
+                timeOptions={ARCHIVE_TIMES}
+                type={{
+                  value: archiveType,
+                  counts: true,
+                  onChange: (value) => setArchiveType(value as typeof archiveType),
+                  options: [
+                    { value: 'all', label: 'All run types' },
+                    { value: 'approved', label: 'Approved' },
+                    { value: 'declined', label: 'Declined' },
+                  ],
+                }}
+                people={people}
+                resultLabel={`Showing ${archivedRuns.length} of ${plural(archived.length, 'archived run')}`}
+              />
+            </div>
+            {archiveTable()}
+          </section>
+        )}
 
-      {detailsRun && (
-        <DecisionDetailsDialog
-          run={detailsRun}
-          href={runHref(detailsRun.id)}
-          now={now}
-          onClose={() => setDialog(null)}
-          onNewRun={() => setDialog({ type: 'newrun', id: detailsRun.id })}
-        />
-      )}
-      {newRunRun && (
-        <NewRunDialog
-          run={newRunRun}
-          onClose={() => setDialog(null)}
-          onSend={() => {
-            setRequested((current) => new Set(current).add(newRunRun.id))
-            setDialog(null)
-            notify(
-              `Request sent to ${newRunRun.requestedBy}. You will get a message when they answer.`,
-            )
-          }}
-        />
-      )}
-      {dialog?.type === 'archive' && (
-        <ArchiveConfirmDialog
-          runs={dialog.ids.map(byId).filter((run): run is Run => !!run)}
-          onClose={() => setDialog(null)}
-          onConfirm={() => {
-            setDialog(null)
-            archive(dialog.ids)
-          }}
-        />
-      )}
-      {dialog?.type === 'report' && (
-        <ReportDialog
-          count={selected.size}
-          fromArchive={fromArchive}
-          defaultName={`Review report ${today}`}
-          onClose={() => setDialog(null)}
-          onCreate={createReport}
-        />
-      )}
-      <Toaster />
-    </div>
+        {detailsRun && (
+          <DecisionDetailsDialog
+            run={detailsRun}
+            href={runHref(detailsRun.id)}
+            now={now}
+            onClose={() => setDialog(null)}
+            onNewRun={() => setDialog({ type: 'newrun', id: detailsRun.id })}
+          />
+        )}
+        {newRunRun && (
+          <NewRunDialog
+            run={newRunRun}
+            onClose={() => setDialog(null)}
+            onSend={() => {
+              setRequested((current) => new Set(current).add(newRunRun.id))
+              setDialog(null)
+              notify(
+                `Request sent to ${newRunRun.requestedBy}. You will get a message when they answer.`,
+              )
+            }}
+          />
+        )}
+        {dialog?.type === 'archive' && (
+          <ArchiveConfirmDialog
+            runs={dialog.ids.map(byId).filter((run): run is Run => !!run)}
+            onClose={() => setDialog(null)}
+            onConfirm={() => {
+              setDialog(null)
+              archive(dialog.ids)
+            }}
+          />
+        )}
+        {dialog?.type === 'report' && (
+          <ReportDialog
+            count={selected.size}
+            fromArchive={fromArchive}
+            defaultName={`Review report ${today}`}
+            onClose={() => setDialog(null)}
+            onCreate={createReport}
+          />
+        )}
+        <Toaster />
+      </div>
+    </>
   )
 }
 

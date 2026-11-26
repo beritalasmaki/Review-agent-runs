@@ -154,210 +154,211 @@ export function DecisionPanel({
   }
 
   return (
-    <section
-      aria-labelledby="decision-heading"
-      className="flex flex-col gap-[var(--space-6)] rounded-lg border border-border-subtle bg-surface p-[var(--space-4)] shadow-card"
-    >
-      <div className="flex flex-col gap-[var(--space-4)]">
-        <div className="flex flex-col gap-[var(--space-5)]">
-          <SectionHeading id="decision-heading" icon={ShieldCheck}>
-            Your decision
-          </SectionHeading>
-          <p className="text-meta font-normal font-body text-text-secondary">
-            Made by you, never by the agent. You can undo it for {UNDO_WINDOW_MINUTES} minutes.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-[var(--space-2)]">
-          <span className="text-caption font-normal font-body text-text-secondary">
-            Deciding as
-          </span>
-          <ActorName name={reviewerName} className="self-start text-body font-medium" />
-        </div>
-      </div>
-
-      <fieldset
-        id="open-items"
-        className="t-spotlight flex scroll-mt-[calc(var(--space-5))] flex-col gap-[var(--space-2)]"
-      >
-        <legend className="mb-[var(--space-2)] flex w-full items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
-          <StepNumber>1</StepNumber>
-          Confirm each open item
-          {items.length > 0 && (
-            <span className="ml-auto text-caption font-normal font-body text-text-secondary">
-              {items.length - left} of {items.length}
-            </span>
-          )}
-        </legend>
-        {items.length === 0 ? (
-          <p className="text-caption font-normal font-body text-text-secondary">
-            Nothing is open: no check failed or was left without a result, and no score is low.
-          </p>
-        ) : (
-          <>
-            <p className="text-caption font-normal font-body leading-relaxed text-text-secondary">
-              {run.target.environment === 'production'
-                ? 'This change goes to production. Tick each item to say you have seen it and accept it.'
-                : 'Tick each item to say you have seen it and accept it.'}
+    <section aria-labelledby="decision-heading" className="panel overflow-hidden">
+      <div aria-hidden className="foil" />
+      <div className="flex flex-col gap-[var(--space-6)] p-[var(--space-5)]">
+        <div className="flex flex-col gap-[var(--space-4)]">
+          <div className="flex flex-col gap-[var(--space-5)]">
+            <SectionHeading id="decision-heading" icon={ShieldCheck}>
+              Your decision
+            </SectionHeading>
+            <p className="text-meta font-normal font-body text-text-secondary">
+              Made by you, never by the agent. You can undo it for {UNDO_WINDOW_MINUTES} minutes.
             </p>
-            {items.map((item) => {
-              const checked = ticked.has(item.id)
-              return (
-                <div
-                  key={item.id}
-                  className={cn(
-                    'flex flex-col gap-[var(--space-2)] rounded-md px-[var(--space-3)] py-[var(--space-3)]',
-                    checked ? 'bg-bg' : 'border border-status-waived/40 bg-status-waived-tint-bg',
-                  )}
-                >
-                  <label
+          </div>
+
+          <div className="flex flex-col gap-[var(--space-2)]">
+            <span className="text-caption font-normal font-body text-text-secondary">
+              Deciding as
+            </span>
+            <ActorName name={reviewerName} className="self-start text-body font-medium" />
+          </div>
+        </div>
+
+        <fieldset
+          id="open-items"
+          className="t-spotlight flex scroll-mt-[calc(var(--space-5))] flex-col gap-[var(--space-2)]"
+        >
+          <legend className="mb-[var(--space-2)] flex w-full items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
+            <StepNumber>1</StepNumber>
+            Confirm each open item
+            {items.length > 0 && (
+              <span className="ml-auto text-caption font-normal font-body text-text-secondary">
+                {items.length - left} of {items.length}
+              </span>
+            )}
+          </legend>
+          {items.length === 0 ? (
+            <p className="text-caption font-normal font-body text-text-secondary">
+              Nothing is open: no check failed or was left without a result, and no score is low.
+            </p>
+          ) : (
+            <>
+              <p className="text-caption font-normal font-body leading-relaxed text-text-secondary">
+                {run.target.environment === 'production'
+                  ? 'This change goes to production. Tick each item to say you have seen it and accept it.'
+                  : 'Tick each item to say you have seen it and accept it.'}
+              </p>
+              {items.map((item) => {
+                const checked = ticked.has(item.id)
+                return (
+                  <div
+                    key={item.id}
                     className={cn(
-                      'flex cursor-pointer items-start gap-[var(--space-3)] rounded-sm',
-                      'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus-ring',
+                      'flex flex-col gap-[var(--space-2)] rounded-md px-[var(--space-3)] py-[var(--space-3)]',
+                      checked ? 'bg-bg' : 'border border-status-waived/40 bg-status-waived-tint-bg',
                     )}
                   >
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={() => toggle(item.id)}
-                      // The label's own ring shows focus, around the box and its sentence.
-                      className="mt-[var(--space-1)] border-status-waived text-surface focus-visible:outline-none data-[state=checked]:border-status-waived data-[state=checked]:bg-status-waived"
-                    />
-                    <span className="text-meta font-normal font-body leading-relaxed text-text-primary">
-                      {item.text}
-                    </span>
-                  </label>
-                  {onShowItem && (
-                    <Button
-                      variant="link"
-                      size="inline"
-                      onClick={() => onShowItem(item.target)}
-                      className="ml-[calc(1rem+var(--space-3))] self-start font-medium font-body"
+                    <label
+                      className={cn(
+                        'flex cursor-pointer items-start gap-[var(--space-3)] rounded-sm',
+                        'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus-ring',
+                      )}
                     >
-                      {SHOW_LABEL[item.target.kind](item.target)}
-                    </Button>
-                  )}
-                </div>
-              )
-            })}
-          </>
-        )}
-      </fieldset>
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggle(item.id)}
+                        // The label's own ring shows focus, around the box and its sentence.
+                        className="mt-[var(--space-1)] border-status-waived text-surface focus-visible:outline-none data-[state=checked]:border-status-waived data-[state=checked]:bg-status-waived"
+                      />
+                      <span className="text-meta font-normal font-body leading-relaxed text-text-primary">
+                        {item.text}
+                      </span>
+                    </label>
+                    {onShowItem && (
+                      <Button
+                        variant="link"
+                        size="inline"
+                        onClick={() => onShowItem(item.target)}
+                        className="ml-[calc(1rem+var(--space-3))] self-start font-medium font-body"
+                      >
+                        {SHOW_LABEL[item.target.kind](item.target)}
+                      </Button>
+                    )}
+                  </div>
+                )
+              })}
+            </>
+          )}
+        </fieldset>
 
-      <div className="flex flex-col gap-[var(--space-3)] pt-[var(--space-4)]">
-        <span className="flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
-          <StepNumber>2</StepNumber>
-          Choose one
-        </span>
+        <div className="flex flex-col gap-[var(--space-3)] pt-[var(--space-4)]">
+          <span className="flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
+            <StepNumber>2</StepNumber>
+            Choose one
+          </span>
 
-        <div className="flex flex-col gap-[var(--space-2)]">
-          <label
-            htmlFor={reasonId}
-            className="text-caption font-semibold font-body text-text-primary"
-          >
-            Reason for approving{' '}
-            <span className="font-normal text-text-secondary">
-              {reasonRequired
-                ? `(required: ${formatCount(missing, 'check')} ${missing === 1 ? 'is' : 'are'} missing)`
-                : '(optional)'}
+          <div className="flex flex-col gap-[var(--space-2)]">
+            <label
+              htmlFor={reasonId}
+              className="text-caption font-semibold font-body text-text-primary"
+            >
+              Reason for approving{' '}
+              <span className="font-normal text-text-secondary">
+                {reasonRequired
+                  ? `(required: ${formatCount(missing, 'check')} ${missing === 1 ? 'is' : 'are'} missing)`
+                  : '(optional)'}
+              </span>
+            </label>
+            <Textarea
+              id={reasonId}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              rows={3}
+              required={reasonRequired}
+              placeholder={
+                reasonRequired
+                  ? 'For example: these checks do not apply because no new dependencies or screens were added.'
+                  : undefined
+              }
+              className="text-meta focus-visible:border-primary"
+            />
+            <Button
+              variant="approve"
+              onClick={approve}
+              disabled={!ready}
+              aria-describedby={hintId}
+              data-popping={popping || undefined}
+              className="t-pop"
+            >
+              <span className="t-pop-label">
+                <Check aria-hidden className="h-4 w-4" strokeWidth={2.5} />
+                Approve and release
+              </span>
+            </Button>
+            <span
+              id={hintId}
+              className="text-caption font-normal font-body leading-relaxed text-text-secondary"
+              aria-live="polite"
+            >
+              {approveHint}
             </span>
-          </label>
-          <Textarea
-            id={reasonId}
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            rows={3}
-            required={reasonRequired}
-            placeholder={
-              reasonRequired
-                ? 'For example: these checks do not apply because no new dependencies or screens were added.'
-                : undefined
-            }
-            className="text-meta focus-visible:border-primary"
+          </div>
+
+          <div
+            className="my-[var(--space-1)] flex items-center gap-[var(--space-3)] text-caption font-normal font-body text-text-secondary"
+            role="separator"
+          >
+            <span className="h-px flex-1 bg-border-subtle" />
+            or, if it is not ready
+            <span className="h-px flex-1 bg-border-subtle" />
+          </div>
+
+          <div className="flex flex-col gap-[var(--space-2)]">
+            <Button variant="outline" onClick={() => openOther('changes_requested')}>
+              <ArrowLeft
+                aria-hidden
+                data-bounce={bouncedAction === 'changes_requested' || undefined}
+                className="t-icon-pop h-4 w-4"
+              />
+              Request changes
+            </Button>
+            <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">
+              Sends the run back to the agent with your reason. The agent tries again. Nothing is
+              released.
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-[var(--space-2)]">
+            <Button variant="destructive" onClick={() => openOther('rejected')}>
+              <X
+                aria-hidden
+                data-bounce={bouncedAction === 'rejected' || undefined}
+                className="t-icon-pop h-4 w-4"
+              />
+              Reject run
+            </Button>
+            <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">
+              Closes the run for good. The agent does not try again. Nothing is released.
+            </span>
+          </div>
+        </div>
+
+        <p className="flex gap-[var(--space-2)] rounded-md bg-surface-raised px-[var(--space-3)] py-[var(--space-3)] text-caption font-normal font-body leading-relaxed text-text-secondary">
+          <Info aria-hidden className="mt-[var(--space-1)] h-4 w-4 shrink-0" />
+          Request changes and Reject run also ask for a short reason. Your name, the time, your
+          ticks and your reason are saved with the run.
+        </p>
+
+        {openAction && (
+          <DecisionDialog
+            action={openAction}
+            runId={run.id}
+            revision={run.revision}
+            environment={run.target.environment}
+            reviewerName={reviewerName}
+            acknowledgedItemIds={openAction === 'approved' ? [...ticked] : []}
+            approvalReason={reason}
+            onClose={() => setOpenAction(null)}
+            onDecided={(updatedRun) => {
+              onRunUpdated(updatedRun)
+              setOpenAction(null)
+            }}
+            onConflict={applyConflict}
+            submitDecisionOptions={submitDecisionOptions}
           />
-          <Button
-            onClick={approve}
-            disabled={!ready}
-            aria-describedby={hintId}
-            data-popping={popping || undefined}
-            className="t-pop"
-          >
-            <span className="t-pop-label">
-              <Check aria-hidden className="h-4 w-4" strokeWidth={2.5} />
-              Approve and release
-            </span>
-          </Button>
-          <span
-            id={hintId}
-            className="text-caption font-normal font-body leading-relaxed text-text-secondary"
-            aria-live="polite"
-          >
-            {approveHint}
-          </span>
-        </div>
-
-        <div
-          className="my-[var(--space-1)] flex items-center gap-[var(--space-3)] text-caption font-normal font-body text-text-secondary"
-          role="separator"
-        >
-          <span className="h-px flex-1 bg-border-subtle" />
-          or, if it is not ready
-          <span className="h-px flex-1 bg-border-subtle" />
-        </div>
-
-        <div className="flex flex-col gap-[var(--space-2)]">
-          <Button variant="outline" onClick={() => openOther('changes_requested')}>
-            <ArrowLeft
-              aria-hidden
-              data-bounce={bouncedAction === 'changes_requested' || undefined}
-              className="t-icon-pop h-4 w-4"
-            />
-            Request changes
-          </Button>
-          <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">
-            Sends the run back to the agent with your reason. The agent tries again. Nothing is
-            released.
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-[var(--space-2)]">
-          <Button variant="destructive" onClick={() => openOther('rejected')}>
-            <X
-              aria-hidden
-              data-bounce={bouncedAction === 'rejected' || undefined}
-              className="t-icon-pop h-4 w-4"
-            />
-            Reject run
-          </Button>
-          <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">
-            Closes the run for good. The agent does not try again. Nothing is released.
-          </span>
-        </div>
+        )}
       </div>
-
-      <p className="flex gap-[var(--space-2)] rounded-md bg-surface-raised px-[var(--space-3)] py-[var(--space-3)] text-caption font-normal font-body leading-relaxed text-text-secondary">
-        <Info aria-hidden className="mt-[var(--space-1)] h-4 w-4 shrink-0" />
-        Request changes and Reject run also ask for a short reason. Your name, the time, your ticks
-        and your reason are saved with the run.
-      </p>
-
-      {openAction && (
-        <DecisionDialog
-          action={openAction}
-          runId={run.id}
-          revision={run.revision}
-          environment={run.target.environment}
-          reviewerName={reviewerName}
-          acknowledgedItemIds={openAction === 'approved' ? [...ticked] : []}
-          approvalReason={reason}
-          onClose={() => setOpenAction(null)}
-          onDecided={(updatedRun) => {
-            onRunUpdated(updatedRun)
-            setOpenAction(null)
-          }}
-          onConflict={applyConflict}
-          submitDecisionOptions={submitDecisionOptions}
-        />
-      )}
     </section>
   )
 }

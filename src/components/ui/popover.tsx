@@ -59,7 +59,7 @@ function PopoverContent({
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
         className={cn(
-          'z-50 w-80 rounded-lg border border-border-subtle bg-surface p-[var(--space-4)] text-text-primary shadow-card outline-none',
+          'z-50 w-80 panel p-[var(--space-4)] text-text-primary outline-none',
           'origin-(--radix-popover-content-transform-origin) animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 motion-reduce:animate-none',
           className,
         )}

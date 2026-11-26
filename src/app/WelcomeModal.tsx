@@ -41,7 +41,7 @@ export function WelcomeModal({ onStartTour, onSkip, onReplayIntro }: WelcomeModa
         <Button variant="outline" onClick={onSkip}>
           Skip, I'll look around myself
         </Button>
-        <Button variant="brand" onClick={onStartTour}>
+        <Button onClick={onStartTour}>
           Take the tour
           <ArrowRight aria-hidden className="h-4 w-4" />
         </Button>

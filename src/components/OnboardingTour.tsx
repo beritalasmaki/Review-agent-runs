@@ -293,7 +293,7 @@ export function OnboardingTour({
                 Skip tour
               </Button>
             </div>
-            <Button variant="brand" size="sm" onClick={next}>
+            <Button size="sm" onClick={next}>
               {last ? (
                 <>
                   <Check aria-hidden className="h-4 w-4" />
