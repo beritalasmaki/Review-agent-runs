@@ -15,11 +15,13 @@ Few files, all short. If you find yourself writing view logic here, it belongs i
   only "Take the tour" opens Leg 1 over the home page, continuing as Leg 2 over a run page if
   the visitor opens one.
 - `WelcomeIntro.tsx`, `intro.ts`, `intro.css`, `SignatureMark.tsx` — the welcome intro, once per
-  visit, over the home page only (docs/DECISIONS.md, 0048, 0049, 0071). `intro.ts` holds the
-  visit flag (`ledger:intro-seen`, in sessionStorage) and the
-  timings. `SignatureMark.tsx` holds the supplied signature path, unchanged.
+  visit, over the home page only (docs/DECISIONS.md, 0048, 0049, 0071; redesigned in 0142). A
+  marker travels a map route through Station Alpha (a run is requested), Beta (an agent works)
+  and Omega (a person reviews), then the author's signature draws. `intro.ts` holds the visit
+  flag (`ledger:intro-seen`, in sessionStorage), the timings and the phase list.
+  `SignatureMark.tsx` holds the supplied signature path, unchanged.
 - `WelcomeModal.tsx` — what the product is and why it exists, and the explicit choice to take
-  the onboarding tour or skip it (docs/DECISIONS.md, 0079). Built on `components/Modal.tsx`,
+  the onboarding tour or skip it, or replay the intro (docs/DECISIONS.md, 0079, 0142). Built on `components/Modal.tsx`,
   the same as any other confirmation dialog in the app; lives here, not `components/`, because
   its copy is specific to this product.
 - `tour.ts` — the onboarding tour's sequencing (docs/DECISIONS.md, 0078, 0079; the tour

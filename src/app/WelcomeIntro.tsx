@@ -1,37 +1,37 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { CSSProperties, Ref } from 'react'
-import { cn } from '../lib/utils'
-import { INTRO_TIMING, markIntroSeen } from './intro'
+import { useEffect, useRef, useState } from 'react'
+import { INTRO_PHASES, INTRO_TIMING, markIntroSeen } from './intro'
+import type { IntroPhase } from './intro'
 import { SignatureMark } from './SignatureMark'
 import './intro.css'
 
 /**
- * A welcome intro, shown once per visit before the app appears (docs/DECISIONS.md, 0048 and
- * 0049). Decorative, not informational: the page loads underneath from the
- * first moment, so the intro never delays the data, and it is not part of the loading state.
+ * The welcome intro, shown once per visit before the app appears (docs/DECISIONS.md, 0048,
+ * 0049; redesigned in 0142). Decorative, not informational: the page loads underneath from the
+ * first moment, so the intro never delays the data.
  *
- * Sequence: the signature draws itself in orange (900 ms), resolves to solid ink (200 ms), the
- * name and title type on character by character (40 ms each) with a blinking cursor, "Made by"
- * fades in to the left of the mark, a short hold, then the overlay fades out (500 ms).
+ * It tells the product's story as a short route across a map: Station Alpha (a run is
+ * requested), Station Beta (an agent does the work), Station Omega (a person reviews and
+ * decides). A marker travels the route; then the author's signature draws itself and the
+ * overlay fades out. All shapes are simple, original figures: no photos, no real people.
  *
- * The name and title form one left-aligned block, centred under the mark, and the title is
- * tracked out to exactly the name's width — measured once the fonts have loaded, so the two
- * edges line up whatever font actually renders.
- *
- * - Shown once per visit: while `ledger:intro-seen` is absent from sessionStorage, which the
- *   browser clears when the tab or window closes. The flag is set when the intro completes or
- *   is skipped, so page loads inside the visit don't replay it. No cookies, no backend.
- * - Skipped outright for `prefers-reduced-motion: reduce`.
- * - Any click, tap or key press dismisses it at once. The overlay is `aria-hidden` and holds
- *   no focusable element, so it never traps keyboard focus; the page underneath stays
- *   reachable the whole time.
+ * - Shown once per visit (`ledger:intro-seen` in sessionStorage), unless the visitor replays it
+ *   from the welcome modal.
+ * - Skipped outright for `prefers-reduced-motion: reduce` (the replay button is hidden then).
+ * - Any click, tap or key press dismisses it at once. The overlay is `aria-hidden` and holds no
+ *   focusable element, so it never traps keyboard focus.
  */
-/** The mark's box, as specified: 200×200. The artwork sits on its bottom edge, near the name. */
-const MARK_BOX = 200
 const NAME = 'Berit Alasmäki'
 const TITLE = 'UX & Product Designer'
 
-type Phase = 'draw' | 'resolve' | 'type' | 'madeBy' | 'fade'
+const ROUTE = 'M200 360 C 330 360, 420 200, 600 200 S 870 360, 1000 360'
+
+const CAPTIONS: Record<IntroPhase, { station: string; line: string }> = {
+  alpha: { station: 'Station Alpha', line: 'A run is requested' },
+  beta: { station: 'Station Beta', line: 'An agent does the work' },
+  omega: { station: 'Station Omega', line: 'You review it and decide' },
+  sign: { station: '', line: '' },
+  fade: { station: '', line: '' },
+}
 
 export interface WelcomeIntroProps {
   /** Called once, when the overlay has faded out or was skipped. */
@@ -39,17 +39,11 @@ export interface WelcomeIntroProps {
 }
 
 export function WelcomeIntro({ onDone }: WelcomeIntroProps) {
-  const [phase, setPhase] = useState<Phase>('draw')
-  const [nameChars, setNameChars] = useState(0)
-  const [titleChars, setTitleChars] = useState(0)
+  const [phase, setPhase] = useState<IntroPhase>('alpha')
   const finished = useRef(false)
-  // Set by the timeline effect; the overlay's pointer handler calls it to skip.
   const skip = useRef<() => void>(() => {})
-  const nameRef = useRef<HTMLSpanElement>(null)
-  const titleRef = useRef<HTMLSpanElement>(null)
-  const [tracking, setTracking] = useState<number | null>(null)
-  // The timeline below runs once, on mount. It reads `onDone` through a ref, so a parent
-  // re-rendering with a new function neither restarts the intro nor calls a stale callback.
+  // The timeline runs once, on mount, and reads `onDone` through a ref, so a parent re-render
+  // neither restarts the intro nor calls a stale callback.
   const onDoneRef = useRef(onDone)
   useEffect(() => {
     onDoneRef.current = onDone
@@ -67,21 +61,12 @@ export function WelcomeIntro({ onDone }: WelcomeIntroProps) {
     }
 
     const t = INTRO_TIMING
-    let time = t.draw
-    at(time, () => setPhase('resolve'))
-    time += t.resolve
-    at(time, () => setPhase('type'))
-    for (let i = 1; i <= NAME.length; i++) at(time + i * t.perChar, () => setNameChars(i))
-    time += NAME.length * t.perChar + t.betweenLines
-    for (let i = 1; i <= TITLE.length; i++) at(time + i * t.perChar, () => setTitleChars(i))
-    time += TITLE.length * t.perChar
-    at(time, () => setPhase('madeBy'))
-    time += t.madeBy + t.hold
-    at(time, () => setPhase('fade'))
-    time += t.fade
-    at(time, finish)
+    at(t.station, () => setPhase('beta'))
+    at(t.station * 2, () => setPhase('omega'))
+    at(t.station * 3, () => setPhase('sign'))
+    at(t.station * 3 + t.sign, () => setPhase('fade'))
+    at(t.station * 3 + t.sign + t.fade, finish)
 
-    // Skip: any key, anywhere. (Clicks and taps are caught by the overlay itself, below.)
     const onKey = () => finish()
     window.addEventListener('keydown', onKey)
     skip.current = finish
@@ -91,31 +76,9 @@ export function WelcomeIntro({ onDone }: WelcomeIntroProps) {
     }
   }, [])
 
-  // Title tracking = the width the title lacks, spread over the gaps between its characters.
-  useLayoutEffect(() => {
-    let cancelled = false
-    function fit() {
-      const name = nameRef.current
-      const title = titleRef.current
-      if (!name || !title || cancelled) return
-      const previous = title.style.letterSpacing
-      title.style.letterSpacing = '0px'
-      const natural = title.getBoundingClientRect().width
-      title.style.letterSpacing = previous
-      const target = name.getBoundingClientRect().width
-      if (!natural || !target) return
-      setTracking(Math.max(0, (target - natural) / (TITLE.length - 1)))
-    }
-    fit()
-    void document.fonts?.ready.then(fit)
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const resolved = phase !== 'draw'
-  const typingName = phase === 'type' && nameChars < NAME.length
-  const typingTitle = phase === 'type' && nameChars === NAME.length
+  const step = INTRO_PHASES.indexOf(phase)
+  const caption = CAPTIONS[phase]
+  const signing = phase === 'sign' || phase === 'fade'
 
   return (
     <div
@@ -125,76 +88,117 @@ export function WelcomeIntro({ onDone }: WelcomeIntroProps) {
       aria-hidden
       onPointerDown={() => skip.current()}
     >
-      <div className="flex flex-col items-center gap-[var(--space-3)]">
-        <div className="relative">
-          <span
-            className="intro-made-by absolute right-full mr-[var(--space-4)] -translate-y-1/2 text-caption font-normal font-heading whitespace-nowrap text-intro-muted"
-            // Level with the middle of the drawn mark, which sits at the bottom of its box.
-            style={{ top: `${MARK_BOX - (MARK_BOX * 101) / 178 / 2}px` }}
-            data-shown={phase === 'madeBy' || phase === 'fade' || undefined}
-          >
-            Made by
-          </span>
-          <SignatureMark className="intro-mark" size={MARK_BOX} resolved={resolved} bottomAligned />
+      <div className="intro-stage" data-signing={signing || undefined}>
+        <svg viewBox="0 0 1200 520" className="intro-map" role="presentation">
+          <path d={ROUTE} className="intro-route-base" />
+          <path d={ROUTE} pathLength={1} className="intro-route" data-step={Math.min(step, 2)} />
+          <Station x={200} y={360} label="A" active={step >= 0}>
+            <Person x={200} y={296} />
+            <Card x={150} y={190} title="Run requested" mark="dot" />
+          </Station>
+          <Station x={600} y={200} label="B" active={step >= 1}>
+            <Robot x={600} y={136} />
+            <Card x={550} y={30} title="Agent working" mark="dots" />
+          </Station>
+          <Station x={1000} y={360} label="Ω" active={step >= 2}>
+            <Person x={1000} y={296} />
+            <Card x={950} y={190} title="Your decision" mark="check" />
+          </Station>
+          <circle r={9} className="intro-marker" data-step={Math.min(step, 2)} />
+        </svg>
+        <div className="intro-caption" aria-hidden>
+          <span className="intro-caption-station">{caption.station}</span>
+          <span className="intro-caption-line">{caption.line}</span>
         </div>
-        <div className="flex flex-col items-start gap-[var(--space-2)] font-heading">
-          <TypedLine
-            full={NAME}
-            shown={nameChars}
-            cursor={typingName}
-            measureRef={nameRef}
-            className="text-page-title leading-none font-bold tracking-tight"
-          />
-          <TypedLine
-            full={TITLE}
-            shown={titleChars}
-            cursor={typingTitle}
-            measureRef={titleRef}
-            // Letter-spacing also follows the last character; the negative margin takes that
-            // back off, so the title's visible right edge meets the name's.
-            style={
-              tracking == null
-                ? { letterSpacing: '0.3em' }
-                : { letterSpacing: `${tracking}px`, marginRight: `${-tracking}px` }
-            }
-            className="text-body leading-none font-normal uppercase"
-          />
+        <div className="intro-sign">
+          <SignatureMark className="intro-mark" size={120} resolved={signing} />
+          <span className="intro-sign-label">Made by</span>
+          <span className="intro-sign-name">{NAME}</span>
+          <span className="intro-sign-title">{TITLE}</span>
         </div>
       </div>
     </div>
   )
 }
 
-/**
- * One typed line. The full text is laid out invisibly to reserve its width, and the typed part
- * sits on top of it, left-aligned — so the line grows from the left edge of its final position
- * instead of re-centring on every character.
- */
-function TypedLine({
-  full,
-  shown,
-  cursor,
-  className,
-  style,
-  measureRef,
+function Station({
+  x,
+  y,
+  label,
+  active,
+  children,
 }: {
-  full: string
-  shown: number
-  cursor: boolean
-  className?: string
-  style?: CSSProperties
-  /** The invisible full-width copy — what the tracking fit measures. */
-  measureRef?: Ref<HTMLSpanElement>
+  x: number
+  y: number
+  label: string
+  active: boolean
+  children: React.ReactNode
 }) {
   return (
-    <span className={cn('relative inline-block whitespace-pre', className)} style={style}>
-      <span ref={measureRef} className="invisible">
-        {full}
-      </span>
-      <span className="absolute inset-0 text-left">
-        {full.slice(0, shown)}
-        {cursor && <span className="intro-cursor" />}
-      </span>
-    </span>
+    <g className="intro-station" data-active={active || undefined}>
+      <circle cx={x} cy={y} r={20} className="intro-station-ring" />
+      <text x={x} y={y + 6} textAnchor="middle" className="intro-station-label">
+        {label}
+      </text>
+      {children}
+    </g>
+  )
+}
+
+/** A person: a plain round figure, never a likeness of anyone. */
+function Person({ x, y }: { x: number; y: number }) {
+  return (
+    <g className="intro-person" transform={`translate(${x} ${y})`}>
+      <circle r={24} className="intro-person-body" />
+      <circle cx={-8} cy={-4} r={2.6} className="intro-face" />
+      <circle cx={8} cy={-4} r={2.6} className="intro-face" />
+      <path d="M-8 8 Q0 14 8 8" className="intro-mouth" />
+    </g>
+  )
+}
+
+/** An agent: square head and an antenna, so it never reads as a person. */
+function Robot({ x, y }: { x: number; y: number }) {
+  return (
+    <g className="intro-robot" transform={`translate(${x} ${y})`}>
+      <line x1={0} y1={-34} x2={0} y2={-24} className="intro-mouth" />
+      <circle cy={-37} r={4} className="intro-antenna" />
+      <rect x={-26} y={-24} width={52} height={44} rx={8} className="intro-robot-body" />
+      <rect x={-14} y={-8} width={9} height={4} rx={2} className="intro-face-bar" />
+      <rect x={5} y={-8} width={9} height={4} rx={2} className="intro-face-bar" />
+      <line x1={-8} y1={8} x2={8} y2={8} className="intro-mouth" />
+    </g>
+  )
+}
+
+function Card({
+  x,
+  y,
+  title,
+  mark,
+}: {
+  x: number
+  y: number
+  title: string
+  mark: 'dot' | 'dots' | 'check'
+}) {
+  return (
+    <g className="intro-card" transform={`translate(${x} ${y})`}>
+      <rect width={100} height={46} rx={6} className="intro-card-body" />
+      <text x={10} y={19} className="intro-card-title">
+        {title}
+      </text>
+      {mark === 'check' ? (
+        <path d="M10 32 l5 5 l10 -11" className="intro-check" />
+      ) : mark === 'dots' ? (
+        <g className="intro-dots">
+          <circle cx={14} cy={34} r={3} />
+          <circle cx={26} cy={34} r={3} />
+          <circle cx={38} cy={34} r={3} />
+        </g>
+      ) : (
+        <circle cx={14} cy={34} r={4} className="intro-pulse" />
+      )}
+    </g>
   )
 }

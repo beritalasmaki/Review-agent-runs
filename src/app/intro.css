@@ -1,12 +1,9 @@
 /*
- * The one-time welcome intro (WelcomeIntro.tsx, docs/DECISIONS.md 0048). Timings are
- * variables so the sequence reads in one place; the component's own timeline uses the same
- * numbers (INTRO_TIMING in WelcomeIntro.tsx).
+ * The welcome intro (WelcomeIntro.tsx, docs/DECISIONS.md 0048, redesigned in 0142). Timings live
+ * in `INTRO_TIMING` (intro.ts); the CSS only has to be as slow as they are. Colours are tokens.
  */
 :root {
-  --intro-draw-dur: 900ms;
-  --intro-resolve-dur: 200ms;
-  --intro-made-by-dur: 300ms;
+  --intro-step-dur: 2800ms;
   --intro-fade-dur: 500ms;
 }
 
@@ -16,14 +13,16 @@
   z-index: 100;
   display: grid;
   place-items: center;
-  /* The same vivid gradient the rest of the app uses behind glass (tokens.css,
-   * docs/DECISIONS.md, 0100), fixed to the light variant regardless of theme — the intro's own
-   * scrim/ink colours are already theme-independent by design (a fixed "signature" moment, not
-   * themed chrome), so the colour behind it should be too. */
   background-color: var(--color-intro-scrim);
-  background-image: var(--page-gradient-light);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  /* A faint survey grid, like the lines on a map sheet. */
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--terrain-line) 14%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--terrain-line) 14%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 64px 64px;
   color: var(--color-intro-ink);
   opacity: 1;
   cursor: pointer;
@@ -33,8 +32,203 @@
   opacity: 0;
 }
 
-/* 1. The outline draws itself in orange; 2. then the line becomes the logo — the stroke and
- * the fill resolve to solid ink together. Same path throughout, no swap to a second SVG. */
+.intro-stage {
+  position: relative;
+  width: min(96vw, 1100px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+.intro-map {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transition: opacity 600ms ease;
+}
+.intro-stage[data-signing] .intro-map {
+  opacity: 0.12;
+}
+
+/* The route: a faint full line, and the travelled part drawn over it. */
+.intro-route-base {
+  fill: none;
+  stroke: var(--terrain-line);
+  stroke-width: 2;
+  stroke-dasharray: 3 9;
+  opacity: 0.6;
+}
+.intro-route {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset var(--intro-step-dur) ease-in-out;
+}
+.intro-route[data-step='0'] {
+  stroke-dashoffset: 1;
+}
+.intro-route[data-step='1'] {
+  stroke-dashoffset: 0.5;
+}
+.intro-route[data-step='2'] {
+  stroke-dashoffset: 0;
+}
+
+/* The marker rides the route; the first step starts it at Alpha. */
+.intro-marker {
+  fill: var(--color-primary);
+  offset-path: path('M200 360 C 330 360, 420 200, 600 200 S 870 360, 1000 360');
+  offset-rotate: 0deg;
+  transition: offset-distance var(--intro-step-dur) ease-in-out;
+}
+.intro-marker[data-step='0'] {
+  offset-distance: 0%;
+}
+.intro-marker[data-step='1'] {
+  offset-distance: 50%;
+}
+.intro-marker[data-step='2'] {
+  offset-distance: 100%;
+}
+
+/* Stations and what stands at them fade up when the marker reaches them. */
+.intro-station {
+  opacity: 0.25;
+  transition: opacity 700ms ease;
+}
+.intro-station[data-active] {
+  opacity: 1;
+}
+.intro-station-ring {
+  fill: var(--color-surface);
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
+.intro-station-label {
+  fill: var(--color-intro-ink);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+}
+.intro-person-body {
+  fill: var(--terrain-line);
+}
+.intro-robot-body {
+  fill: var(--color-surface-raised);
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
+.intro-antenna {
+  fill: var(--color-primary);
+}
+.intro-face {
+  fill: var(--terrain-shade);
+}
+.intro-face-bar {
+  fill: var(--color-intro-ink);
+}
+.intro-mouth {
+  fill: none;
+  stroke: var(--color-intro-ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.intro-person .intro-mouth {
+  stroke: var(--terrain-shade);
+}
+.intro-card-body {
+  fill: var(--color-surface);
+  stroke: var(--color-border);
+  stroke-width: 1.5;
+}
+.intro-card-title {
+  fill: var(--color-intro-ink);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+}
+.intro-check {
+  fill: none;
+  stroke: var(--status-green-dark);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.intro-dots circle,
+.intro-pulse {
+  fill: var(--color-primary);
+}
+.intro-dots circle {
+  animation: intro-dot 1.2s ease-in-out infinite;
+}
+.intro-dots circle:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.intro-dots circle:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes intro-dot {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.intro-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 3.5rem;
+  text-align: center;
+  font-family: var(--font-heading);
+  transition: opacity 600ms ease;
+}
+.intro-stage[data-signing] .intro-caption {
+  opacity: 0;
+}
+.intro-caption-station {
+  color: var(--color-primary);
+  font-size: var(--text-caption);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+.intro-caption-line {
+  font-size: var(--text-page-title);
+  font-weight: 700;
+}
+
+/* The signature: drawn in orange, then resolves to solid ink (as in 0048), after the route. */
+.intro-sign {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  opacity: 0;
+  transition: opacity 600ms ease;
+  font-family: var(--font-heading);
+}
+.intro-stage[data-signing] .intro-sign {
+  opacity: 1;
+}
+.intro-sign-label {
+  color: var(--color-intro-muted);
+  font-size: var(--text-caption);
+}
+.intro-sign-name {
+  font-size: var(--text-page-title);
+  font-weight: 700;
+}
+.intro-sign-title {
+  color: var(--color-intro-muted);
+  font-size: var(--text-body);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
 .intro-mark path {
   fill: transparent;
   stroke: var(--color-signature);
@@ -42,10 +236,12 @@
   stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: intro-draw var(--intro-draw-dur) ease-out forwards;
   transition:
-    fill var(--intro-resolve-dur) ease,
-    stroke var(--intro-resolve-dur) ease;
+    fill 400ms ease,
+    stroke 400ms ease;
+}
+.intro-stage[data-signing] .intro-mark path {
+  animation: intro-draw 1400ms ease-out forwards;
 }
 .intro-mark[data-resolved] path {
   fill: var(--color-intro-ink);
@@ -55,29 +251,4 @@
   to {
     stroke-dashoffset: 0;
   }
-}
-
-/* 3. The typed lines. A blinking block cursor while typing. */
-.intro-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 0.9em;
-  margin-left: 2px;
-  vertical-align: -0.1em;
-  background: currentColor;
-  animation: intro-blink 1s steps(1) infinite;
-}
-@keyframes intro-blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-/* 4. "Made by" fades in to the left of the mark. */
-.intro-made-by {
-  opacity: 0;
-  transition: opacity var(--intro-made-by-dur) ease;
-}
-.intro-made-by[data-shown] {
-  opacity: 1;
 }

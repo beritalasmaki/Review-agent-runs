@@ -37,6 +37,38 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-26 · Satellite design ported to src (theme, backdrop, intro, buttons, fonts)
+
+**Goal**
+Port the rest of the approved satellite design from the artifact into the app.
+
+**What changed**
+- `src/styles/tokens.css`, `index.css`, `transitions.css`: dark by default, warm black and orange palette (`--brand-*`), terrain image token, link sweep duration, amber dark tint.
+- `src/components/theme.ts`, `ThemeToggle.tsx`: no system-preference following; dark unless light is chosen.
+- `src/components/TerrainBackdrop.tsx` (+ story, test): the page `<main>` with the backdrop.
+- `src/components/ui/button.tsx`: chamfered default, new `brand` variant, sweeping underline on `link`.
+- `src/app/WelcomeIntro.tsx`, `intro.ts`, `intro.css`: new route intro; `WelcomeModal.tsx`: Replay the intro; `App.tsx` wiring.
+- `index.html`: Chakra Petch and Hanken Grotesk. `OnboardingTour.tsx`: focus fix.
+- Tests: theme, intro, modal, backdrop; e2e theme switch and accessibility choose light explicitly; `scripts/check-theme-bridge.mjs` light variant uses `data-theme="light"`.
+- READMEs and `docs/DECISIONS.md` 0142.
+
+**Steps, in order**
+1. Merged the two dark token blocks into `:root:not([data-theme='light'])` and swapped the values. 2. Renamed indigo to brand. 3. Changed fonts in `index.html` and tokens. 4. Added the backdrop, first as elements, then as `::before` after axe could not decide contrast under dialogs. 5. Restyled Button; the first orange default broke the no-brand-on-Approve rule, so it became a separate `brand` variant. 6. Rewrote the intro and added Replay. 7. Ran `npm run check`, fixed the amber tint contrast and the flaky tour focus.
+
+**Why it was done this way**
+See 0142 for each trade-off.
+
+**How to do this by hand**
+Edit the dark values in `tokens.css`, set `data-theme` default in `theme.ts`, swap the Google Fonts link, add the backdrop class to `main`, then run the check and look at each failing axe node.
+
+**Verification**
+`npm run check` passes: unit tests, Playwright with axe in light and dark, keyboard specs. Not done: a visual comparison against the artifact on a real screen; the intro's timing and look were checked by tests only.
+
+**Open questions / next**
+Orange Approve (needs a rule change), the "Article 14" wording, whether the intro should show the characters' faces as in the artifact, and a visual pass in a browser.
+
+---
+
 ### 2026-11-26 · Overview steps in the onboarding tour
 
 **Goal**

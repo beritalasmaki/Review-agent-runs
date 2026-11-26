@@ -1,12 +1,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { INTRO_SEEN_KEY, INTRO_TIMING, shouldShowIntro } from './intro'
+import { INTRO_SEEN_KEY, INTRO_TIMING } from './intro'
 import { WelcomeIntro } from './WelcomeIntro'
 
 const t = INTRO_TIMING
-const NAME_MS = 'Berit Alasmäki'.length * t.perChar
-const TITLE_MS = 'UX & Product Designer'.length * t.perChar
-const TOTAL = t.draw + t.resolve + NAME_MS + t.betweenLines + TITLE_MS + t.madeBy + t.hold + t.fade
+const TOTAL = t.station * 3 + t.sign + t.fade
 
 beforeEach(() => {
   window.sessionStorage.clear()
@@ -18,34 +16,35 @@ afterEach(() => {
 })
 
 describe('WelcomeIntro', () => {
-  it('draws, resolves, types the name and title, shows "Made by", then fades and finishes', () => {
+  it('visits Station Alpha, Beta and Omega, signs, then fades and finishes', () => {
     const onDone = vi.fn()
     render(<WelcomeIntro onDone={onDone} />)
     const overlay = screen.getByTestId('welcome-intro')
-    const mark = overlay.querySelector('svg')!
     expect(overlay).toHaveAttribute('aria-hidden', 'true')
-    expect(mark).not.toHaveAttribute('data-resolved')
+    expect(overlay).toHaveAttribute('data-phase', 'alpha')
+    expect(overlay).toHaveTextContent('A run is requested')
 
     act(() => {
-      vi.advanceTimersByTime(t.draw)
+      vi.advanceTimersByTime(t.station)
     })
-    expect(mark).toHaveAttribute('data-resolved')
+    expect(overlay).toHaveAttribute('data-phase', 'beta')
+    expect(overlay).toHaveTextContent('An agent does the work')
 
     act(() => {
-      vi.advanceTimersByTime(t.resolve + 5 * t.perChar)
+      vi.advanceTimersByTime(t.station)
     })
-    expect(overlay).toHaveTextContent('Berit')
-    expect(overlay.querySelector('.intro-cursor')).not.toBeNull()
+    expect(overlay).toHaveAttribute('data-phase', 'omega')
+    expect(overlay).toHaveTextContent('You review it and decide')
 
     act(() => {
-      vi.advanceTimersByTime(NAME_MS + t.betweenLines + TITLE_MS)
+      vi.advanceTimersByTime(t.station)
     })
-    expect(overlay).toHaveTextContent('UX & Product Designer')
-    expect(overlay.querySelector('.intro-made-by')).toHaveAttribute('data-shown')
-    expect(overlay.querySelector('.intro-cursor')).toBeNull()
+    expect(overlay).toHaveAttribute('data-phase', 'sign')
+    expect(overlay.querySelector('svg.intro-mark')).toHaveAttribute('data-resolved')
+    expect(overlay).toHaveTextContent('Berit Alasmäki')
 
     act(() => {
-      vi.advanceTimersByTime(t.madeBy + t.hold)
+      vi.advanceTimersByTime(t.sign)
     })
     expect(overlay).toHaveAttribute('data-phase', 'fade')
     expect(onDone).not.toHaveBeenCalled()
@@ -76,26 +75,5 @@ describe('WelcomeIntro', () => {
     render(<WelcomeIntro onDone={onDone} />)
     fireEvent.pointerDown(screen.getByTestId('welcome-intro'))
     expect(onDone).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe('shouldShowIntro', () => {
-  it('shows once per visit, and tidies away the old permanent flag', () => {
-    window.localStorage.setItem(INTRO_SEEN_KEY, 'from the first version')
-    expect(shouldShowIntro()).toBe(true)
-    window.sessionStorage.setItem(INTRO_SEEN_KEY, 'yes')
-    expect(shouldShowIntro()).toBe(false)
-    // A new visit starts with an empty sessionStorage.
-    window.sessionStorage.clear()
-    expect(shouldShowIntro()).toBe(true)
-  })
-
-  it('is skipped entirely for reduced motion', () => {
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn(() => ({ matches: true })),
-    )
-    expect(shouldShowIntro()).toBe(false)
-    vi.unstubAllGlobals()
   })
 })

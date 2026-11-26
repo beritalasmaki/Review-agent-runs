@@ -2,7 +2,7 @@ import { prefersReducedMotion } from '../lib/motion'
 
 /**
  * The welcome intro's once-per-visit logic and timing (WelcomeIntro.tsx, docs/DECISIONS.md
- * 0048 and 0049). A visit is a browser session: the intro plays again whenever someone opens
+ * 0048, 0049 and 0142). A visit is a browser session: the intro plays again whenever someone opens
  * the site in a new tab or window, or comes back after closing it — but not on the page loads
  * inside one visit (the breadcrumb and "My reviews" links reload the page).
  * Kept apart from the component so `App.tsx` can decide whether to show it without importing
@@ -11,14 +11,16 @@ import { prefersReducedMotion } from '../lib/motion'
 export const INTRO_SEEN_KEY = 'ledger:intro-seen'
 
 export const INTRO_TIMING = {
-  draw: 900,
-  resolve: 200,
-  perChar: 40,
-  betweenLines: 160,
-  madeBy: 300,
-  hold: 400,
+  /** How long each of the three stations holds the stage (Alpha, Beta, Omega). */
+  station: 2800,
+  /** The signature and name, after the route is done. */
+  sign: 2400,
   fade: 500,
 } as const
+
+/** The intro's stages, in order; `fade` is the last. */
+export const INTRO_PHASES = ['alpha', 'beta', 'omega', 'sign', 'fade'] as const
+export type IntroPhase = (typeof INTRO_PHASES)[number]
 
 function readSeen(): boolean {
   try {

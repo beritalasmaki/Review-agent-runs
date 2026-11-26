@@ -6,6 +6,46 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0142 · Dark by default, signal-orange brand, terrain backdrop and a new welcome intro
+
+**Context.** The approved satellite design (0140) is now ported to `src/`: dark by default, a warm
+black and signal-orange palette, a terrain-map page backdrop, new fonts, a chamfered button and
+a sweeping link underline, and a welcome intro that tells the product story as a route.
+
+**Options and choices.**
+- *Theme.* Dark applies unless the viewer chose light, whatever the system says; the switch
+  remembers the choice. This reverses 0001 (light default). Cost: the system preference no longer
+  decides the first view, and the tests choose light explicitly.
+- *Brand.* Indigo becomes orange (`--indigo-*` renamed `--brand-*`): text-safe `#ff7a47` on dark
+  (7.6:1), `#b8420f` on light (5.9:1), fill `#f45b22`. The amber status tint on dark was darkened
+  (`#534215` to `#3b2f0f`) because orange links on it fell to 3.8:1; they now hold 5.2:1.
+- *Approve stays neutral.* AGENTS.md non-negotiable 2 says the brand colour is never on Approve,
+  Request changes or Reject, and the design's orange Approve would break it. So the neutral
+  `default` Button gets the chamfer, and a new `brand` variant (orange) is used only for the
+  welcome modal's "Take the tour" and the tour's Next and Done. If the author wants an orange
+  Approve, that is a deliberate change to the rule and should be decided first.
+- *Terrain.* Drawn as the page `<main>`'s own `::before`, from one SVG data URI (relief by
+  `feTurbulence` lighting, vignette, fading coordinates), not as DOM elements: as elements, axe
+  could not decide contrast for text under dialogs. Cost: the SVG's colours are literal, since a
+  data URI cannot read tokens; they are kept in `tokens.css` next to the primitives, with a note.
+  Light theme shows no terrain.
+- *Fonts.* Chakra Petch and Hanken Grotesk through the same Google Fonts link as before: no new
+  dependency, and the same network cost as Raleway and Montserrat had.
+- *Intro.* Station Alpha (a run is requested), Beta (an agent works), Omega (you review), then the
+  signature draws. Plain round figures and a square-headed agent; no photos, people or memes. The
+  welcome modal has "Replay the intro", hidden when reduced motion is on.
+- *Link hover.* An underline sweeps in from the left over about 0.65 s (`--motion-duration-sweep`),
+  replacing 0127's fading background; instant under reduced motion.
+
+**Also fixed.** The tour re-focused its heading on every scroll tick, which could pull focus off
+the bubble's buttons mid-step (a flaky Tab test); it now focuses once per step.
+
+**Consequence.** `npm run check` passes in both themes. Deciding the orange-Approve question,
+and checking the "Article 14" wording used in the design artifact against the source, are left to
+the author.
+
+---
+
 ## 0141 · The tour opens each leg with a whole-page overview step
 
 **Context.** The approved design starts the tour with "this is the review list" and, inside a run,
