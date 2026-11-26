@@ -6,6 +6,34 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0146 · A living background, and the run page's top bar as designed
+
+**Context.** The backdrop was one static image with its coordinates baked in, so nothing came and
+went; the design's coordinates drift in out of the haze and dissolve, mist moves over the relief, and
+a small bright dot flies along the arc over the top panel. The run page's top bar also differed: the
+design has the breadcrumb, "Reviewing as" and "Open audit log", with the open-items count in the
+decision panel.
+
+**Choices.**
+- *Alive, with no extra elements.* The relief, parcels, roads and ruler ticks, and fourteen readings (map
+  coordinates, UTM, elevation, orbit) are one SVG image on the page's `::before`. Each reading fades in
+  blurred, sharpens, hangs and dissolves upward over 13 to 18 s, offset from the others, by CSS inside the
+  SVG. Two patches of mist drift over it, painted by `::after`. Reduced motion: mist still, readings left out.
+- *Why not elements.* A first version used a layer of `aria-hidden` spans and divs; axe treats any element
+  overlapping text as hiding it (`bgOverlap`, `elmPartiallyObscuring`) and the contrast spec failed on every
+  page. Pseudo-elements and an image are not elements, so nothing overlaps.
+- *Arc and dot.* The top panel of My reviews has the dashed arc and a bright dot that flies along it,
+  70 s per pass, as the panel's own `::before` and `::after`. Its small label "Agent run reviews" moved
+  from the panel into the top bar, in place of "My reviews", slightly larger.
+- *Run top bar.* Breadcrumb left; "Reviewing as" and "Open audit log" right. "Open audit log" opens the
+  All steps view (the full record), not a separate page. The open-items count ("3 things to solve") moved
+  into the decision panel under its heading; its "Jump to the open items" link is gone because the list is
+  right below. This changes 0053's placement.
+- *Run details.* A small uppercase heading, uppercase field labels, the environment as an orange label,
+  and Reject run as a small button under Request changes, as drawn.
+
+---
+
 ## 0145 · One set of hovers, the design's
 
 **Context.** Hovers had piled up over many rounds: tinted boxes behind links, a border and fill on

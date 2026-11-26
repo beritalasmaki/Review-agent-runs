@@ -43,10 +43,12 @@ test('the whole review, keyboard only', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const keys = page.keyboard
 
-  // The top bar's jump lands on the first item left to tick (0059).
-  await tabTo(page, /^Jump to the open items/)
-  await keys.press('Enter')
+  // Tab on from the top bar until the first item left to tick has focus.
   const boxes = page.getByRole('group', { name: /Confirm each open item/ }).getByRole('checkbox')
+  for (let i = 0; i < 60; i++) {
+    if (await boxes.first().evaluate((el) => el === document.activeElement)) break
+    await keys.press('Tab')
+  }
   await expect(boxes.first()).toBeFocused()
 
   // Tick all three: Space ticks, Tab passes each item's "Show the …" link.

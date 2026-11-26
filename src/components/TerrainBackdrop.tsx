@@ -2,12 +2,16 @@ import type { ComponentProps } from 'react'
 import { cn } from '../lib/utils'
 
 /**
- * The page's `<main>`, with a terrain-map backdrop behind its content (docs/DECISIONS.md, 0142):
- * shaded relief drawn by an SVG filter, a vignette so the edges fall away into the page colour,
- * and a few map coordinates that fade in and out like fog. The backdrop is the element's own
- * `::before` (styles/transitions.css), so it is not part of the DOM, never takes focus, and is
- * invisible to assistive technology. Cards are opaque surfaces, so text never relies on it. Dark
- * theme only; the coordinates stand still for `prefers-reduced-motion: reduce`.
+ * The page's `<main>`, with a living terrain-map backdrop behind its content (docs/DECISIONS.md,
+ * 0142, 0143, 0146): shaded relief, parcels, roads and ruler ticks, and map coordinates and survey
+ * readings that fade in out of the haze, hang for a moment and dissolve again, all in one SVG painted
+ * by the element's own `::before`; and two slow patches of mist drifting over it, painted by `::after`
+ * (styles/index.css).
+ *
+ * Nothing here is an element or a text node: the accessibility tools measure text against any element
+ * that overlaps it, and a decorative layer of spans made that impossible. With
+ * `prefers-reduced-motion: reduce` the mist stands still and the readings are left out. Cards are
+ * opaque surfaces, so text never relies on the backdrop.
  */
 export function TerrainBackdrop({ className, ...props }: ComponentProps<'main'>) {
   return (

@@ -420,8 +420,8 @@ function ReviewsBoard({
               </span>
             </>
           ) : (
-            <span aria-current="page" className="font-medium">
-              My reviews
+            <span aria-current="page" className="lbl text-body font-semibold text-primary">
+              Agent run reviews
             </span>
           )
         }
@@ -441,11 +441,10 @@ function ReviewsBoard({
              * (docs/DECISIONS.md, 0124), one level up: two cards here, not a tab strip and a card,
              * fused into one continuous outline rather than a strip meeting a card's own edge.
              */}
-            <div className="panel overflow-hidden rounded-b-none border-b-0">
+            <div className="panel hero-panel overflow-hidden rounded-b-none border-b-0">
               <div aria-hidden className="foil" />
               <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-6)]">
                 <div className="flex flex-col gap-[var(--space-2)]">
-                  <span className="lbl text-primary">Agent run reviews</span>
                   <PageTitle headingRef={headingRef}>My reviews</PageTitle>
                   <p className="max-w-[40rem] text-lead leading-relaxed text-text-primary">
                     Each run is one change made by an AI agent. Nothing is released until you decide
@@ -456,9 +455,9 @@ function ReviewsBoard({
                   <Badge
                     variant="warning"
                     data-tour="needs-review-badge"
-                    className="rounded-[3px] border-transparent bg-status-waived-dot px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body text-primary-foreground"
+                    className="rounded-[4px] border-status-waived bg-status-waived-tint-bg px-[var(--space-4)] py-[var(--space-2)] text-body leading-none font-semibold font-body text-text-primary"
                   >
-                    <span aria-hidden className="h-2 w-2 rounded-full bg-primary-foreground" />
+                    <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-status-waived" />
                     {needsYou} need{needsYou === 1 ? 's' : ''} your review
                   </Badge>
                   <Button

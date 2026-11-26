@@ -15,6 +15,7 @@ import { ActorName } from './ActorName'
 import { CURRENT_REVIEWER } from './currentReviewer'
 import { DecisionDialog } from './DecisionDialog'
 import type { DecisionAction } from './DecisionDialog'
+import { OpenItemsNotice } from './OpenItemsNotice'
 import { SectionHeading } from './SectionHeading'
 
 /**
@@ -162,6 +163,7 @@ export function DecisionPanel({
             <SectionHeading id="decision-heading" icon={ShieldCheck}>
               Your decision
             </SectionHeading>
+            <OpenItemsNotice run={run} jump={false} />
             <p className="text-meta font-normal font-body text-text-secondary">
               Made by you, never by the agent. You can undo it for {UNDO_WINDOW_MINUTES} minutes.
             </p>
@@ -320,7 +322,12 @@ export function DecisionPanel({
           </div>
 
           <div className="flex flex-col gap-[var(--space-2)]">
-            <Button variant="destructive" onClick={() => openOther('rejected')}>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="self-start"
+              onClick={() => openOther('rejected')}
+            >
               <X
                 aria-hidden
                 data-bounce={bouncedAction === 'rejected' || undefined}

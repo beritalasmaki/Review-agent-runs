@@ -1,5 +1,3 @@
-import { Info } from 'lucide-react'
-import { Badge } from '../../components/ui/badge'
 import type { Ref } from 'react'
 import { confidenceLevel, resolveConfidenceAreas } from '../../lib/confidence'
 import {
@@ -85,30 +83,16 @@ export function RunDetails({ run, className, tabIndex, ref }: RunDetailsProps) {
       ref={ref}
       tabIndex={tabIndex}
       aria-labelledby="run-details-heading"
-      className={cn(
-        'flex flex-col gap-[var(--space-4)] panel p-[var(--space-4)] shadow-card',
-        className,
-      )}
+      className={cn('flex flex-col gap-[var(--space-4)] panel p-[var(--space-5)]', className)}
     >
-      <h2
-        id="run-details-heading"
-        className="flex items-center gap-[var(--space-2)] text-item-title font-semibold font-heading text-text-primary"
-      >
-        <Info aria-hidden className="h-4 w-4 text-text-primary" />
+      <h2 id="run-details-heading" className="lbl">
         Run details
       </h2>
 
       <Group title="The change">
         <Field label={released ? 'Where it went' : 'Where it would go'}>
           <span className={VALUE}>{run.target.system}</span>
-          <Badge
-            variant="outline"
-            size="sm"
-            className="py-[var(--space-1)] leading-none font-heading tracking-wide uppercase"
-          >
-            <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', env.dot)} />
-            {run.target.environment}
-          </Badge>
+          <span className="lbl text-primary">{run.target.environment}</span>
           <span className={HELP}>{env.help}</span>
         </Field>
         <Field label={released ? 'What was released' : 'What would be released'}>

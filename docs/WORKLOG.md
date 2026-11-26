@@ -37,6 +37,36 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-26 · Living background and the run page as designed
+
+**Goal**
+Make the background alive (coordinates that come and go, drifting mist) and the run page match the design, top bar first.
+
+**What changed**
+- `TerrainBackdrop.tsx`, `index.css`, `tokens.css`: mist and fourteen fading readings in an `aria-hidden` layer; the baked-in coordinates left the image.
+- `MyReviews.tsx`: the arc and the flying dot on the top panel.
+- `TopBar.tsx`, `RunReviewPage.tsx`: "Open audit log" after "Reviewing as"; `OpenItemsNotice.tsx`, `DecisionPanel.tsx`: the count moved into the decision panel.
+- `RunDetails.tsx`: heading, labels, orange environment; Reject run small.
+- Hover set (0145) and the tour outline fix.
+- `docs/DECISIONS.md` 0145, 0146.
+
+**Steps, in order**
+1. Compared the run page with Main, listing differences. 2. Rebuilt the backdrop as a CSS-only layer. 3. Moved the open-items count. 4. Restyled Run details and Reject. 5. Ran the full check.
+
+**Why it was done this way**
+See 0146.
+
+**How to do this by hand**
+Open Main in the artifact and the run page side by side; list each difference, change the shared style first.
+
+**Verification**
+`npm run check`; screenshots of the list and run page.
+
+**Open questions / next**
+The design's grid texture on the run overview and its "What the agent did" panel are not built (the app's story already says it).
+
+---
+
 ### 2026-11-26 · Tour, run tabs and person pills fixed to the design
 
 **Goal**

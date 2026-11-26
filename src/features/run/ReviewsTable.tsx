@@ -189,7 +189,7 @@ function OpenItemsCell({ run }: { run: Run }) {
     <Badge
       variant="warning"
       size="sm"
-      className="h-6 min-w-7 rounded-[3px] border-transparent bg-status-waived px-[var(--space-2)] text-primary-foreground"
+      className="h-7 min-w-8 rounded-[4px] border-status-waived bg-status-waived-tint-bg px-[var(--space-2)] text-body font-semibold text-text-primary"
     >
       {count}
     </Badge>

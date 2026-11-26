@@ -11,7 +11,6 @@ import type { Run } from '../../lib/types'
 import { DecisionPanel } from './DecisionPanel'
 import { EvidenceTab } from './EvidenceTab'
 import { InProgressBox } from './InProgressBox'
-import { OpenItemsNotice } from './OpenItemsNotice'
 import { checkCardId, scoreCardId } from './openItemTargets'
 import { RunDetails } from './RunDetails'
 import { RunOverview } from './RunOverview'
@@ -253,7 +252,11 @@ export function RunReviewPage({
               </span>
             </>
           }
-          end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
+          end={
+            <button type="button" className="sat font-medium" onClick={() => chooseView('steps')}>
+              Open audit log
+            </button>
+          }
         />
         <div className="mx-auto flex max-w-[86rem] flex-col gap-[var(--space-4)] px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-8)]">
           <div

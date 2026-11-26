@@ -209,24 +209,103 @@
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
   background-image:
     radial-gradient(ellipse at 50% 30%, transparent 40%, rgb(17 16 15 / 0.5) 100%),
-    radial-gradient(closest-side at 18% 22%, rgb(142 153 160 / 0.12), transparent),
-    radial-gradient(closest-side at 78% 70%, rgb(244 91 34 / 0.08), transparent),
     var(--terrain-image);
+  background-size: auto, cover;
+  background-repeat: no-repeat;
+  background-position: center, center;
+}
+/* Mist: two blurred patches drifting slowly over the relief, painted by `::after`. */
+.terrain-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(closest-side, rgb(142 153 160 / 0.14), transparent),
+    radial-gradient(closest-side, rgb(244 91 34 / 0.1), transparent);
   background-size:
-    auto,
     900px 700px,
-    900px 700px,
-    cover;
+    900px 700px;
   background-repeat: no-repeat;
   background-position:
-    center,
-    left top,
-    right bottom,
-    center;
+    -240px 80px,
+    62% 62%;
+  animation: terrain-drift 45s ease-in-out infinite alternate;
+}
+@keyframes terrain-drift {
+  from {
+    background-position:
+      -240px 80px,
+      62% 62%;
+  }
+  to {
+    background-position:
+      -20px 200px,
+      52% 54%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .terrain-page::after {
+    animation: none;
+  }
+}
+
+/* The arc across the top panel and the small bright dot that flies along it, a satellite pass. Both
+ * are the panel's own pseudo-elements, so no element overlaps the text. */
+.hero-panel::before {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: 18px;
+  width: 1260px;
+  height: 200px;
+  pointer-events: none;
+  background: var(--hero-arc-image) no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 72%);
+  mask-image: linear-gradient(90deg, transparent 30%, #000 72%);
+}
+.hero-panel::after {
+  content: '';
+  position: absolute;
+  right: 1220px;
+  top: 18px;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: #ffe6d9;
+  box-shadow: 0 0 10px 3px color-mix(in srgb, var(--color-primary-strong) 70%, transparent);
+  offset-path: path('M0 100 C140 10 280 10 420 100 S700 190 840 100 S1120 10 1260 100');
+  offset-rotate: 0deg;
+  animation: hero-flyby 70s linear infinite;
+}
+@keyframes hero-flyby {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  0% {
+    offset-distance: 0%;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    offset-distance: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-panel::after {
+    animation: none;
+    offset-distance: 38%;
+  }
 }
 
 /* Scrolls without showing a scrollbar: the sticky "Run details" card (docs/DECISIONS.md, 0054). */
