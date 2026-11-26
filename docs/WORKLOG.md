@@ -37,6 +37,40 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-26 · Satellite-themed design of the review screen (artifact)
+
+**Goal**
+Make a dark, satellite-themed version of the run review screen as a design sample.
+
+**What changed**
+- No code in `src/`. A Design artifact, "Run Review Agents – Satellite Theme", holds one artboard
+  (`Main.dc.html`) and its index (`canvas.json`).
+- `docs/DECISIONS.md` 0140.
+
+**Steps, in order**
+1. Read `AGENTS.md`, `docs/spec-review-screen.md`, the worklog and decisions format.
+2. Created the artifact from the Design type and wrote the artboard: three columns under a sticky
+   bar, sample data from the "blocked" case, terrain contours as inline SVG, coordinates as
+   fading `aria-hidden` text, metal panels, gold foil hairline, solar-cell grid on the overview.
+3. Link and button hover: a 1 px track plus a 2 px bright segment that slides left to right in 3.4 s.
+4. Published to the artifact.
+
+**Why it was done this way**
+See 0140. No real company name is used in the design.
+
+**How to do this by hand**
+In Figma, build the three columns, set the page fill to near-black blue, add contour lines as
+vector strokes at 15% opacity, and prototype the underline as a looping smart animate.
+
+**Verification**
+Not run: no browser render, no contrast check, no `npm run check` (nothing in `src/` changed).
+
+**Open questions / next**
+- Does the author want this ported into `src/styles/tokens.css`, replacing 0137 and 0139?
+- Fixtures are invented for the artifact and not read from `src/fixtures/`.
+
+---
+
 ### 2026-11-18 · Icon motion on the remaining icons
 
 **Goal**

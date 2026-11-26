@@ -6,6 +6,28 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0140 · Satellite theme explored as a design artifact, dark by default
+
+**Context.** The author wants to show the run review screen in a portfolio setting for an
+earth-observation company, as a dark, satellite-themed look: terrain-map background, coordinates
+that fade in like fog, metal and solar-panel colours, and link hovers that are a moving underline
+instead of a highlighted box.
+
+**Options.** (1) Change the app tokens now. (2) Explore it first as a Design artifact and only
+port what is accepted. (3) Skip the theme.
+
+**Choice.** Option 2. The design lives in the artifact "Run Review Agents – Satellite Theme", not in
+`src/`. It uses no company name or logo (AGENTS.md, non-negotiable 5). Dark is default in the
+design, which reverses 0001 (light default) for this variant only.
+
+**Consequence.** Porting it later needs: a dark default in `tokens.css`, a terrain/coordinate
+background layer that stops under `prefers-reduced-motion`, and a satellite-underline link style
+(0137 and 0139 set button hover to a plain fade and icon motion, which this would replace). The
+fog text is decorative and `aria-hidden`; colours must be re-checked with `npm run check` contrast
+tests in both themes. Not yet done: any of the above in code.
+
+---
+
 ## 0139 · Icon motion on button hover
 
 **Context.** After 0137 removed the stripe, buttons had only a colour fade. The user asked for a
