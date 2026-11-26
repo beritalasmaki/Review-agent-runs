@@ -6,6 +6,37 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0148 · The run page's cards follow the design, and the small print moves behind "i"
+
+**Context.** Even with the right sizes (0147) the run page still showed a lot the design does not: plain
+lines under every label, numbered steps and captions in the decision panel, a "Deciding as" line, links
+under each open item, and an explanation under "What is not checked".
+
+**Choices.**
+- *Behind an "i".* Each plain line sits in a tooltip beside its label or title (environment, revision, run
+  reference, the decision, open items, the reason, Request changes, Reject run, "What is not checked").
+  The tooltip looks as drawn: a small dark box with a thin light border. The "i" is a small thin ring,
+  not a button with a letter. Nothing is removed: a screen reader still gets the text as the button's
+  description.
+- *Decision panel.* "Decision" with an "i"; the open-items badge; "OPEN ITEMS" and the tick count; each
+  item is a boxed line with a plain white square to tick and a small arrow button that shows where the item
+  comes from (it keeps the name "Show the check →"); "REASON FOR APPROVING"; the state line and "Approving
+  releases revision … to production"; the green Approve; Request changes; a dashed divider; a small Reject
+  run. "Deciding as", the step numbers and the captions are gone.
+- *Run details.* Environment (orange), target system, requested by, ran and duration, revision. The rest —
+  run reference, agent, checks, lowest score — is under "More details".
+- *Overview.* Status line with the environment, the title, the reason the agent was asked, then "What the
+  agent did" with the figures: files changed, tests passing, checks passed, failed, need a look.
+- *Scores and checks.* A score is a boxed card: "CONFIDENCE · AREA", "COULD NOT VERIFY" and what, the
+  percentage with its level, a segmented bar, "Based on …", "Why this score". A check that needs attention
+  has the filled status icon.
+- *Not changed.* The words of the product's copy where a test or the spec names them ("Your decision" as
+  the region's name; "Confirm each open item" is now "Open items" in the group's name).
+
+**Consequence.** Tests that read the plain lines now hover the "i" first.
+
+---
+
 ## 0147 · Sizes measured from the design
 
 **Context.** The author asked for pixel-exact work. The design was measured in a browser at 1440 px and the

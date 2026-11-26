@@ -44,7 +44,7 @@ test('the whole review, keyboard only', async ({ page }) => {
   const keys = page.keyboard
 
   // Tab on from the top bar until the first item left to tick has focus.
-  const boxes = page.getByRole('group', { name: /Confirm each open item/ }).getByRole('checkbox')
+  const boxes = page.getByRole('group', { name: /Open items/ }).getByRole('checkbox')
   for (let i = 0; i < 60; i++) {
     if (await boxes.first().evaluate((el) => el === document.activeElement)) break
     await keys.press('Tab')

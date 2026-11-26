@@ -1,7 +1,7 @@
 import { Button } from '../../components/ui/button'
 import { Textarea } from '../../components/ui/textarea'
 import { Checkbox } from '../../components/ui/checkbox'
-import { Check, Info, Pencil, X } from 'lucide-react'
+import { ArrowUpRight, Check, Pencil, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { SubmitDecisionOptions } from '../../lib/api'
 import { UNDO_WINDOW_MINUTES } from '../../lib/decision'
@@ -11,10 +11,10 @@ import { approvalNeedsReason, buildOpenItems, missingChecks } from '../../lib/op
 import type { OpenItemTarget } from '../../lib/openItems'
 import type { Decision, Run } from '../../lib/types'
 import { cn } from '../../lib/utils'
-import { ActorName } from './ActorName'
 import { CURRENT_REVIEWER } from './currentReviewer'
 import { DecisionDialog } from './DecisionDialog'
 import type { DecisionAction } from './DecisionDialog'
+import { InfoTip } from '../../components/InfoTip'
 import { OpenItemsNotice } from './OpenItemsNotice'
 import { SectionHeading } from './SectionHeading'
 
@@ -49,17 +49,6 @@ const SHOW_LABEL: Record<OpenItemTarget['kind'], (target: OpenItemTarget) => str
     target.kind === 'check' && target.count > 1 ? 'Show the checks →' : 'Show the check →',
   score: () => 'Show the score →',
   step: () => 'Show the step →',
-}
-
-function StepNumber({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      aria-hidden
-      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-text-primary text-caption font-semibold font-body leading-none text-surface"
-    >
-      {children}
-    </span>
-  )
 }
 
 export function DecisionPanel({
@@ -154,158 +143,150 @@ export function DecisionPanel({
     onRunUpdated({ ...run, decision, status: decision.outcome })
   }
 
+  const tickedCount = items.length - left
   return (
-    <section aria-labelledby="decision-heading" className="panel overflow-hidden">
+    <section aria-label="Your decision" className="panel overflow-hidden">
       <div aria-hidden className="foil" />
-      <div className="flex flex-col gap-[var(--space-6)] p-[var(--space-5)]">
+      <div className="flex flex-col gap-[var(--space-5)] p-[var(--space-5)]">
         <div className="flex flex-col gap-[var(--space-4)]">
-          <div className="flex flex-col gap-[var(--space-5)]">
-            <SectionHeading id="decision-heading">Your decision</SectionHeading>
-            <OpenItemsNotice run={run} jump={false} />
-            <p className="text-meta font-normal font-body text-text-secondary">
-              Made by you, never by the agent. You can undo it for {UNDO_WINDOW_MINUTES} minutes.
-            </p>
+          <div className="flex items-center gap-[var(--space-2)]">
+            <SectionHeading id="decision-heading">Decision</SectionHeading>
+            <InfoTip label="the decision">
+              {`Made by you, never by the agent. It is saved with your name (${reviewerName}), the time, your ticks and your reason, and you can undo it for ${UNDO_WINDOW_MINUTES} minutes.`}
+            </InfoTip>
           </div>
-
-          <div className="flex flex-col gap-[var(--space-2)]">
-            <span className="text-caption font-normal font-body text-text-secondary">
-              Deciding as
-            </span>
-            <ActorName name={reviewerName} className="self-start text-body font-medium" />
+          <div className="flex items-center gap-[var(--space-2)]">
+            <OpenItemsNotice run={run} jump={false} />
+            {items.length > 0 && (
+              <InfoTip label="open items">
+                {run.target.environment === 'production'
+                  ? 'This change goes to production. Tick each item to say you have seen it and accept it.'
+                  : 'Tick each item to say you have seen it and accept it.'}
+              </InfoTip>
+            )}
           </div>
         </div>
 
         <fieldset
           id="open-items"
-          className="t-spotlight flex scroll-mt-[calc(var(--space-5))] flex-col gap-[var(--space-2)]"
+          className="t-spotlight flex scroll-mt-[calc(var(--space-5))] flex-col gap-[var(--space-3)]"
         >
-          <legend className="mb-[var(--space-2)] flex w-full items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
-            <StepNumber>1</StepNumber>
-            Confirm each open item
+          <legend className="lbl mb-[var(--space-3)] flex w-full items-center justify-between">
+            <span>
+              Open items<span className="sr-only">: confirm each one</span>
+            </span>
             {items.length > 0 && (
-              <span className="ml-auto text-caption font-normal font-body text-text-secondary">
-                {items.length - left} of {items.length}
+              <span className="font-body tracking-normal normal-case">
+                {tickedCount} of {items.length}
               </span>
             )}
           </legend>
           {items.length === 0 ? (
-            <p className="text-caption font-normal font-body text-text-secondary">
+            <p className="text-meta text-text-secondary">
               Nothing is open: no check failed or was left without a result, and no score is low.
             </p>
           ) : (
-            <>
-              <p className="text-caption font-normal font-body leading-relaxed text-text-secondary">
-                {run.target.environment === 'production'
-                  ? 'This change goes to production. Tick each item to say you have seen it and accept it.'
-                  : 'Tick each item to say you have seen it and accept it.'}
-              </p>
-              {items.map((item) => {
-                const checked = ticked.has(item.id)
-                return (
-                  <div
-                    key={item.id}
+            items.map((item) => {
+              const checked = ticked.has(item.id)
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    'flex items-start gap-[var(--space-3)] rounded-[3px] border px-[var(--space-4)] py-[var(--space-3)]',
+                    checked
+                      ? 'border-border-subtle bg-bg'
+                      : 'border-status-waived/50 bg-status-waived-tint-bg',
+                  )}
+                >
+                  <label
                     className={cn(
-                      'flex flex-col gap-[var(--space-2)] rounded-md px-[var(--space-3)] py-[var(--space-3)]',
-                      checked ? 'bg-bg' : 'border border-status-waived/40 bg-status-waived-tint-bg',
+                      'flex flex-1 cursor-pointer items-start gap-[var(--space-3)] rounded-sm',
+                      'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus-ring',
                     )}
                   >
-                    <label
-                      className={cn(
-                        'flex cursor-pointer items-start gap-[var(--space-3)] rounded-sm',
-                        'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus-ring',
-                      )}
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => toggle(item.id)}
+                      // The label's own ring shows focus, around the box and its sentence.
+                      className="mt-[2px] h-[18px] w-[18px] rounded-[2px] border-0 bg-text-primary text-primary-foreground focus-visible:outline-none data-[state=checked]:bg-primary-strong"
+                    />
+                    <span className="text-meta leading-relaxed font-normal font-body text-text-primary">
+                      {item.text}
+                    </span>
+                  </label>
+                  {onShowItem && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onShowItem(item.target)}
+                      aria-label={SHOW_LABEL[item.target.kind](item.target)}
+                      title={SHOW_LABEL[item.target.kind](item.target).replace(' →', '')}
+                      className="h-6 w-6 shrink-0 text-text-secondary"
                     >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={() => toggle(item.id)}
-                        // The label's own ring shows focus, around the box and its sentence.
-                        className="mt-[var(--space-1)] border-status-waived text-surface focus-visible:outline-none data-[state=checked]:border-status-waived data-[state=checked]:bg-status-waived"
-                      />
-                      <span className="text-meta font-normal font-body leading-relaxed text-text-primary">
-                        {item.text}
-                      </span>
-                    </label>
-                    {onShowItem && (
-                      <Button
-                        variant="link"
-                        size="inline"
-                        onClick={() => onShowItem(item.target)}
-                        className="ml-[calc(1rem+var(--space-3))] self-start font-medium font-body"
-                      >
-                        {SHOW_LABEL[item.target.kind](item.target)}
-                      </Button>
-                    )}
-                  </div>
-                )
-              })}
-            </>
+                      <ArrowUpRight aria-hidden className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )
+            })
           )}
         </fieldset>
 
-        <div className="flex flex-col gap-[var(--space-3)] pt-[var(--space-4)]">
-          <span className="flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading text-text-primary">
-            <StepNumber>2</StepNumber>
-            Choose one
-          </span>
-
-          <div className="flex flex-col gap-[var(--space-2)]">
-            <label
-              htmlFor={reasonId}
-              className="text-caption font-semibold font-body text-text-primary"
-            >
+        <div className="flex flex-col gap-[var(--space-3)]">
+          <div className="flex items-center gap-[var(--space-2)]">
+            <label htmlFor={reasonId} className="lbl">
               Reason for approving{' '}
-              <span className="font-normal text-text-secondary">
+              <span className="tracking-normal normal-case">
                 {reasonRequired
                   ? `(required: ${formatCount(missing, 'check')} ${missing === 1 ? 'is' : 'are'} missing)`
                   : '(optional)'}
               </span>
             </label>
-            <Textarea
-              id={reasonId}
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              rows={3}
-              required={reasonRequired}
-              placeholder={
-                reasonRequired
-                  ? 'For example: these checks do not apply because no new dependencies or screens were added.'
-                  : undefined
-              }
-              className="text-meta focus-visible:border-primary"
-            />
-            <Button
-              variant="approve"
-              onClick={approve}
-              disabled={!ready}
-              aria-describedby={hintId}
-              data-popping={popping || undefined}
-              className="t-pop"
-            >
-              <span className="t-pop-label">
-                <Check aria-hidden className="h-4 w-4" strokeWidth={2.5} />
-                Approve and release
-              </span>
-            </Button>
-            <span
-              id={hintId}
-              className="text-caption font-normal font-body leading-relaxed text-text-secondary"
-              aria-live="polite"
-            >
-              {approveHint}
-            </span>
+            <InfoTip label="the reason">
+              Request changes and Reject run also ask for a short reason. Your name, the time, your
+              ticks and your reason are saved with the run.
+            </InfoTip>
           </div>
-
-          <div
-            className="my-[var(--space-1)] flex items-center gap-[var(--space-3)] text-caption font-normal font-body text-text-secondary"
-            role="separator"
+          <Textarea
+            id={reasonId}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            rows={3}
+            required={reasonRequired}
+            placeholder={reasonRequired ? 'What risk are you accepting, and why?' : undefined}
+            className="text-meta focus-visible:border-primary"
+          />
+          <span
+            id={hintId}
+            className="text-meta leading-relaxed font-normal font-body text-text-secondary"
+            aria-live="polite"
           >
-            <span className="h-px flex-1 bg-border-subtle" />
-            or, if it is not ready
-            <span className="h-px flex-1 bg-border-subtle" />
-          </div>
-
-          <div className="flex flex-col gap-[var(--space-2)]">
-            <Button variant="outline" onClick={() => openOther('changes_requested')}>
+            {approveHint}
+          </span>
+          <span className="text-meta leading-relaxed font-normal font-body text-text-secondary">
+            Approving releases revision <span className="font-mono">{run.revision}</span> to{' '}
+            <b className="font-semibold text-text-primary">{run.target.environment}</b>. You can
+            undo this for {UNDO_WINDOW_MINUTES} minutes.
+          </span>
+          <Button
+            variant="approve"
+            onClick={approve}
+            disabled={!ready}
+            aria-describedby={hintId}
+            data-popping={popping || undefined}
+            className="t-pop min-h-[60px] w-full"
+          >
+            <span className="t-pop-label">
+              <Check aria-hidden className="h-4 w-4" strokeWidth={2.5} />
+              Approve and release
+            </span>
+          </Button>
+          <div className="flex items-center gap-[var(--space-2)]">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => openOther('changes_requested')}
+            >
               <Pencil
                 aria-hidden
                 data-bounce={bouncedAction === 'changes_requested' || undefined}
@@ -313,19 +294,17 @@ export function DecisionPanel({
               />
               Request changes
             </Button>
-            <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">
+            <InfoTip label="sending it back">
               Sends the run back to the agent with your reason. The agent tries again. Nothing is
               released.
-            </span>
+            </InfoTip>
           </div>
-
-          <div className="flex flex-col gap-[var(--space-2)]">
-            <Button
-              variant="destructive"
-              size="sm"
-              className="self-start"
-              onClick={() => openOther('rejected')}
-            >
+          <div
+            role="separator"
+            className="my-[var(--space-2)] border-t border-dashed border-border-subtle"
+          />
+          <div className="flex items-center gap-[var(--space-2)]">
+            <Button variant="destructive" size="sm" onClick={() => openOther('rejected')}>
               <X
                 aria-hidden
                 data-bounce={bouncedAction === 'rejected' || undefined}
@@ -333,17 +312,11 @@ export function DecisionPanel({
               />
               Reject run
             </Button>
-            <span className="text-caption font-normal font-body leading-relaxed text-text-secondary">
+            <InfoTip label="closing the run">
               Closes the run for good. The agent does not try again. Nothing is released.
-            </span>
+            </InfoTip>
           </div>
         </div>
-
-        <p className="flex gap-[var(--space-2)] rounded-md bg-surface-raised px-[var(--space-3)] py-[var(--space-3)] text-caption font-normal font-body leading-relaxed text-text-secondary">
-          <Info aria-hidden className="mt-[var(--space-1)] h-4 w-4 shrink-0" />
-          Request changes and Reject run also ask for a short reason. Your name, the time, your
-          ticks and your reason are saved with the run.
-        </p>
 
         {openAction && (
           <DecisionDialog

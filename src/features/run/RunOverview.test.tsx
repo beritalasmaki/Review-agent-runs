@@ -8,7 +8,7 @@ describe('RunOverview', () => {
     render(<RunOverview run={runMessyPending} />)
     expect(screen.getByText('Awaiting review')).toBeVisible()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(runMessyPending.initiative)
-    expect(screen.getByText('Why the agent was asked')).toBeVisible()
+    expect(screen.getByText('What the agent did')).toBeVisible()
     expect(screen.getByText('Maarit Kasakallio')).toBeVisible()
     expect(
       screen.getByText(/Nothing has been released\. The agent worked for 1 h 49 min/),

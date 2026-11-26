@@ -81,7 +81,7 @@ describe('App', () => {
     window.history.pushState({}, '', `/?run=${runMessyPending.id}`)
     render(<App />)
     expect(screen.queryByTestId('welcome-intro')).not.toBeInTheDocument()
-    expect(await screen.findByText(runMessyPending.id)).toBeVisible()
+    expect(await screen.findByText(`Run ${runMessyPending.id}`)).toBeVisible()
   })
 
   describe('the welcome modal and the onboarding tour', () => {
@@ -121,7 +121,7 @@ describe('App', () => {
     it('does not offer the welcome modal on a direct run link', async () => {
       window.history.pushState({}, '', `/?run=${runMessyPending.id}`)
       render(<App />)
-      await screen.findByText(runMessyPending.id)
+      await screen.findByText(`Run ${runMessyPending.id}`)
       expect(
         screen.queryByRole('heading', { name: 'Welcome to Review agent runs' }),
       ).not.toBeInTheDocument()

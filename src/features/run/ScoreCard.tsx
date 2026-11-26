@@ -1,5 +1,5 @@
 import { confidenceLevel } from '../../lib/confidence'
-import type { ConfidenceLevel, ResolvedConfidenceArea } from '../../lib/confidence'
+import type { ResolvedConfidenceArea } from '../../lib/confidence'
 import {
   formatConfidenceAction,
   formatConfidenceAreaLabel,
@@ -23,14 +23,28 @@ export interface ScoreCardProps {
   decided?: boolean
 }
 
-const LEVEL_CHIP: Record<ConfidenceLevel, string> = {
-  high: 'bg-status-pass-tint-bg text-status-pass-tint-fg',
-  medium: 'bg-status-waived-tint-bg text-status-waived-tint-fg',
-  low: 'bg-status-fail-tint-bg text-status-fail-tint-fg',
-}
-
 const CARD =
-  'flex max-w-[45rem] gap-[var(--space-3)] rounded-md bg-surface-raised px-[var(--space-4)] py-[var(--space-3)]'
+  'flex max-w-[45rem] flex-col gap-[var(--space-3)] rounded-[3px] border border-border-subtle bg-bg p-[var(--space-5)]'
+
+const SEGMENTS = 30
+
+/** The score as a row of small blocks, filled up to the value. Decoration: the percentage is text. */
+function Segments({ value }: { value: number }) {
+  const filled = Math.round(value * SEGMENTS)
+  return (
+    <div aria-hidden className="flex gap-[3px]">
+      {Array.from({ length: SEGMENTS }, (_, i) => (
+        <i
+          key={i}
+          className={cn(
+            'h-[6px] flex-1 rounded-[1px]',
+            i < filled ? 'bg-steel-bar' : 'bg-text-primary/15',
+          )}
+        />
+      ))}
+    </div>
+  )
+}
 
 export function ScoreCard({ area, decided = false }: ScoreCardProps) {
   const areaLabel = formatConfidenceAreaLabel(area.area)
@@ -40,7 +54,7 @@ export function ScoreCard({ area, decided = false }: ScoreCardProps) {
       <div
         id={scoreCardId(area.area)}
         tabIndex={-1}
-        className={cn(CARD, LINK_TARGET, 'items-center')}
+        className={cn(CARD, LINK_TARGET, 'flex-row items-center')}
       >
         <span className="rounded-sm border border-border px-[var(--space-2)] py-[var(--space-1)] text-caption font-semibold font-heading whitespace-nowrap text-text-primary">
           Not checked
@@ -56,51 +70,43 @@ export function ScoreCard({ area, decided = false }: ScoreCardProps) {
   const level = confidenceLevel(area.value)
 
   return (
-    <div
-      id={scoreCardId(area.area)}
-      tabIndex={-1}
-      className={cn(CARD, LINK_TARGET, 'items-baseline')}
-    >
-      <span
-        className={cn(
-          'text-score font-semibold font-heading leading-none tabular-nums',
-          level === 'low' ? 'text-status-waived-tint-fg' : 'text-text-primary',
-        )}
-      >
-        <span className="sr-only">{areaLabel} confidence </span>
-        {formatConfidencePercent(area.value)}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-[var(--space-2)]">
-        <span className="flex flex-wrap items-center gap-[var(--space-2)]">
-          <span
-            className={cn(
-              'rounded-sm px-[var(--space-2)] py-[var(--space-1)] text-caption font-semibold font-heading whitespace-nowrap',
-              LEVEL_CHIP[level],
-            )}
-          >
-            {formatConfidenceLevelLabel(level)}
-          </span>
-          {!decided && (
-            <span className="text-meta font-semibold font-body text-text-primary">
-              {formatConfidenceAction(level)}
-            </span>
+    <div id={scoreCardId(area.area)} tabIndex={-1} className={cn(CARD, LINK_TARGET)}>
+      <span className="lbl">Confidence · {areaLabel}</span>
+      {area.unverified.length > 0 && (
+        <div className="flex flex-col gap-[var(--space-1)]">
+          <span className="lbl text-status-waived">Could not verify</span>
+          <p className="text-body leading-relaxed font-normal font-body text-text-primary">
+            {area.unverified.join(' ')}
+          </p>
+        </div>
+      )}
+      <span className="flex flex-wrap items-baseline gap-[var(--space-3)]">
+        <span
+          className={cn(
+            'text-score leading-none font-medium font-heading tabular-nums',
+            level === 'low' ? 'text-status-fail' : 'text-text-primary',
           )}
+        >
+          <span className="sr-only">{areaLabel} confidence </span>
+          {formatConfidencePercent(area.value)}
         </span>
-        <p className="text-body font-normal font-body leading-relaxed text-text-secondary">
-          <span className="font-medium text-text-primary">{areaLabel}.</span> {area.basis}
-          {area.unverified.length > 0 && (
-            <>
-              {' '}
-              <span className="font-medium text-text-primary">Could not check:</span>{' '}
-              {area.unverified.join(' ')}
-            </>
-          )}
-        </p>
-        <details className="group text-meta font-body text-text-secondary">
-          <summary className="sat w-fit font-medium">Why this score</summary>
-          <p className="pt-[var(--space-1)]">{area.rationale}</p>
-        </details>
-      </div>
+        <span className="text-body font-semibold font-body text-text-primary">
+          {formatConfidenceLevelLabel(level)}
+        </span>
+        {!decided && (
+          <span className="text-meta font-normal font-body text-text-secondary">
+            {formatConfidenceAction(level)}
+          </span>
+        )}
+      </span>
+      <Segments value={area.value} />
+      <p className="text-meta leading-relaxed font-normal font-body text-text-secondary">
+        {area.basis}
+      </p>
+      <details className="group text-meta font-body text-text-secondary">
+        <summary className="sat w-fit font-medium">Why this score</summary>
+        <p className="pt-[var(--space-1)]">{area.rationale}</p>
+      </details>
     </div>
   )
 }

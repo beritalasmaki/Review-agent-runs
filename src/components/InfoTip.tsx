@@ -1,3 +1,4 @@
+import { Info } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
@@ -22,15 +23,15 @@ export function InfoTip({ label, children, align = 'start', className }: InfoTip
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           aria-label={`About ${label}`}
           className={cn(
-            'h-4 w-4 cursor-help rounded-full border-border text-caption leading-none text-text-secondary hover:text-text-primary',
+            'h-4 min-h-0 w-4 cursor-help rounded-full p-0 text-text-secondary hover:enabled:bg-transparent hover:enabled:text-text-primary',
             className,
           )}
         >
-          i
+          <Info aria-hidden className="h-3 w-3" strokeWidth={1.7} />
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" align={align}>

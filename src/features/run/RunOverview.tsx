@@ -1,6 +1,7 @@
-import { Activity, Clock, Info } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { StatusBadge } from '../../components/StatusBadge'
 import { formatRunStatusLabel } from '../../lib/format'
+import { testsPassing } from '../../lib/timeline'
 import { describeDecision, describePendingRun } from '../../lib/story'
 import type { Run, RunStatus } from '../../lib/types'
 import { cn } from '../../lib/utils'
@@ -26,9 +27,6 @@ const STATUS_ICON: Partial<Record<RunStatus, string>> = {
   rejected: 'text-status-fail',
 }
 
-const EYEBROW =
-  'flex items-center gap-[var(--space-2)] text-meta font-semibold font-heading leading-none tracking-wide uppercase text-text-primary'
-
 function StatusPill({ status }: { status: RunStatus }) {
   if (status === 'approved')
     return <StatusBadge tone="success" label={formatRunStatusLabel(status)} />
@@ -42,13 +40,33 @@ function StatusPill({ status }: { status: RunStatus }) {
   )
 }
 
+/** One of the numbers under "What the agent did": a big figure and what it counts. */
+function Figure({ n, label, tone }: { n: number | string; label: string; tone?: string }) {
+  return (
+    <li className="flex items-baseline gap-[var(--space-2)] text-meta text-text-secondary">
+      <span
+        className={cn('text-section-heading leading-none font-heading text-text-primary', tone)}
+      >
+        {n}
+      </span>
+      {label}
+    </li>
+  )
+}
+
 export function RunOverview({ run }: RunOverviewProps) {
+  const files = run.timeline.filter((event) => event.type === 'file_change').length
+  const tests = testsPassing(run.timeline)
+  const passed = run.gates.filter((gate) => gate.result === 'pass').length
+  const failed = run.gates.filter((gate) => gate.result === 'fail').length
+  const lookAt = run.gates.filter((gate) => gate.result === 'unknown').length
   return (
     <header className="panel overflow-hidden">
       <div aria-hidden className="foil" />
-      <div className="flex flex-col gap-[var(--space-5)] p-[var(--space-5)]">
-        <div className="self-start">
+      <div className="flex flex-col gap-[var(--space-4)] p-[var(--space-5)]">
+        <div className="flex flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)]">
           <StatusPill status={run.status} />
+          <span className="lbl text-primary">{run.target.environment}</span>
         </div>
         <h1
           id="run-heading"
@@ -58,35 +76,33 @@ export function RunOverview({ run }: RunOverviewProps) {
         </h1>
 
         {run.assignment && (
-          <div className="flex flex-col gap-[var(--space-2)]">
-            <span className={EYEBROW}>
-              <Info aria-hidden className="h-4 w-4" />
-              Why the agent was asked
-            </span>
-            <p className="text-body font-normal font-body leading-relaxed text-text-primary md:text-item-title">
-              {run.assignment.context}{' '}
-              <ActorName name={run.assignment.by} className="align-middle" /> gave the change to the
-              agent because {run.assignment.reason}
-            </p>
-          </div>
-        )}
-
-        <div className="flex flex-col gap-[var(--space-2)] pt-[var(--space-5)]">
-          <span className={EYEBROW}>
-            <Activity aria-hidden className="h-4 w-4" />
-            Where the run is now
-          </span>
-          <p className="text-body font-normal font-body leading-relaxed text-text-secondary md:text-item-title">
-            {run.decision ? (
-              <>
-                <ActorName name={run.decision.by} className="align-middle text-text-primary" />{' '}
-                {describeDecision(run)}
-              </>
-            ) : (
-              describePendingRun(run)
-            )}
+          <p className="text-body leading-relaxed font-normal font-body text-text-primary">
+            <span className="sr-only">Why the agent was asked: </span>
+            {run.assignment.context} <ActorName name={run.assignment.by} className="align-middle" />{' '}
+            gave the change to the agent because {run.assignment.reason}
           </p>
-        </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-[var(--space-3)] border-t border-border-subtle p-[var(--space-5)]">
+        <h2 className="lbl">What the agent did</h2>
+        <p className="text-body leading-relaxed font-normal font-body text-text-primary">
+          {run.decision ? (
+            <>
+              <ActorName name={run.decision.by} className="align-middle text-text-primary" />{' '}
+              {describeDecision(run)}
+            </>
+          ) : (
+            describePendingRun(run)
+          )}
+        </p>
+        <ul className="flex flex-wrap gap-x-[var(--space-6)] gap-y-[var(--space-2)] pt-[var(--space-2)]">
+          <Figure n={files} label="files changed" />
+          {tests != null && <Figure n={tests} label="tests passing" />}
+          <Figure n={passed} label="checks passed" tone="text-status-pass" />
+          {failed > 0 && <Figure n={failed} label="failed" tone="text-status-fail" />}
+          {lookAt > 0 && <Figure n={lookAt} label="need a look" tone="text-status-waived" />}
+        </ul>
       </div>
     </header>
   )

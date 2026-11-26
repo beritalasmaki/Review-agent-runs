@@ -28,7 +28,7 @@ test('review a run, approve it, and undo inside the window', async ({ page }) =>
   // Sign off every open item, then give the required reason.
   // The native checkbox is visually hidden behind its styled box, so tick by clicking the
   // label, as a person does.
-  const openItems = page.getByRole('group', { name: /Confirm each open item/ })
+  const openItems = page.getByRole('group', { name: /Open items/ })
   await expect(openItems.getByRole('checkbox')).toHaveCount(3)
   for (const label of await openItems.locator('label').all()) await label.click()
   for (const box of await openItems.getByRole('checkbox').all()) await expect(box).toBeChecked()

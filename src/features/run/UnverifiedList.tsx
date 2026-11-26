@@ -1,7 +1,7 @@
 import { CircleHelp } from 'lucide-react'
 import { buildUnverifiedItems } from '../../lib/openItems'
 import type { Run } from '../../lib/types'
-import { cn } from '../../lib/utils'
+import { InfoTip } from '../../components/InfoTip'
 import { SectionHeading } from './SectionHeading'
 
 /**
@@ -22,9 +22,9 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
   return (
     <section
       aria-labelledby="unverified-heading"
-      className="flex flex-col gap-[var(--space-4)] panel p-[var(--space-5)]"
+      className="flex flex-col gap-[var(--space-3)] panel p-[var(--space-5)]"
     >
-      <div className="flex flex-col gap-[var(--space-5)]">
+      <div className="flex items-center gap-[var(--space-2)]">
         <SectionHeading
           id="unverified-heading"
           aside
@@ -33,11 +33,11 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
         >
           {decided ? 'What is still unverified' : 'What is not checked'}
         </SectionHeading>
-        <p className="text-meta font-normal font-body text-text-secondary">
+        <InfoTip label="this list">
           {decided
             ? 'Everything this decision was made without. This is the list to explain later.'
             : 'If you approve now, this is the list you would be accepting.'}
-        </p>
+        </InfoTip>
       </div>
       {items.length === 0 ? (
         <p className="pt-[var(--space-3)] text-meta font-normal font-body text-text-primary">
@@ -48,15 +48,8 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
           {items.map((item) => (
             <li
               key={item.id}
-              className="flex gap-[var(--space-3)] py-[var(--space-3)] text-meta font-normal font-body leading-relaxed text-text-primary"
+              className="flex gap-[var(--space-3)] py-[var(--space-2)] text-meta font-normal font-body leading-relaxed text-text-primary"
             >
-              <span
-                aria-hidden
-                className={cn(
-                  'mt-[var(--space-2)] h-1.5 w-1.5 shrink-0 rounded-full',
-                  item.severity === 'open' ? 'bg-status-waived' : 'bg-border',
-                )}
-              />
               <span>
                 <span className="sr-only">{item.severity === 'open' ? 'Open: ' : 'Minor: '}</span>
                 {item.text}
