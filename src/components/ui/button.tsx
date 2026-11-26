@@ -22,7 +22,7 @@ const PLATE =
   '[--c:7px] [clip-path:polygon(var(--c)_0,calc(100%-var(--c))_0,100%_var(--c),100%_calc(100%-var(--c)),calc(100%-var(--c))_100%,var(--c)_100%,0_calc(100%-var(--c)),0_var(--c))] border-0 rounded-none hover:brightness-[1.12] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white'
 
 const SWEEP =
-  "after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[linear-gradient(90deg,transparent,#fff_55%,transparent)] after:bg-[length:34%_100%] after:bg-[position:-40%_0] after:bg-no-repeat after:opacity-0 after:content-[''] hover:enabled:after:animate-[orbit_3.4s_linear_infinite] hover:enabled:after:opacity-100 focus-visible:after:animate-[orbit_3.4s_linear_infinite] focus-visible:after:opacity-100 motion-reduce:hover:enabled:after:animate-none motion-reduce:hover:enabled:after:[background-size:100%_100%] motion-reduce:hover:enabled:after:[background-position:0_0]"
+  "after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-[linear-gradient(90deg,transparent,#fff_55%,transparent)] after:bg-[length:34%_100%] after:bg-[position:-40%_0] after:bg-no-repeat after:opacity-0 after:content-[''] hover:enabled:after:animate-[orbit_5s_linear_infinite] hover:enabled:after:opacity-40 focus-visible:after:animate-[orbit_5s_linear_infinite] focus-visible:after:opacity-40 motion-reduce:hover:enabled:after:animate-none motion-reduce:hover:enabled:after:[background-size:100%_100%] motion-reduce:hover:enabled:after:[background-position:0_0]"
 
 const buttonVariants = cva(
   [

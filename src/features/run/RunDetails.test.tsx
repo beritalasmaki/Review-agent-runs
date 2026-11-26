@@ -15,14 +15,10 @@ describe('RunDetails', () => {
     expect(within(card).getByText('e91a4c')).toBeVisible()
   })
 
-  it('keeps the plain lines behind an "i" beside each label, not on the page', async () => {
-    const user = userEvent.setup()
+  it('keeps the plain lines for assistive technology only, with no "i" on the page', () => {
     render(<RunDetails run={runMessyPending} />)
-    expect(screen.queryByText('The live system. Real customers use it.')).not.toBeInTheDocument()
-    await user.hover(screen.getByRole('button', { name: 'About environment' }))
-    expect(
-      (await screen.findAllByText('The live system. Real customers use it.')).length,
-    ).toBeGreaterThan(0)
+    expect(screen.getByText('The live system. Real customers use it.')).toHaveClass('sr-only')
+    expect(screen.queryByRole('button', { name: /^About/ })).not.toBeInTheDocument()
   })
 
   it('puts the rest under "More details"', async () => {

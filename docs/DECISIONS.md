@@ -6,6 +6,26 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0149 · No "i" rings, taller tabs, quieter hovers
+
+**Context.** After 0148 the page was full of small "i" rings, and the author found them distracting. The
+tabs on My reviews looked thin, and the bar that sweeps along links and buttons on hover drew too much
+attention, most of all in the table.
+
+**Choices.**
+- *No "i".* `InfoTip` no longer draws a ring or a tooltip. Its text stays in the page for screen readers
+  (visually hidden) so the plain lines are not lost, but a sighted reader no longer sees them. This
+  reverses the visible part of 0148 and of 0070's `InfoTip`. Cost: someone who wanted the explanation
+  has no way to see it; if that matters, a tooltip on the label itself is the way back.
+- *Taller tabs.* A tab on My reviews is 48 px high (`--size-tab`, was 40) and the track has 8 px above
+  and below. This departs from the measured 40 px of 0147 on purpose.
+- *Quieter sweep.* The bar is 1 px, at about half strength, and a pass takes 5 s (was 2 px, full
+  strength, 3.4 s). On buttons it is a faint white line at 40 %.
+- *None in tables.* In a table (`data-slot="table"`) links and buttons have no sweep. A run's title is a
+  plain underline that brightens on hover.
+
+---
+
 ## 0148 · The run page's cards follow the design, and the small print moves behind "i"
 
 **Context.** Even with the right sizes (0147) the run page still showed a lot the design does not: plain

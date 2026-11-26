@@ -9,13 +9,13 @@ describe('UnverifiedList', () => {
     expect(screen.getByRole('heading', { name: 'What is not checked' })).toBeVisible()
     expect(screen.getAllByRole('listitem')).toHaveLength(6)
     expect(screen.getAllByText('Open:')).toHaveLength(4)
-    expect(screen.getAllByRole('button')).toHaveLength(1) // the "i" beside the heading
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('after a decision: the list to explain later', () => {
     render(<UnverifiedList run={runMessy} />)
     expect(screen.getByRole('heading', { name: 'What is still unverified' })).toBeVisible()
-    expect(screen.getAllByRole('button')).toHaveLength(1) // the "i" beside the heading
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('says "Nothing" when every check ran and nothing is unverified', () => {

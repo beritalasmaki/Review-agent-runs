@@ -122,10 +122,6 @@ test('My reviews, keyboard only', async ({ page }) => {
   )
   await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused()
 
-  // An info tip shows on keyboard focus.
-  await tabTo(page, /^About Status$/)
-  await expect(page.getByRole('tooltip', { name: /Where the run stands overall/ })).toBeVisible()
-
   // Tick the approved run with Space, then archive it from its row.
   await tabTo(page, /^Select “Move refund/)
   await keys.press('Space')
