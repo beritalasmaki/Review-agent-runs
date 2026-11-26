@@ -7,8 +7,8 @@
  *   utility (`--color-surface-raised` -> `bg-surface-raised`). This is the only
  *   layer components are allowed to touch.
  *
- * Light is the default. Dark is applied either by system preference (unless the
- * document opts out with data-theme="light") or explicitly with data-theme="dark".
+ * Dark is the default (docs/DECISIONS.md, 0142). Light is applied only by an explicit
+ * data-theme="light" on <html> (ThemeToggle).
  *
  * Usage rules for the brand and status colours below live in src/styles/README.md —
  * read them before using --color-primary, --color-accent or any --color-status-*
@@ -52,17 +52,17 @@
    * than the flat true-grey 0073 originally gave this.
    */
   --page-light: #f3f5f7;
-  --page-dark: #161a22;
+  --page-dark: #11100f;
   /* Dark theme surfaces, text and lines, lifted brighter than the shared neutral ramp so the
    * dark page reads clearly rather than muddy (docs/DECISIONS.md, 0136). Own values, because
    * the ramp's dark steps double as the light theme's text colours. Contrast checked with the
    * WCAG formula: text 13.8:1, secondary 9.8:1 on the surface; the line 3:1. */
-  --dark-surface: #222836;
-  --dark-surface-raised: #2d3445;
-  --dark-border-subtle: #4a5368;
-  --dark-border: #74809a;
-  --dark-text-secondary: #cdd3dd;
-  --dark-text-disabled: #8a93a3;
+  --dark-surface: #1a1817;
+  --dark-surface-raised: #252120;
+  --dark-border-subtle: #4a423c;
+  --dark-border: #8a7f76;
+  --dark-text-secondary: #bdb5ad;
+  --dark-text-disabled: #8a8179;
 
   /*
    * The page-wide gradient wash (docs/DECISIONS.md, 0089 introduced it, My reviews only; 0097
@@ -96,32 +96,31 @@
   --page-gradient-dark:
     radial-gradient(
       circle at 12% 18%,
-      color-mix(in srgb, #2a5d94 55%, var(--page-dark)) 0%,
+      color-mix(in srgb, #5a2a14 45%, var(--page-dark)) 0%,
       transparent 60%
     ),
     radial-gradient(
       circle at 88% 12%,
-      color-mix(in srgb, #1a6b5c 55%, var(--page-dark)) 0%,
+      color-mix(in srgb, #2c2a28 60%, var(--page-dark)) 0%,
       transparent 60%
     ),
     radial-gradient(
       circle at 50% 92%,
-      color-mix(in srgb, #4a3380 55%, var(--page-dark)) 0%,
+      color-mix(in srgb, #4a2312 40%, var(--page-dark)) 0%,
       transparent 65%
     );
 
-  /* Brand — indigo-blue (primary), replacing 0092's neutral black/white (docs/DECISIONS.md,
-   * 0094). Shifted toward violet (~248°) and away from the existing status-blue's hue (~210-
-   * 215°, --status-blue-* and --mark-blue): a brand colour that reads as the same hue as the
-   * "Requested for change"/"unknown" status would break the README's "status is a separate
-   * palette, never reused for non-status UI" rule in spirit even if the literal values differ. */
-  --indigo-light: #4338ca;
-  --indigo-light-hover: #332d9e;
-  --indigo-dark: #b3b7ff;
-  --indigo-dark-hover: #c4c7ff;
+  /* Brand — signal orange (primary), replacing 0094's indigo (docs/DECISIONS.md, 0142). Well away
+   * from the amber status (~42°): this is ~15° and reads red-orange, and every status also
+   * carries an icon and a word. Light: #b8420f is 5.9:1 on white; dark: #ff7a47 is 7.6:1 on the
+   * dark surface, and the fill #f45b22 carries dark text at 6.1:1. */
+  --brand-light: #b8420f;
+  --brand-light-hover: #8f3209;
+  --brand-dark: #ff7a47;
+  --brand-dark-hover: #ff9a70;
   /* Deeper, for fills and underlines only, not text: 4.75:1 on the dark surfaces, matching
    * 0073's precedent for this token's old (magenta) value. */
-  --indigo-dark-strong: #9a9fff;
+  --brand-dark-strong: #f45b22;
 
   /* Brand — chartreuse-lime (accent), replacing 0068's teal-green (docs/DECISIONS.md, 0073) */
   --lime-light: #427000;
@@ -163,7 +162,7 @@
   --status-green-tint-fg-light: #1a7a3e; /* 4.81:1 on the tint above — new, see comment */
   --status-green-tint-bg-dark: #255438; /* paired with --status-green-dark: 6.2:1 */
   --status-amber-tint-bg-light: #fdf3d9; /* paired with --status-amber-light: 5.36:1 */
-  --status-amber-tint-bg-dark: #534215; /* paired with --status-amber-dark: 6.0:1 */
+  --status-amber-tint-bg-dark: #3b2f0f; /* paired with --status-amber-dark: 9.6:1; the orange links on it hold 5.2:1 (0142) */
   /* Red tint — the Low confidence chip and Reject run's hover (docs/DECISIONS.md, 0039 and
    * 0041). Both reuse the existing red as foreground: 5.67:1 light, 6.57:1 dark. */
   --status-red-tint-bg-light: #fcebea;
@@ -173,11 +172,11 @@
   --status-blue-tint-fg-light: #1f5fbf; /* 5.02:1 on the tint above */
   --status-blue-tint-bg-dark: #244772; /* paired with --status-blue-dark */
 
-  /* A light wash of the brand indigo: selected rows, the active tab's count (0094). */
-  --indigo-tint-light: #eae9fb;
-  --indigo-tint-border-light: #c9c5f0;
-  --indigo-tint-dark: #363376;
-  --indigo-tint-border-dark: #8a85e0;
+  /* A light wash of the brand brand: selected rows, the active tab's count (0094). */
+  --brand-tint-light: #fdeee6;
+  --brand-tint-border-light: #f0c1a8;
+  --brand-tint-dark: #3d2216;
+  --brand-tint-border-dark: #b5532c;
 
   /* The coloured circles behind the My reviews tab icons: decorative, beside a text label. */
   --mark-amber: #f0a04b;
@@ -197,6 +196,16 @@
    * must not be reused for non-status UI. Decorative only — never text, never a status.
    */
   --signature-orange: #e8590c;
+
+  /* The terrain backdrop and the intro's map (components/TerrainBackdrop.tsx, app/WelcomeIntro.tsx,
+   * docs/DECISIONS.md, 0142). Decorative only, never text. */
+  --terrain-glow: #ff7a47;
+  --terrain-shade: #11100f;
+  --terrain-line: #6e777d;
+  /* The relief, vignette and map coordinates as one SVG image (a data URI cannot read tokens, so
+   * its colours are literal: #8e99a0 steel light, #11100f the page, #a39b93 muted). Used by
+   * .terrain-page::before in transitions.css. */
+  --terrain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3Cfilter id='r' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0045 0.007' numOctaves='4' seed='7'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 9 -3.6' result='h'/%3E%3CfeDiffuseLighting in='h' surfaceScale='9' diffuseConstant='1.1' lighting-color='#8e99a0'%3E%3CfeDistantLight azimuth='235' elevation='38'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3CradialGradient id='v' cx='50%25' cy='40%25' r='75%25'%3E%3Cstop offset='0.15' stop-color='#11100f' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='#11100f' stop-opacity='1'/%3E%3C/radialGradient%3E%3Cstyle%3Etext%7Bfont:12px monospace;letter-spacing:2px;fill:#a39b93;opacity:0;animation:f 12s ease-in-out infinite%7D%40keyframes f%7B0%25,100%25%7Bopacity:0%7D40%25,60%25%7Bopacity:.35%7D%7D%40media (prefers-reduced-motion:reduce)%7Btext%7Banimation:none;opacity:.25%7D%7D%3C/style%3E%3C/defs%3E%3Crect width='1600' height='900' filter='url(#r)' opacity='.4'/%3E%3Crect width='1600' height='900' fill='url(#v)'/%3E%3Ctext x='130' y='200'%3E+ 60.17%C2%B0N 24.94%C2%B0E%3C/text%3E%3Ctext x='1150' y='130' style='animation-delay:3s'%3E+ 64.96%C2%B0N 27.59%C2%B0E%3C/text%3E%3Ctext x='930' y='700' style='animation-delay:6s'%3E+ 61.49%C2%B0N 23.76%C2%B0E%3C/text%3E%3Ctext x='220' y='760' style='animation-delay:9s'%3E+ 65.01%C2%B0N 25.47%C2%B0E%3C/text%3E%3C/svg%3E");
 }
 
 @theme {
@@ -222,18 +231,18 @@
    * colour for a filled primary or accent surface — it flips per theme (white in
    * light, near-black in dark).
    *
-   * Primary is an indigo-blue (docs/DECISIONS.md, 0094 — reversing 0092's neutral, by request):
+   * Primary is an brand-blue (docs/DECISIONS.md, 0094 — reversing 0092's neutral, by request):
    * shifted toward violet and away from the existing status-blue's hue, so a brand-coloured
    * focus ring, link or active-tab badge never reads as the "Requested for change"/"unknown"
    * status colour. Vivid colour also stays on the status palette below for its own reason —
    * that was already the only thing actually signalling urgency.
    */
-  --color-primary: var(--indigo-light);
-  --color-primary-hover: var(--indigo-light-hover);
+  --color-primary: var(--brand-light);
+  --color-primary-hover: var(--brand-light-hover);
   --color-primary-foreground: var(--neutral-0);
   /* The brand as a fill or an underline — progress bars, the selected tab. Same as primary in
    * light; deeper in dark, where text-safe primary has to stay light (0073's precedent). */
-  --color-primary-strong: var(--indigo-light);
+  --color-primary-strong: var(--brand-light);
   --color-accent: var(--lime-light);
   --color-accent-hover: var(--lime-light-hover);
   --color-accent-foreground: var(--neutral-13);
@@ -269,10 +278,10 @@
   /* My reviews (docs/DECISIONS.md, 0060). */
   --color-status-info-tint-bg: var(--status-blue-tint-bg-light);
   --color-status-info-tint-fg: var(--status-blue-tint-fg-light);
-  /* A light wash of the brand indigo (0094) — the Filters button open, the active sort icon,
+  /* A light wash of the brand brand (0094) — the Filters button open, the active sort icon,
    * the selected tab's count badge. */
-  --color-primary-tint: var(--indigo-tint-light);
-  --color-primary-tint-border: var(--indigo-tint-border-light);
+  --color-primary-tint: var(--brand-tint-light);
+  --color-primary-tint-border: var(--brand-tint-border-light);
   --color-mark-pending: var(--mark-amber);
   --color-mark-requested: var(--mark-blue);
   --color-mark-declined: var(--mark-red);
@@ -281,19 +290,19 @@
   /* A toast is the inverse of the page: dark on light, light on dark. */
   --color-toast-bg: var(--neutral-12);
   --color-toast-fg: var(--neutral-1);
-  /* The opposite theme's primary-equivalent indigo, same reasoning as --color-toast-fg above:
+  /* The opposite theme's primary-equivalent brand, same reasoning as --color-toast-fg above:
    * visible against the toast's own inverted background (0094). */
-  --color-toast-link: var(--indigo-dark);
+  --color-toast-link: var(--brand-dark);
   --color-toast-icon: var(--status-green-dark);
 
   /*
-   * The welcome intro's overlay, the same in both themes on purpose: the signature is black
-   * ink on a white, frosted sheet, like the logo itself (docs/DECISIONS.md, 0048).
+   * The welcome intro's overlay, the same in both themes on purpose: a dark map sheet with warm
+   * white ink (docs/DECISIONS.md, 0142, replacing 0048's white sheet).
    */
   --color-signature: var(--signature-orange);
-  --color-intro-scrim: rgb(255 255 255 / 0.8);
-  --color-intro-ink: var(--neutral-13);
-  --color-intro-muted: var(--neutral-8);
+  --color-intro-scrim: rgb(17 16 15 / 0.97);
+  --color-intro-ink: #efece8;
+  --color-intro-muted: #a39b93;
   /* The spotlight's dimmed surroundings, the same in both themes (docs/DECISIONS.md, 0056). */
   --color-spotlight-scrim: rgb(0 0 0 / 0.5);
   /* Behind a dialog: dims the page in both themes, never lightens it (0070). */
@@ -320,12 +329,12 @@
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
 
   /*
-   * Type. Raleway for headings, buttons and the wordmark; Montserrat for body and
+   * Type. Chakra Petch for headings, buttons and the wordmark; Hanken Grotesk for body and
    * table/data text. Both loaded via Google Fonts — see index.html. Weights are
-   * requested, not assumed: Raleway 500/600/700, Montserrat 400/500.
+   * requested, not assumed: Chakra Petch 500/600/700, Hanken Grotesk 400/500.
    */
-  --font-heading: 'Raleway', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
 
   /*
    * Type scale. Exact sizes, weights and fonts, decided once — see src/styles/README.md,
@@ -336,13 +345,13 @@
    * `font-heading`/`font-body` wherever a size below is used — every component using one of
    * these sizes uses the full combination, never the size alone.
    */
-  --text-page-title: 28px; /* 700 · font-heading (Raleway) — the page identity element */
-  --text-section-heading: 18px; /* 600 · font-heading (Raleway) — one per region */
-  --text-item-title: 15px; /* 600 · font-body (Montserrat) — e.g. a gate's rule name */
-  --text-body: 14px; /* 400 · font-body (Montserrat) — descriptions, sentences */
-  --text-meta: 13px; /* 400 · font-body (Montserrat) — always --color-text-secondary */
-  --text-badge-label: 13px; /* 600 · font-heading (Raleway) — StatusBadge's label text */
-  --text-lead: 16px; /* 400 · font-body (Montserrat) — the story's running prose */
+  --text-page-title: 28px; /* 700 · font-heading (Chakra Petch) — the page identity element */
+  --text-section-heading: 18px; /* 600 · font-heading (Chakra Petch) — one per region */
+  --text-item-title: 15px; /* 600 · font-body (Hanken Grotesk) — e.g. a gate's rule name */
+  --text-body: 14px; /* 400 · font-body (Hanken Grotesk) — descriptions, sentences */
+  --text-meta: 13px; /* 400 · font-body (Hanken Grotesk) — always --color-text-secondary */
+  --text-badge-label: 13px; /* 600 · font-heading (Chakra Petch) — StatusBadge's label text */
+  --text-lead: 16px; /* 400 · font-body (Hanken Grotesk) — the story's running prose */
   --text-caption: 12px; /* 400 · font-body — field labels and helper text under a control */
   --text-score: 22px; /* 600 · font-heading — a confidence percentage, the undo countdown */
 }
@@ -379,67 +388,11 @@
 }
 
 /*
- * Dark theme. Same semantic names, different values, so no component changes.
- * The :not([data-theme="light"]) guard lets an explicit light choice win over
- * the system preference. Type tokens are theme-independent and stay in @theme.
+ * Dark theme, the default (docs/DECISIONS.md, 0142 — reverses 0001): it applies unless the viewer
+ * has explicitly chosen light, whatever the system setting says. Same semantic names, different values, so no component changes.
+ * Type tokens are theme-independent and stay in @theme.
  */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --color-bg: var(--page-dark);
-    --color-surface: var(--dark-surface);
-    --color-surface-raised: var(--dark-surface-raised);
-
-    --color-border-subtle: var(--dark-border-subtle);
-    --color-border: var(--dark-border);
-
-    --color-text-primary: var(--neutral-1);
-    --color-text-secondary: var(--dark-text-secondary);
-    --color-text-disabled: var(--dark-text-disabled);
-
-    --color-primary: var(--indigo-dark);
-    --color-primary-hover: var(--indigo-dark-hover);
-    --color-primary-strong: var(--indigo-dark-strong);
-    --color-primary-foreground: var(--dark-surface);
-    --color-accent: var(--lime-dark);
-    --color-accent-hover: var(--lime-dark-hover);
-    --color-accent-foreground: var(--dark-surface);
-
-    --color-status-pass: var(--status-green-dark);
-    --color-status-fail: var(--status-red-dark);
-    --color-status-waived: var(--status-amber-dark);
-    --color-status-not-applicable: var(--status-slate-dark);
-    --color-status-unknown: var(--status-blue-dark);
-
-    --color-status-pass-tint-bg: var(--status-green-tint-bg-dark);
-    --color-status-pass-tint-fg: var(--status-green-dark);
-    --color-status-waived-tint-bg: var(--status-amber-tint-bg-dark);
-    --color-status-waived-tint-fg: var(--status-amber-dark);
-    --color-status-fail-tint-bg: var(--status-red-tint-bg-dark);
-    --color-status-fail-tint-fg: var(--status-red-dark);
-    --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
-    --color-status-info-tint-fg: var(--status-blue-dark);
-    --color-primary-tint: var(--indigo-tint-dark);
-    --color-primary-tint-border: var(--indigo-tint-border-dark);
-    --color-toast-bg: var(--neutral-2);
-    --color-toast-fg: var(--neutral-12);
-    --color-toast-link: var(--indigo-light);
-    --color-toast-icon: var(--status-green-light);
-    --color-mark-pending: var(--mark-amber-dark);
-    --color-mark-requested: var(--mark-blue-dark);
-    --color-mark-declined: var(--mark-red-dark);
-    --color-mark-approved: var(--mark-green-dark);
-    --color-mark-pending: var(--mark-amber-dark);
-    --color-mark-requested: var(--mark-blue-dark);
-    --color-mark-declined: var(--mark-red-dark);
-    --color-mark-approved: var(--mark-green-dark);
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-    --color-modal-scrim: rgb(0 0 0 / 0.6);
-
-    --page-gradient: var(--page-gradient-dark);
-  }
-}
-
-:root[data-theme='dark'] {
+:root:not([data-theme='light']) {
   --color-bg: var(--page-dark);
   --color-surface: var(--dark-surface);
   --color-surface-raised: var(--dark-surface-raised);
@@ -447,13 +400,13 @@
   --color-border-subtle: var(--dark-border-subtle);
   --color-border: var(--dark-border);
 
-  --color-text-primary: var(--neutral-1);
+  --color-text-primary: #efece8;
   --color-text-secondary: var(--dark-text-secondary);
   --color-text-disabled: var(--dark-text-disabled);
 
-  --color-primary: var(--indigo-dark);
-  --color-primary-hover: var(--indigo-dark-hover);
-  --color-primary-strong: var(--indigo-dark-strong);
+  --color-primary: var(--brand-dark);
+  --color-primary-hover: var(--brand-dark-hover);
+  --color-primary-strong: var(--brand-dark-strong);
   --color-primary-foreground: var(--dark-surface);
   --color-accent: var(--lime-dark);
   --color-accent-hover: var(--lime-dark-hover);
@@ -473,11 +426,11 @@
   --color-status-fail-tint-fg: var(--status-red-dark);
   --color-status-info-tint-bg: var(--status-blue-tint-bg-dark);
   --color-status-info-tint-fg: var(--status-blue-dark);
-  --color-primary-tint: var(--indigo-tint-dark);
-  --color-primary-tint-border: var(--indigo-tint-border-dark);
+  --color-primary-tint: var(--brand-tint-dark);
+  --color-primary-tint-border: var(--brand-tint-border-dark);
   --color-toast-bg: var(--neutral-2);
   --color-toast-fg: var(--neutral-12);
-  --color-toast-link: var(--indigo-light);
+  --color-toast-link: var(--brand-light);
   --color-toast-icon: var(--status-green-light);
   --color-mark-pending: var(--mark-amber-dark);
   --color-mark-requested: var(--mark-blue-dark);
@@ -498,6 +451,8 @@
   --motion-duration-instant: 80ms;
   --motion-duration-fast: 140ms;
   --motion-duration-base: 220ms;
+  /* The link underline's left-to-right sweep (0142). */
+  --motion-duration-sweep: 650ms;
   --motion-ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
   --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
 
@@ -517,6 +472,7 @@
     --motion-duration-instant: 1ms;
     --motion-duration-fast: 1ms;
     --motion-duration-base: 1ms;
+    --motion-duration-sweep: 1ms;
     --motion-duration-open: 1ms;
     --motion-duration-close: 1ms;
   }

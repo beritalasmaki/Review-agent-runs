@@ -161,21 +161,24 @@ test('My reviews, keyboard only', async ({ page }) => {
 })
 
 test('the theme switch works from the keyboard and is remembered', async ({ page }) => {
-  await page.emulateMedia({ colorScheme: 'light' })
   await page.goto('/')
-  // Tab only once the list has loaded: while it loads, the page has nothing to focus.
+  // Dark is the default (0142): the switch starts on, and one press turns it off.
   await expect(page.getByRole('button', { name: /^Archive/ })).toBeVisible()
   await tabTo(page, /^Dark theme$/)
-  await page.keyboard.press('Space')
   await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
     'aria-checked',
     'true',
   )
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await page.reload()
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.keyboard.press('Space')
   await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
     'aria-checked',
-    'true',
+    'false',
+  )
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
+    'aria-checked',
+    'false',
   )
 })

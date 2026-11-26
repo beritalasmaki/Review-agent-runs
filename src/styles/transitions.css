@@ -494,3 +494,30 @@
  *   not apply — confirmed, not just assumed, with the mandatory keyboard stress test
  *   (`--repeat-each=15`) before this shipped.
  */
+
+/*
+ * Terrain backdrop (components/TerrainBackdrop.tsx, docs/DECISIONS.md, 0142): one fixed,
+ * non-interactive layer painted by the page's own `::before`, behind its content, so it is not
+ * an element the accessibility tools have to reason about. The SVG (tokens.css, --terrain-image)
+ * holds the shaded relief, the vignette and the slowly fading coordinates; a warm glow sits on
+ * top. Dark theme only.
+ */
+.terrain-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      circle at 85% 8%,
+      color-mix(in srgb, var(--terrain-glow) 12%, transparent),
+      transparent 45%
+    ),
+    var(--terrain-image);
+  background-size: cover;
+  background-position: center;
+}
+:root[data-theme='light'] .terrain-page::before {
+  display: none;
+}

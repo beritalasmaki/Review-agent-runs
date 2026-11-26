@@ -10,27 +10,27 @@ describe('ThemeToggle', () => {
     localStorage.clear()
   })
 
-  it('starts from the page theme, and switches it and remembers the choice', async () => {
+  it('starts dark, and switches the theme and remembers the choice', async () => {
     render(<ThemeToggle />)
     const toggle = screen.getByRole('switch', { name: 'Dark theme' })
-    expect(toggle).toHaveAttribute('aria-checked', 'false')
-
-    await userEvent.click(toggle)
     expect(toggle).toHaveAttribute('aria-checked', 'true')
-    expect(document.documentElement.dataset.theme).toBe('dark')
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
 
     await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-checked', 'false')
     expect(document.documentElement.dataset.theme).toBe('light')
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light')
+
+    await userEvent.click(toggle)
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark')
   })
 
   it('reads a choice already on the page', () => {
-    document.documentElement.dataset.theme = 'dark'
+    document.documentElement.dataset.theme = 'light'
     render(<ThemeToggle />)
     expect(screen.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
       'aria-checked',
-      'true',
+      'false',
     )
   })
 })

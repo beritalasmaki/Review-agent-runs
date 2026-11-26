@@ -1,22 +1,15 @@
 /**
  * The page's theme, for `ThemeToggle` (docs/DECISIONS.md, 0063): an explicit choice is
- * `data-theme` on <html> plus a remembered value; no choice follows the system setting.
+ * `data-theme` on <html> plus a remembered value; no choice is dark (docs/DECISIONS.md, 0142).
  */
 export type Theme = 'light' | 'dark'
 
 export const THEME_STORAGE_KEY = 'ledger:theme'
 
-export function systemTheme(): Theme {
-  return typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
-}
-
-/** The theme the page shows now: an explicit choice on <html>, else the system's. */
+/** The theme the page shows now: an explicit choice on <html>, else dark (0142). */
 export function currentTheme(): Theme {
   const chosen = document.documentElement.dataset.theme
-  return chosen === 'light' || chosen === 'dark' ? chosen : systemTheme()
+  return chosen === 'light' ? 'light' : 'dark'
 }
 
 export function setTheme(theme: Theme) {

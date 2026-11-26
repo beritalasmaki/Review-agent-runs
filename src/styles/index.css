@@ -7,16 +7,11 @@
  * A `dark:` variant for the rare case that a component needs more than a token
  * swap. Tokens handle the normal case on their own, so reach for this sparingly.
  */
-/* `dark:` follows the page's theme, not only the system's: an explicit data-theme="dark", or
-   the system's dark mode when the viewer hasn't chosen light (ThemeToggle, 0063). */
+/* `dark:` follows the page's theme: dark unless the viewer has chosen light (ThemeToggle,
+   0063; dark by default, 0142). */
 @custom-variant dark {
-  &:where([data-theme='dark'], [data-theme='dark'] *) {
+  &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) {
     @slot;
-  }
-  @media (prefers-color-scheme: dark) {
-    &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) {
-      @slot;
-    }
   }
 }
 
@@ -100,7 +95,10 @@
 
 @layer base {
   html {
-    color-scheme: light dark;
+    color-scheme: dark;
+  }
+  html[data-theme='light'] {
+    color-scheme: light;
   }
 
   /*

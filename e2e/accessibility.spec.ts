@@ -316,6 +316,8 @@ for (const scheme of ['light', 'dark'] as const) {
       test(`${state.name}: no WCAG A/AA violations, contrast included`, async ({ page }) => {
         // Reduced motion, so nothing is mid-transition when axe reads colours.
         await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
+        // Dark is the default (0142); light is an explicit choice.
+        await page.addInitScript((value) => localStorage.setItem('ledger:theme', value), scheme)
         if (state.skipTourBypass) {
           await page.addInitScript(() => sessionStorage.removeItem('ledger:tour-seen'))
         }

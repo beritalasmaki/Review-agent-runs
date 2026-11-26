@@ -13,14 +13,14 @@ Two layers:
 2. **Semantic tokens** — what the product uses: `--color-primary`, `--color-status-pass`,
    `--color-surface-raised`, `--color-border-subtle`. Components only ever use these.
 
-Both themes are defined here. Light is the default, because the reviewer often works in
-bright, document-heavy environments; dark is available and the system preference is
-respected on first load.
+Both themes are defined here. Dark is the default (docs/DECISIONS.md, 0142, reversing 0001),
+whatever the system setting; light is an explicit choice with the theme switch and is
+remembered. Brand is signal orange in both.
 
 ## Type
 
-Raleway (500/600/700) for headings, buttons and the wordmark — `--font-heading`. Montserrat
-(400/500) for body text and table/data text — `--font-body`. Both load via Google Fonts (see
+Chakra Petch (500/600/700) for headings, buttons and the wordmark — `--font-heading`. Hanken
+Grotesk (400/500/600) for body text and table/data text — `--font-body`. Both load via Google Fonts (see
 `index.html`); neither varies by theme.
 
 ## Type scale
@@ -77,7 +77,8 @@ Consumed through Tailwind's arbitrary-value syntax instead — `gap-[var(--space
 
 ## Usage rules
 
-- **Primary and accent are never used on Approve, Request changes or Reject.** Those three
+- **Primary and accent are never used on Approve, Request changes or Reject** (the `brand`
+  Button variant is for the tour and welcome only, 0142). Those three
   stay neutral. A brand colour on the decision actions would read as "the recommended
   option" or "the easy one," and the interface must never imply that (docs/spec-review-screen.md,
   Scenario S2; AGENTS.md non-negotiable 2).

@@ -1,13 +1,13 @@
 import { Moon, Sun } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { cn } from '../lib/utils'
 import { Switch } from './ui/switch'
-import { currentTheme, setTheme, systemTheme } from './theme'
+import { currentTheme, setTheme } from './theme'
 import type { Theme } from './theme'
 
 /**
  * Light or dark, chosen by the viewer (docs/DECISIONS.md, 0063). Until they choose, the page
- * follows the system setting; the choice then sets `data-theme` on <html>, which the tokens
+ * is dark (0142); the choice then sets `data-theme` on <html>, which the tokens
  * already honour, and is remembered in this browser. index.html applies a remembered choice
  * before the first paint, so the page never flashes the other theme.
  *
@@ -15,17 +15,6 @@ import type { Theme } from './theme'
  */
 export function ThemeToggle({ className }: { className?: string }) {
   const [theme, setThemeState] = useState<Theme>(currentTheme)
-
-  // No choice made yet: follow the system if it changes while the page is open.
-  useEffect(() => {
-    if (typeof window.matchMedia !== 'function') return
-    const query = window.matchMedia('(prefers-color-scheme: dark)')
-    const follow = () => {
-      if (!document.documentElement.dataset.theme) setThemeState(systemTheme())
-    }
-    query.addEventListener('change', follow)
-    return () => query.removeEventListener('change', follow)
-  }, [])
 
   const dark = theme === 'dark'
   return (
