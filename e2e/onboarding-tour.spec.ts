@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
 async function startTour(page: Page) {
   await page.goto('/')
   await page.getByRole('button', { name: 'Take the tour' }).click()
-  await expect(page.getByText('Step 1 of 5')).toBeVisible()
+  await expect(page.getByText('Step 1 of 6')).toBeVisible()
 }
 
 test('the welcome modal offers the tour, and Skip closes it without opening the tour', async ({
@@ -28,7 +28,7 @@ test('the welcome modal offers the tour, and Skip closes it without opening the 
   await expect(page.getByRole('heading', { name: 'Welcome to Review agent runs' })).toBeVisible()
   await page.getByRole('button', { name: /^Skip/ }).click()
   await expect(page.getByRole('heading', { name: 'Welcome to Review agent runs' })).toHaveCount(0)
-  await expect(page.getByText(/Step \d of 5/)).toHaveCount(0)
+  await expect(page.getByText(/Step \d of 6/)).toHaveCount(0)
   // Remembering the choice across a reload is the same sessionStorage write the "Leg 1 ->
   // Leg 2" test below already proves survives one — not re-checked here, since this spec's own
   // beforeEach clears the bypass flag before every navigation, reload included, which would
@@ -39,9 +39,10 @@ test('Leg 1 walks My reviews, and clicking the spotlighted row continues Leg 2 o
   page,
 }) => {
   await startTour(page)
-  await expect(page.getByRole('heading', { name: 'What needs you' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your review list' })).toBeVisible()
 
   for (const title of [
+    'What needs you',
     'Pending, decided, or all of them',
     'Find a specific run',
     'Open a run to review it',
@@ -49,7 +50,7 @@ test('Leg 1 walks My reviews, and clicking the spotlighted row continues Leg 2 o
     await page.getByRole('button', { name: 'Next' }).click()
     await expect(page.getByRole('heading', { name: title })).toBeVisible()
   }
-  await expect(page.getByText('Step 4 of 5')).toBeVisible()
+  await expect(page.getByText('Step 5 of 6')).toBeVisible()
 
   // The spotlighted row stays genuinely clickable through the cutout — the whole point of
   // this step. The tour overlay does not block the click.
@@ -60,14 +61,14 @@ test('Leg 1 walks My reviews, and clicking the spotlighted row continues Leg 2 o
   await expect(page).toHaveURL(/\?run=/)
 
   // Leg 2 continues automatically on the run page — no welcome modal here, it already asked.
-  await expect(page.getByRole('heading', { name: 'What this run is' })).toBeVisible()
-  await expect(page.getByText('Step 1 of 3')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'One run on one page' })).toBeVisible()
+  await expect(page.getByText('Step 1 of 4')).toBeVisible()
   await page.getByRole('button', { name: 'Skip tour' }).click()
-  await expect(page.getByText(/Step \d of 3/)).toHaveCount(0)
+  await expect(page.getByText(/Step \d of 4/)).toHaveCount(0)
 
   // The whole tour is seen now: reloading the run page does not replay Leg 2.
   await page.reload()
-  await expect(page.getByText(/Step \d of 3/)).toHaveCount(0)
+  await expect(page.getByText(/Step \d of 4/)).toHaveCount(0)
 })
 
 test('Skip tour on Leg 1 ends the tour outright, without continuing onto a run', async ({
@@ -75,14 +76,14 @@ test('Skip tour on Leg 1 ends the tour outright, without continuing onto a run',
 }) => {
   await startTour(page)
   await page.getByRole('button', { name: 'Skip tour' }).click()
-  await expect(page.getByText(/Step \d of 5/)).toHaveCount(0)
+  await expect(page.getByText(/Step \d of 6/)).toHaveCount(0)
 
   await page
     .getByRole('link', { name: /^Review / })
     .first()
     .click()
   await expect(page).toHaveURL(/\?run=/)
-  await expect(page.getByText(/Step \d of 3/)).toHaveCount(0)
+  await expect(page.getByText(/Step \d of 4/)).toHaveCount(0)
 })
 
 test('Escape dismisses the tour from any step, and it does not return on reload', async ({
@@ -90,9 +91,9 @@ test('Escape dismisses the tour from any step, and it does not return on reload'
 }) => {
   await startTour(page)
   await page.keyboard.press('Escape')
-  await expect(page.getByText(/Step \d of 5/)).toHaveCount(0)
+  await expect(page.getByText(/Step \d of 6/)).toHaveCount(0)
   await page.reload()
-  await expect(page.getByText(/Step \d of 5/)).toHaveCount(0)
+  await expect(page.getByText(/Step \d of 6/)).toHaveCount(0)
 })
 
 test("Tab stays within the step bubble's own Back, Skip and Next controls", async ({ page }) => {

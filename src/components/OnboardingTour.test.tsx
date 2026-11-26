@@ -37,6 +37,13 @@ const TWO_STEPS: TourStep[] = [
 ]
 
 describe('OnboardingTour', () => {
+  it('shows an overview step without a highlight ring', async () => {
+    const steps: TourStep[] = [{ ...TWO_STEPS[0], overview: true }, TWO_STEPS[1]]
+    const { container } = render(<Page steps={steps} onDismiss={vi.fn()} />)
+    expect(await screen.findByRole('heading', { name: 'First step' })).toBeVisible()
+    expect(container.ownerDocument.querySelector('.border-primary.hidden')).not.toBeNull()
+  })
+
   it('shows the first step, with no Back button', async () => {
     render(<Page steps={TWO_STEPS} onDismiss={vi.fn()} />)
     expect(await screen.findByRole('heading', { name: 'First step' })).toBeVisible()

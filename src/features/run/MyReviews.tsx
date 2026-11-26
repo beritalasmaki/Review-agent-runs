@@ -404,7 +404,10 @@ function ReviewsBoard({
   )
 
   return (
-    <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]">
+    <div
+      data-tour="list-page"
+      className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-4)] pt-[var(--space-6)] pb-[var(--space-7)] md:px-[var(--space-6)]"
+    >
       {!onArchivePage ? (
         <div className="flex flex-col">
           {/*

@@ -33,6 +33,10 @@ export interface TourStep {
   body: string
   /** Which side of the target the bubble prefers. Radix still flips it near a screen edge. */
   side?: 'top' | 'right' | 'bottom' | 'left'
+  /** A "look at the whole page" step: no cutout, no ring — the page is dimmed evenly and the
+   * bubble sits at the middle of the viewport. `selector` still has to match (it is how the
+   * tour knows the page has loaded). */
+  overview?: boolean
 }
 
 export interface OnboardingTourProps {
@@ -197,10 +201,11 @@ export function OnboardingTour({
   const last = index === steps.length - 1
   const vw = window.innerWidth
   const vh = window.innerHeight
-  const top = Math.max(activeRect.top - RING_PAD, 0)
-  const left = Math.max(activeRect.left - RING_PAD, 0)
-  const right = Math.min(activeRect.right + RING_PAD, vw)
-  const bottom = Math.min(activeRect.bottom + RING_PAD, vh)
+  const overview = step.overview === true
+  const top = overview ? vh / 2 : Math.max(activeRect.top - RING_PAD, 0)
+  const left = overview ? vw / 2 : Math.max(activeRect.left - RING_PAD, 0)
+  const right = overview ? vw / 2 : Math.min(activeRect.right + RING_PAD, vw)
+  const bottom = overview ? vh / 2 : Math.min(activeRect.bottom + RING_PAD, vh)
   const fade = 'transition-all duration-300 motion-reduce:transition-none'
 
   function next() {
@@ -232,7 +237,11 @@ export function OnboardingTour({
       />
       <div
         aria-hidden
-        className={cn('pointer-events-none fixed z-50 rounded-lg border-2 border-primary', fade)}
+        className={cn(
+          'pointer-events-none fixed z-50 rounded-lg border-2 border-primary',
+          overview && 'hidden',
+          fade,
+        )}
         style={{ top, left, width: right - left, height: bottom - top }}
       />
       <Popover open onOpenChange={() => {}}>
@@ -245,7 +254,7 @@ export function OnboardingTour({
         </PopoverAnchor>
         <PopoverContent
           key={step.id}
-          side={step.side ?? 'bottom'}
+          side={overview ? 'top' : (step.side ?? 'bottom')}
           role="dialog"
           aria-labelledby={`tour-step-title-${step.id}`}
           aria-describedby={`tour-step-body-${step.id}`}

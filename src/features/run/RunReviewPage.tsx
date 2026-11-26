@@ -244,7 +244,10 @@ export function RunReviewPage({
             reviewsHref={reviewsHref}
             end={toSolve ? <OpenItemsNotice run={run} /> : undefined}
           />
-          <div className="grid grid-cols-1 items-start gap-[var(--space-4)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]">
+          <div
+            data-tour="run-page"
+            className="grid grid-cols-1 items-start gap-[var(--space-4)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]"
+          >
             <div
               className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"
               data-tour="run-overview"

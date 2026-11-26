@@ -11,6 +11,14 @@ import type { TourStep } from '../../components/OnboardingTour'
 /** Leg 1, shown on My reviews (the home page), in page order. */
 export const LIST_TOUR_STEPS: TourStep[] = [
   {
+    id: 'list-overview',
+    selector: '[data-tour="list-page"]',
+    title: 'Your review list',
+    body: 'This is the review preview page. Here you see the list of agent runs that need your review.',
+    side: 'bottom',
+    overview: true,
+  },
+  {
     id: 'needs-review-badge',
     selector: '[data-tour="needs-review-badge"]',
     title: 'What needs you',
@@ -49,6 +57,14 @@ export const LIST_TOUR_STEPS: TourStep[] = [
 
 /** Leg 2, shown on a run's review page — only reached by continuing from Leg 1. */
 export const RUN_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'run-page-overview',
+    selector: '[data-tour="run-page"]',
+    title: 'One run on one page',
+    body: 'This is the review page for a single run. It shows what the agent did and lets you decide. First a quick look at the whole page, then the details.',
+    side: 'bottom',
+    overview: true,
+  },
   {
     id: 'run-overview',
     selector: '[data-tour="run-overview"]',
