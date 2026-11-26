@@ -33,9 +33,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        /** The page's main action: Approve and release, Review, Undo, Create report. It fades on hover/focus. */
+        /** The page's main action: Approve and release, Review, Undo, Create report. Neutral —
+         * the decision actions never take the brand colour (src/styles/README.md) — with two
+         * chamfered corners (docs/DECISIONS.md, 0142). `clip-path` would cut a focus outline
+         * off, so the outline is drawn inside the box (negative offset). */
         default:
-          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-text-primary bg-text-primary text-surface hover:opacity-85',
+          'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-text-primary bg-text-primary text-surface [clip-path:polygon(0_0,calc(100%-8px)_0,100%_8px,100%_100%,8px_100%,0_calc(100%-8px))] hover:opacity-85 focus-visible:outline-offset-[-5px] focus-visible:outline-surface',
+        /** The brand's own call to action, outside the review decision: "Take the tour", the
+         * tour's Next and Done. Signal orange, same chamfer. Never on Approve, Request changes
+         * or Reject. */
+        brand:
+          'transition-[background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-primary bg-primary text-primary-foreground [clip-path:polygon(0_0,calc(100%-8px)_0,100%_8px,100%_100%,8px_100%,0_calc(100%-8px))] hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-offset-[-5px] focus-visible:outline-primary-foreground',
         /** The quieter action beside it: Request changes, Cancel, Filters. A plain fade on
          * hover/focus. */
         outline:
@@ -55,12 +63,10 @@ const buttonVariants = cva(
           'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-destructive bg-destructive text-destructive-foreground hover:opacity-85',
         ghost:
           'transition-[opacity,background-color,border-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] border-transparent bg-transparent text-text-primary hover:bg-surface-raised',
-        /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". A soft
-         * tinted background fades in on hover/focus (0127 — "the link style... looks plain and
-         * simple... background hover with fading animation"), replacing a plain underline: the
-         * same `--color-primary-tint`/`--color-primary-hover` wash already used for a selected
-         * row or the active tab's own count badge, not a new colour. */
-        link: 'rounded-xs border-transparent bg-transparent text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:bg-primary-tint hover:text-primary-hover focus-visible:bg-primary-tint focus-visible:text-primary-hover',
+        /** A button that reads as a link: "Show the checks →", "Retry", "Clear filters". On hover
+         * or focus an underline sweeps in from the left, slowly, like a scan line (0142,
+         * replacing 0127's fading background); instant under reduced motion. */
+        link: 'relative rounded-xs border-transparent bg-transparent text-primary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-[var(--motion-duration-sweep)] after:ease-[var(--motion-ease-standard)] hover:text-primary-hover hover:after:scale-x-100 focus-visible:text-primary-hover focus-visible:after:scale-x-100',
       },
       size: {
         default: 'gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] text-body',

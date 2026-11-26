@@ -1,6 +1,7 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, RotateCcw } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Button } from '../components/ui/button'
+import { prefersReducedMotion } from '../lib/motion'
 
 /**
  * Shown once per visit, right after the welcome intro, over the home page only
@@ -13,9 +14,11 @@ import { Button } from '../components/ui/button'
 export interface WelcomeModalProps {
   onStartTour: () => void
   onSkip: () => void
+  /** Plays the intro again. Left out, or with reduced motion on, there is no replay button. */
+  onReplayIntro?: () => void
 }
 
-export function WelcomeModal({ onStartTour, onSkip }: WelcomeModalProps) {
+export function WelcomeModal({ onStartTour, onSkip, onReplayIntro }: WelcomeModalProps) {
   return (
     <Modal title="Welcome to Review agent runs" onClose={onSkip} className="max-w-[32rem]">
       <p className="text-body leading-relaxed text-text-primary">
@@ -28,11 +31,17 @@ export function WelcomeModal({ onStartTour, onSkip }: WelcomeModalProps) {
         wanted to try designing an interface for that — not for any one company, just an idea worth
         testing.
       </p>
+      {onReplayIntro && !prefersReducedMotion() && (
+        <Button variant="link" size="inline" onClick={onReplayIntro} className="self-start">
+          <RotateCcw aria-hidden className="h-4 w-4" />
+          Replay the intro
+        </Button>
+      )}
       <div className="flex flex-wrap items-center justify-end gap-[var(--space-3)]">
         <Button variant="outline" onClick={onSkip}>
           Skip, I'll look around myself
         </Button>
-        <Button onClick={onStartTour}>
+        <Button variant="brand" onClick={onStartTour}>
           Take the tour
           <ArrowRight aria-hidden className="h-4 w-4" />
         </Button>

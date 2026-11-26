@@ -191,9 +191,12 @@ export function OnboardingTour({
 
   // A fresh step: announce it by moving focus to its heading, the same way MyReviews moves
   // focus to a view's heading when it changes.
+  // Keyed to whether a rect exists, not to the rect itself: every scroll tick produces a new
+  // DOMRect, and re-focusing the heading on each would pull focus back from the buttons.
+  const hasRect = activeRect != null
   useEffect(() => {
-    if (activeRect) headingRef.current?.focus()
-  }, [index, activeRect])
+    if (hasRect) headingRef.current?.focus()
+  }, [index, hasRect])
 
   if (!step || !activeRect) return null
 
@@ -290,7 +293,7 @@ export function OnboardingTour({
                 Skip tour
               </Button>
             </div>
-            <Button size="sm" onClick={next}>
+            <Button variant="brand" size="sm" onClick={next}>
               {last ? (
                 <>
                   <Check aria-hidden className="h-4 w-4" />
