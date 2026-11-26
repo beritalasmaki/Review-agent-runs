@@ -26,6 +26,8 @@ background layer that stops under `prefers-reduced-motion`, and a satellite-unde
 fog text is decorative and `aria-hidden`; colours must be re-checked with `npm run check` contrast
 tests in both themes. Not yet done: any of the above in code.
 
+**Fonts (follow-up).** Two families, not three: Chakra Petch for headings and small labels, Hanken Grotesk for body text and numbers. Numbers use `font-feature-settings: "tnum"` on Hanken instead of a third, monospaced family (Martian Mono). Trade-off: less of a "terminal" feel for figures, one fewer font to load.
+
 ---
 
 ## 0139 · Icon motion on button hover
