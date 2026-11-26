@@ -1,7 +1,7 @@
 import { Button } from '../../components/ui/button'
 import { Textarea } from '../../components/ui/textarea'
 import { Checkbox } from '../../components/ui/checkbox'
-import { ArrowLeft, Check, Info, ShieldCheck, X } from 'lucide-react'
+import { Check, Info, Pencil, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { SubmitDecisionOptions } from '../../lib/api'
 import { UNDO_WINDOW_MINUTES } from '../../lib/decision'
@@ -160,9 +160,7 @@ export function DecisionPanel({
       <div className="flex flex-col gap-[var(--space-6)] p-[var(--space-5)]">
         <div className="flex flex-col gap-[var(--space-4)]">
           <div className="flex flex-col gap-[var(--space-5)]">
-            <SectionHeading id="decision-heading" icon={ShieldCheck}>
-              Your decision
-            </SectionHeading>
+            <SectionHeading id="decision-heading">Your decision</SectionHeading>
             <OpenItemsNotice run={run} jump={false} />
             <p className="text-meta font-normal font-body text-text-secondary">
               Made by you, never by the agent. You can undo it for {UNDO_WINDOW_MINUTES} minutes.
@@ -308,7 +306,7 @@ export function DecisionPanel({
 
           <div className="flex flex-col gap-[var(--space-2)]">
             <Button variant="outline" onClick={() => openOther('changes_requested')}>
-              <ArrowLeft
+              <Pencil
                 aria-hidden
                 data-bounce={bouncedAction === 'changes_requested' || undefined}
                 className="t-icon-pop h-4 w-4"

@@ -1,5 +1,4 @@
-import { Activity, Info } from 'lucide-react'
-import { Badge } from '../../components/ui/badge'
+import { Activity, Clock, Info } from 'lucide-react'
 import { StatusBadge } from '../../components/StatusBadge'
 import { formatRunStatusLabel } from '../../lib/format'
 import { describeDecision, describePendingRun } from '../../lib/story'
@@ -17,14 +16,14 @@ export interface RunOverviewProps {
   run: Run
 }
 
-/** Colour of the small dot in a neutral status pill. `approved` and `changes_requested` use
+/** Colour of the clock in a plain status line. `approved` and `changes_requested` use
  * `StatusBadge` instead (docs/DECISIONS.md, 0029). */
-const STATUS_DOT: Partial<Record<RunStatus, string>> = {
-  running: 'bg-status-not-applicable',
-  checks_running: 'bg-status-not-applicable',
-  blocked: 'bg-status-fail',
-  awaiting_review: 'bg-status-waived',
-  rejected: 'bg-status-fail',
+const STATUS_ICON: Partial<Record<RunStatus, string>> = {
+  running: 'text-status-not-applicable',
+  checks_running: 'text-status-not-applicable',
+  blocked: 'text-status-fail',
+  awaiting_review: 'text-status-waived',
+  rejected: 'text-status-fail',
 }
 
 const EYEBROW =
@@ -36,10 +35,10 @@ function StatusPill({ status }: { status: RunStatus }) {
   if (status === 'changes_requested')
     return <StatusBadge tone="warning" label={formatRunStatusLabel(status)} />
   return (
-    <Badge>
-      <span aria-hidden className={cn('h-2 w-2 rounded-full', STATUS_DOT[status])} />
+    <span className="inline-flex items-center gap-[var(--space-2)] text-body font-medium text-text-primary">
+      <Clock aria-hidden className={cn('h-4 w-4', STATUS_ICON[status])} />
       {formatRunStatusLabel(status)}
-    </Badge>
+    </span>
   )
 }
 

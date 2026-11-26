@@ -6,6 +6,25 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0147 · Sizes measured from the design
+
+**Context.** The author asked for pixel-exact work. The design was measured in a browser at 1440 px and the
+app at the same width, panel by panel.
+
+**Choices.** Content is 1376 px wide (the page is at most 1440 px with 32 px sides). On a run the columns are
+260 / flexible / 340 px with 24 px gaps, and the panels start 84 px from the top, as in the design. My
+reviews: a table row is 87 px, the header row 47 px, a tab 40 px, a field 40 px, the search 420 px wide, the
+page title 46 px. A run's title is 30 px, section headings 20 px, a side panel's heading 18 px
+(`--text-aside-heading`). Panels are padded 24 px; the design's 22, 26 and 28 px are rounded to the
+spacing scale. The four measured sizes are tokens (`--size-row`, `--size-thead`, `--size-tab`,
+`--size-field`), outside the 4 px scale on purpose.
+
+**Also.** On a run the status is a plain line with a clock, the decision panel has no icon in its heading
+and its "Request changes" has the pencil, and "What is not checked" has the filled question icon, as drawn.
+The My reviews top panel has more room above the title now that its small label lives in the top bar.
+
+---
+
 ## 0146 · A living background, and the run page's top bar as designed
 
 **Context.** The backdrop was one static image with its coordinates baked in, so nothing came and
@@ -15,11 +34,12 @@ design has the breadcrumb, "Reviewing as" and "Open audit log", with the open-it
 decision panel.
 
 **Choices.**
-- *Alive, with no extra elements.* The relief, parcels, roads and ruler ticks, and fourteen readings (map
-  coordinates, UTM, elevation, orbit) are one SVG image on the page's `::before`. Each reading fades in
-  blurred, sharpens, hangs and dissolves upward over 13 to 18 s, offset from the others, by CSS inside the
-  SVG. Two patches of mist drift over it, painted by `::after`. Reduced motion: mist still, readings left out.
-- *Why not elements.* A first version used a layer of `aria-hidden` spans and divs; axe treats any element
+- *Alive, with no extra elements.* The relief, parcels, roads and ruler ticks, and five small glowing points
+  on long, faint dashed orbits (95 to 150 s a lap, each at its own pace) are one SVG image on the page's
+  `::before`, the motion done by CSS inside the SVG. Two patches of mist drift over it, painted by `::after`.
+  Reduced motion: mist and points stand still. The map coordinates and survey readings the design had were
+  dropped on request: the backdrop should not read as a literal map.
+- *Why not elements.* A first version used a layer of `aria-hidden` spans and divs (the readings); axe treats any element
   overlapping text as hiding it (`bgOverlap`, `elmPartiallyObscuring`) and the contrast spec failed on every
   page. Pseudo-elements and an image are not elements, so nothing overlaps.
 - *Arc and dot.* The top panel of My reviews has the dashed arc and a bright dot that flies along it,

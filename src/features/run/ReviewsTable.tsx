@@ -89,7 +89,7 @@ export function ColumnHeader<K extends string>({
       scope="col"
       aria-sort={dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined}
       className={cn(
-        'px-[var(--space-2)] py-[var(--space-3)] first:pl-[var(--space-5)] last:pr-[var(--space-5)]',
+        'h-[var(--size-thead)] px-[var(--space-2)] first:pl-[var(--space-5)] last:pr-[var(--space-5)]',
         className,
       )}
     >
@@ -329,7 +329,7 @@ export function ReviewsTable({
             <TableRow
               key={run.id}
               data-tour={index === 0 ? 'first-run-row' : undefined}
-              className="transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-text-primary/5"
+              className="transition-colors duration-[var(--motion-duration-base)] ease-[var(--motion-ease-standard)] hover:bg-text-primary/5 [&>td]:h-[var(--size-row)]"
             >
               <TableCell className={CELL}>
                 <DetailsButton run={run} onClick={() => onDetails(run.id)} />

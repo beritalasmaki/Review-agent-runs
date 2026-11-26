@@ -18,7 +18,7 @@ export interface TopBarProps {
 export function TopBar({ trail, end }: TopBarProps) {
   return (
     <header className="sticky top-0 z-10 border-b border-border-subtle bg-bg/80 backdrop-blur-[10px]">
-      <div className="mx-auto flex max-w-[86rem] flex-wrap items-center justify-between gap-x-[var(--space-5)] gap-y-[var(--space-3)] px-[var(--space-6)] py-[var(--space-3)]">
+      <div className="mx-auto flex max-w-[90rem] flex-wrap items-center justify-between gap-x-[var(--space-5)] gap-y-[var(--space-3)] px-[var(--space-6)] py-[var(--space-3)]">
         <nav aria-label="Breadcrumb" className="flex items-center gap-[var(--space-3)] text-body">
           {trail}
         </nav>

@@ -152,7 +152,7 @@ function PageTitle({
     <h1
       ref={headingRef}
       tabIndex={-1}
-      className="text-[2.5rem] leading-tight font-bold tracking-tight font-heading text-text-primary outline-none"
+      className="text-page-title leading-tight font-bold tracking-tight font-heading text-text-primary outline-none"
     >
       {children}
     </h1>
@@ -428,7 +428,7 @@ function ReviewsBoard({
       />
       <div
         data-tour="list-page"
-        className="mx-auto flex max-w-[86rem] flex-col gap-[var(--space-5)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-8)]"
+        className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-5)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-8)]"
       >
         {!onArchivePage ? (
           <div className="flex flex-col">
@@ -443,7 +443,7 @@ function ReviewsBoard({
              */}
             <div className="panel hero-panel overflow-hidden rounded-b-none border-b-0">
               <div aria-hidden className="foil" />
-              <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-6)]">
+              <div className="flex flex-wrap items-end justify-between gap-[var(--space-5)] px-[var(--space-6)] pt-[var(--space-7)] pb-[var(--space-6)]">
                 <div className="flex flex-col gap-[var(--space-2)]">
                   <PageTitle headingRef={headingRef}>My reviews</PageTitle>
                   <p className="max-w-[40rem] text-lead leading-relaxed text-text-primary">
@@ -485,7 +485,7 @@ function ReviewsBoard({
                   <TabsList
                     variant="pill"
                     label="Run types"
-                    className="scrollbar-none w-full max-w-full justify-start overflow-x-auto rounded-[4px] border border-border-subtle bg-bg/60 px-[var(--space-2)]"
+                    className="scrollbar-none w-full max-w-full justify-start overflow-x-auto rounded-[4px] border border-border-subtle bg-bg/60 px-[var(--space-2)] py-[6px]"
                   >
                     {TABS.map(({ value, label, mark, icon: Icon }) => (
                       <TabsTrigger key={value} variant="pill" value={value} className="group">

@@ -61,7 +61,7 @@ const tabsTriggerVariants = cva(
           'focus-visible:relative focus-visible:z-10 focus-visible:outline-offset-[-2px]',
         ],
         pill: [
-          't-tab inline-flex gap-[9px] rounded-[4px] px-[14px] py-[9px]',
+          't-tab inline-flex min-h-[var(--size-tab)] gap-[9px] rounded-[4px] px-[14px] py-[9px]',
           'text-body font-medium font-body leading-tight text-text-secondary',
           // The pressed tab is brighter and bolder; the sliding underline behind it
           // (components/Tabs.tsx) carries the orange. aria-selected, not data-state: a trigger

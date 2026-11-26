@@ -258,10 +258,10 @@ export function RunReviewPage({
             </button>
           }
         />
-        <div className="mx-auto flex max-w-[86rem] flex-col gap-[var(--space-4)] px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-8)]">
+        <div className="mx-auto flex max-w-[90rem] flex-col gap-[var(--space-4)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-8)]">
           <div
             data-tour="run-page"
-            className="grid grid-cols-1 items-start gap-[var(--space-4)] md:grid-cols-[minmax(0,1fr)_21.25rem] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[17.5rem_minmax(0,1fr)_21.25rem] xl:grid-rows-[auto_1fr]"
+            className="grid grid-cols-1 items-start gap-[var(--space-5)] md:grid-cols-[minmax(0,1fr)_340px] md:grid-rows-[auto_auto_1fr] xl:grid-cols-[260px_minmax(0,1fr)_340px] xl:grid-rows-[auto_1fr]"
           >
             <div
               className="min-w-0 md:col-start-1 md:row-start-1 xl:col-start-2"

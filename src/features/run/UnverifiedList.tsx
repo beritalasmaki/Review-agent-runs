@@ -1,4 +1,4 @@
-import { TriangleAlert } from 'lucide-react'
+import { CircleHelp } from 'lucide-react'
 import { buildUnverifiedItems } from '../../lib/openItems'
 import type { Run } from '../../lib/types'
 import { cn } from '../../lib/utils'
@@ -22,13 +22,14 @@ export function UnverifiedList({ run }: UnverifiedListProps) {
   return (
     <section
       aria-labelledby="unverified-heading"
-      className="flex flex-col gap-[var(--space-4)] panel p-[var(--space-4)]"
+      className="flex flex-col gap-[var(--space-4)] panel p-[var(--space-5)]"
     >
       <div className="flex flex-col gap-[var(--space-5)]">
         <SectionHeading
           id="unverified-heading"
-          icon={TriangleAlert}
-          iconClassName="text-status-waived"
+          aside
+          icon={CircleHelp}
+          iconClassName="fill-text-secondary stroke-surface text-text-secondary"
         >
           {decided ? 'What is still unverified' : 'What is not checked'}
         </SectionHeading>

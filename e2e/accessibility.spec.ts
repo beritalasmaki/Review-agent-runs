@@ -230,6 +230,8 @@ async function measuredBackgroundContrast(page: Page, selector: string) {
   const info = await page.evaluate((sel) => {
     const el = document.querySelector(sel)
     if (!el) return null
+    // A screenshot only holds what is on screen, so bring the element into view first.
+    el.scrollIntoView({ block: 'center', behavior: 'instant' })
     const rect = el.getBoundingClientRect()
     const cx = rect.x + rect.width / 2
     const cy = rect.y + rect.height / 2

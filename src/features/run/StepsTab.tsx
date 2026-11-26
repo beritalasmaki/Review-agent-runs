@@ -86,7 +86,7 @@ export function StepsTab({ run, focusEventId }: StepsTabProps) {
         tabIndex={focused ? -1 : undefined}
         className={cn(
           'text-meta font-normal font-body text-text-primary',
-          attention ? 'bg-status-waived-tint-bg/60' : nested ? 'bg-bg' : 'hover:bg-text-primary/5',
+          attention ? 'bg-status-waived-tint-bg' : nested ? 'bg-bg' : 'hover:bg-text-primary/5',
           focused && 'outline-2 -outline-offset-2 outline-focus-ring',
           nested && 'text-text-secondary',
         )}
