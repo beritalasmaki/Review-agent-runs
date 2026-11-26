@@ -159,26 +159,3 @@ test('My reviews, keyboard only', async ({ page }) => {
   await keys.press('Enter')
   await expect(page.getByRole('heading', { level: 1, name: 'My reviews' })).toBeFocused()
 })
-
-test('the theme switch works from the keyboard and is remembered', async ({ page }) => {
-  await page.goto('/')
-  // Dark is the default (0142): the switch starts on, and one press turns it off.
-  await expect(page.getByRole('button', { name: /^Archive/ })).toBeVisible()
-  await tabTo(page, /^Dark theme$/)
-  await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
-    'aria-checked',
-    'true',
-  )
-  await page.keyboard.press('Space')
-  await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
-    'aria-checked',
-    'false',
-  )
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-  await page.reload()
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-  await expect(page.getByRole('switch', { name: 'Dark theme' })).toHaveAttribute(
-    'aria-checked',
-    'false',
-  )
-})

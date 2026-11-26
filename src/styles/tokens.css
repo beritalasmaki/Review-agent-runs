@@ -15,6 +15,7 @@
   --ink-0: #11100f; /* the page */
   --ink-1: #1a1817; /* a panel */
   --ink-2: #231f1d; /* raised: a row, a field */
+  --ink-chip: #3a3735; /* a count pill on a panel */
   --ink-line: #36312d; /* the hairline between things */
   --ink-edge: #6b6560; /* a control's own border, 3.1:1 on --ink-1 */
   /* Text. */
@@ -81,6 +82,7 @@
   --color-surface-raised: var(--ink-2);
 
   /* Lines */
+  --color-chip: var(--ink-chip);
   --color-border-subtle: var(--ink-line);
   --color-border: var(--ink-edge);
 

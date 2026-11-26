@@ -1,7 +1,6 @@
 import { ArrowRight, RotateCcw } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { Button } from '../components/ui/button'
-import { prefersReducedMotion } from '../lib/motion'
 
 /**
  * Shown once per visit, right after the welcome intro, over the home page only
@@ -34,20 +33,27 @@ export function WelcomeModal({ onStartTour, onSkip, onReplayIntro }: WelcomeModa
         It was built by Berit Alasmäki, a UX and product designer, to test how an interface for that
         could work. It is not for any one company, and it is not a compliance tool.
       </p>
-      {onReplayIntro && !prefersReducedMotion() && (
-        <Button variant="link" size="inline" onClick={onReplayIntro} className="self-start">
-          <RotateCcw aria-hidden className="h-4 w-4" />
-          Replay intro
-        </Button>
-      )}
-      <div className="flex flex-wrap items-center justify-end gap-[var(--space-3)]">
-        <Button variant="outline" onClick={onSkip}>
-          Skip, I'll look around myself
-        </Button>
-        <Button onClick={onStartTour}>
-          Take the tour
-          <ArrowRight aria-hidden className="h-4 w-4" />
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-[var(--space-3)]">
+        {onReplayIntro ? (
+          <Button variant="link" size="inline" onClick={onReplayIntro}>
+            <RotateCcw aria-hidden className="h-4 w-4" />
+            Replay intro
+          </Button>
+        ) : (
+          <span />
+        )}
+        <div className="flex flex-wrap items-center gap-[var(--space-3)]">
+          <Button variant="outline" onClick={onSkip}>
+            Skip, I'll look around myself
+          </Button>
+          <Button onClick={onStartTour} autoFocus>
+            Take the tour
+            <ArrowRight
+              aria-hidden
+              className="h-4 w-4 transition-transform group-hover:translate-x-[3px]"
+            />
+          </Button>
+        </div>
       </div>
     </Modal>
   )

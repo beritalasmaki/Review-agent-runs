@@ -123,7 +123,10 @@ export function OnboardingTour({
       observer?.disconnect()
       if (timeout != null) window.clearTimeout(timeout)
       const reduced = prefersReducedMotion()
-      element.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
+      // An overview step looks at the whole page where it is; centring a page-tall element
+      // would scroll the page away.
+      if (!step.overview)
+        element.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
       setRect(element.getBoundingClientRect())
       setRectStepId(step.id)
     }

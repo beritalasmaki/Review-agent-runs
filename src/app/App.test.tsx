@@ -62,7 +62,7 @@ describe('App', () => {
 
   it("hands off to the page's own loading state when the welcome is skipped before a slow load", async () => {
     window.sessionStorage.clear()
-    window.history.pushState({}, '', '/?delay=100')
+    window.history.pushState({}, '', '/?delay=1500')
     render(<App />)
     fireEvent.keyDown(window, { key: 'Escape' })
     fireEvent.click(await screen.findByRole('button', { name: /^Skip, I'll look around/ }))

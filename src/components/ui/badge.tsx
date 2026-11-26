@@ -17,7 +17,7 @@ const badgeVariants = cva(
         default: 'border-border bg-surface-raised text-text-primary',
         outline: 'border-border bg-transparent text-text-primary',
         /** A quiet count beside a label: "Archive 4". */
-        muted: 'border-transparent bg-text-primary/14 text-text-primary',
+        muted: 'border-transparent bg-chip text-text-primary',
         /** A count that belongs to the selection or a filter. */
         primary: 'border-transparent bg-primary text-primary-foreground',
         'primary-tint': 'border-transparent bg-primary-tint text-primary',

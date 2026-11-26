@@ -16,10 +16,10 @@ import { Slot } from 'radix-ui'
  *   orange bar on hover and focus, a satellite pass (the `.sat` class, styles/index.css).
  *
  * The chamfer is `clip-path`, which would cut a focus outline off, so the plates draw their focus
- * ring inside as a white-and-dark double ring. Colours fade; nothing grows or moves but the arrow.
+ * outline inside the box (a negative offset). Colours fade; nothing grows or moves but the arrow.
  */
 const PLATE =
-  '[--c:7px] [clip-path:polygon(var(--c)_0,calc(100%-var(--c))_0,100%_var(--c),100%_calc(100%-var(--c)),calc(100%-var(--c))_100%,var(--c)_100%,0_calc(100%-var(--c)),0_var(--c))] border-0 rounded-none hover:brightness-[1.12] focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_#fff,inset_0_0_0_4px_#140a04]'
+  '[--c:7px] [clip-path:polygon(var(--c)_0,calc(100%-var(--c))_0,100%_var(--c),100%_calc(100%-var(--c)),calc(100%-var(--c))_100%,var(--c)_100%,0_calc(100%-var(--c)),0_var(--c))] border-0 rounded-none hover:brightness-[1.12] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white'
 
 const SWEEP =
   "after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[linear-gradient(90deg,transparent,#fff_55%,transparent)] after:bg-[length:34%_100%] after:bg-[position:-40%_0] after:bg-no-repeat after:opacity-0 after:content-[''] hover:enabled:after:animate-[orbit_3.4s_linear_infinite] hover:enabled:after:opacity-100 focus-visible:after:animate-[orbit_3.4s_linear_infinite] focus-visible:after:opacity-100 motion-reduce:hover:enabled:after:animate-none motion-reduce:hover:enabled:after:[background-size:100%_100%] motion-reduce:hover:enabled:after:[background-position:0_0]"
@@ -38,7 +38,7 @@ const buttonVariants = cva(
         default: cn(
           PLATE,
           SWEEP,
-          'bg-[linear-gradient(180deg,#ff6a30,#f45b22_55%,#e24f19)] text-primary-foreground shadow-[inset_0_0_0_3px_var(--color-primary-strong),inset_0_0_0_4px_rgb(20_10_4/0.38)] disabled:bg-surface-raised',
+          'bg-primary-strong text-primary-foreground shadow-[inset_0_0_0_3px_var(--color-primary-strong),inset_0_0_0_4px_rgb(20_10_4/0.38)] disabled:bg-surface-raised',
         ),
         approve: cn(
           PLATE,
