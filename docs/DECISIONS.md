@@ -6,6 +6,24 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0141 · The tour opens each leg with a whole-page overview step
+
+**Context.** The approved design starts the tour with "this is the review list" and, inside a run,
+with "this is the page for one run" before any detail. The tour engine could only highlight one
+element, and a page-sized highlight put the bubble outside the viewport.
+
+**Options.** (1) Highlight a large region and let the bubble flip. (2) Add an `overview` flag to a
+step: the page is dimmed evenly, no ring, the bubble sits mid-screen. (3) A separate intro modal.
+
+**Choice.** Option 2. It is a few lines in `OnboardingTour.tsx`, keeps one engine, and keeps focus
+and Tab handling as is. The step still needs a `selector`, so it waits for the page to load.
+
+**Consequence.** Leg 1 is now 6 steps and Leg 2 is 4. Overview steps may be added to any tour.
+The rest of the satellite design (dark default, terrain backdrop, new intro) is not in `src/` yet;
+0140 still applies to it.
+
+---
+
 ## 0140 · Satellite theme explored as a design artifact, dark by default
 
 **Context.** The author wants to show the run review screen in a portfolio setting for an

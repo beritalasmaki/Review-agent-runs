@@ -55,7 +55,7 @@ const STATES: {
     skipInitialHeading: true,
     open: async (page) => {
       await page.getByRole('button', { name: 'Take the tour' }).click()
-      await expect(page.getByText('Step 1 of 5')).toBeVisible()
+      await expect(page.getByText('Step 1 of 6')).toBeVisible()
     },
   },
   {

@@ -37,6 +37,35 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-26 · Overview steps in the onboarding tour
+
+**Goal**
+Port the first approved piece of the satellite design: tour steps that explain the page before the details.
+
+**What changed**
+- `src/components/OnboardingTour.tsx`: new `overview` step flag (no cutout, no ring, bubble mid-screen).
+- `src/features/run/tourSteps.ts`: "Your review list" (Leg 1) and "One run on one page" (Leg 2).
+- `MyReviews.tsx`, `RunReviewPage.tsx`: `data-tour` markers `list-page` and `run-page`.
+- Tests: `OnboardingTour.test.tsx`, `App.test.tsx`, `e2e/onboarding-tour.spec.ts` (6 and 4 steps).
+- `docs/DECISIONS.md` 0141.
+
+**Steps, in order**
+1. Added the two steps and markers. 2. The bubble fell outside the viewport for a page-sized target, so added the `overview` flag. 3. Updated step counts and headings in tests. 4. Ran `npx vitest run` and `npx playwright test e2e/onboarding-tour.spec.ts --trace off`.
+
+**Why it was done this way**
+See 0141. Only the tour is ported; the theme, terrain backdrop and new intro are larger and need their own contrast checks.
+
+**How to do this by hand**
+Add a step object with `overview: true` to `tourSteps.ts`, put a matching `data-tour` on the page wrapper, update the "Step n of N" expectations.
+
+**Verification**
+Unit tests pass (293 before the new one, then 11 in the tour file). The tour e2e spec passes (5 tests). `npm run check`: all pass except one accessibility spec that still expected 5 steps; fixed and re-run (axe clean in both themes).
+
+**Open questions / next**
+Dark default and tokens (reverses 0001), terrain backdrop, new intro with replay in the welcome modal, button style, fonts (needs a decision on adding a font source).
+
+---
+
 ### 2026-11-26 · Satellite-themed design of the review screen (artifact)
 
 **Goal**
