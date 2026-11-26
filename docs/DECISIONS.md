@@ -6,6 +6,35 @@ Each entry has four parts: the situation, the options, the choice, and what it m
 
 ---
 
+## 0144 · The onboarding tour follows the designed tour
+
+**Context.** The tour in the app did not match the design's "route stops" tour, and the run page's
+view tabs sat above the story instead of in the story panel's header as drawn. A person pill in the
+"runs still in progress" list also stretched across its grid column.
+
+**Choices.**
+- *One tour of ten.* Both legs count together: "Step 7 of 10" on the run page. The stops row
+  fills as the tour goes on. Back is shown but disabled on a leg's first step.
+- *Spotlight.* One orange outline whose large shadow dims the page (replacing 0078's four
+  rectangles); it glides to the next target, and a thin arc with a bright dot joins two targets on
+  the same page. The outline does not block clicks. Reduced motion: no glide, no arc.
+- *Overview steps* outline what is on screen and put the bubble low and central. They no longer
+  scroll the page.
+- *Carrying on.* The last step on My reviews is labelled "Open a run" and opens the first run
+  row, so Leg 2 starts at once. The tour ends on a closing card, "You are ready to review", with
+  "Replay tour" (reloads My reviews and starts again) and "Start reviewing".
+- *Copy* of two steps follows the design.
+- *Tabs.* On a run, the story panel's bar shows the open view's name on the left and the three tabs
+  on the right, as in the design; the tour's "Three ways to read it" outlines just that bar. The
+  tab bar's sliding orange underline (0084) is kept, not the design's static underline.
+- *Pills.* A person's pill is `w-fit`, so it never stretches inside a grid cell or a flex column,
+  and uses opaque steel tokens (so contrast stays checkable).
+
+**Consequence.** `OnboardingTour` takes `stepOffset`, `totalSteps`, `finish` and `onReplay`, and a
+step can set `nextLabel` and `onNext`. E2E counts moved to ten.
+
+---
+
 ## 0143 · The app is made to match the design: dark only, no old UI left
 
 **Context.** 0142 ported the first pieces of the satellite design, but the app still carried the

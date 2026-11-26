@@ -186,7 +186,11 @@ function OpenItemsCell({ run }: { run: Run }) {
     )
   }
   return (
-    <Badge variant="warning" size="sm" className={chip}>
+    <Badge
+      variant="warning"
+      size="sm"
+      className="h-6 min-w-7 rounded-[3px] border-transparent bg-status-waived px-[var(--space-2)] text-primary-foreground"
+    >
       {count}
     </Badge>
   )

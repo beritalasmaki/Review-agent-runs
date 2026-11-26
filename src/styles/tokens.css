@@ -31,6 +31,9 @@
   --orange-tint-edge: #7a3a1e;
   /* Steel: people, quiet chrome. */
   --steel: #8e99a0;
+  --steel-pill: #2d2d2d; /* a person's pill: steel at 16% on a panel */
+  --steel-pill-edge: #5a5f62;
+  --steel-pill-icon: #4f5355;
   /* Status — a separate palette from brand, always beside an icon and a word. */
   --st-pass: #34e89e;
   --st-fail: #ff5470;
@@ -79,6 +82,9 @@
 
   /* Lines */
   --color-chip: var(--ink-chip);
+  --color-pill: var(--steel-pill);
+  --color-pill-edge: var(--steel-pill-edge);
+  --color-pill-icon: var(--steel-pill-icon);
   --color-border-subtle: var(--ink-line);
   --color-border: var(--ink-edge);
 

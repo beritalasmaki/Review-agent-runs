@@ -14,6 +14,8 @@
  */
 export const TOUR_SEEN_KEY = 'ledger:tour-seen'
 const TOUR_LEG_KEY = 'ledger:tour-leg'
+/** Set by "Replay tour" on the closing card: the next load of My reviews starts Leg 1 at once. */
+const TOUR_REPLAY_KEY = 'ledger:tour-replay'
 
 function readSeen(): boolean {
   try {
@@ -48,18 +50,48 @@ export function shouldShowRunTour(): boolean {
  * next time a run page loads, without marking the whole tour seen yet. */
 export function markListLegFinished() {
   try {
+    window.sessionStorage.removeItem(TOUR_REPLAY_KEY)
     window.sessionStorage.setItem(TOUR_LEG_KEY, 'run')
   } catch {
     // Nothing to do: without storage the tour simply can't remember being mid-way.
   }
 }
 
+/** True from "Replay tour" until the page reloads. */
+let replaying = false
+
 /** The whole tour is done: dismissed early from either leg, or Leg 2 finished. */
 export function markTourSeen() {
+  // Leaving the page to replay the tour also fires the tour's own `pagehide` dismissal; that must
+  // not mark the tour seen again.
+  if (replaying) return
   try {
+    window.sessionStorage.removeItem(TOUR_REPLAY_KEY)
     window.sessionStorage.setItem(TOUR_SEEN_KEY, new Date().toISOString())
     window.sessionStorage.removeItem(TOUR_LEG_KEY)
   } catch {
     // Nothing to do: without storage the tour simply can't remember having run.
+  }
+}
+
+/** "Replay tour": forget that the tour was seen and start it again from My reviews. */
+export function replayTour() {
+  replaying = true
+  try {
+    window.sessionStorage.removeItem(TOUR_SEEN_KEY)
+    window.sessionStorage.removeItem(TOUR_LEG_KEY)
+    window.sessionStorage.setItem(TOUR_REPLAY_KEY, '1')
+  } catch {
+    // Without storage the replay simply cannot be remembered across the page load.
+  }
+  window.location.assign('/')
+}
+
+/** Whether a replay was asked for and has not started yet (cleared when the tour ends). */
+export function replayRequested(): boolean {
+  try {
+    return window.sessionStorage.getItem(TOUR_REPLAY_KEY) != null
+  } catch {
+    return false
   }
 }

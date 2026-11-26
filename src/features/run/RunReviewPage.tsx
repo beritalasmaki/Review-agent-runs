@@ -316,16 +316,8 @@ export function RunReviewPage({
               />
             </div>
 
-            <div
-              data-tour="run-tabs-view"
-              className="min-w-0 panel pb-[var(--space-4)] pl-[var(--space-4)] md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2"
-            >
-              {/* No top/right padding on the wrapper above, on purpose: RunViewTabs' own
-                `rounded-t-lg` corner sits flush against this card's top-right corner instead of
-                floating with a gap around it, so the tab strip reads as this card's own attached
-                header rather than a separate element — the pill tabs and the content below both
-                keep their own `px-[var(--space-5)]`, so nothing touches the true edge. */}
-              <RunViewTabs ref={tabsRef} run={run} />
+            <div className="min-w-0 panel md:col-start-1 md:row-start-3 xl:col-start-2 xl:row-start-2">
+              <RunViewTabs ref={tabsRef} run={run} view={view} />
               <div className="px-[var(--space-5)] pt-[var(--space-5)] pb-[var(--space-5)]">
                 <TabsContent value="story">
                   <StoryTimeline run={run} onShowSteps={showStep} />

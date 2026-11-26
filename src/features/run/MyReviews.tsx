@@ -456,7 +456,7 @@ function ReviewsBoard({
                   <Badge
                     variant="warning"
                     data-tour="needs-review-badge"
-                    className="border-transparent bg-status-waived-dot px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body text-primary-foreground"
+                    className="rounded-[3px] border-transparent bg-status-waived-dot px-[var(--space-4)] py-[var(--space-2)] text-meta leading-none font-body text-primary-foreground"
                   >
                     <span aria-hidden className="h-2 w-2 rounded-full bg-primary-foreground" />
                     {needsYou} need{needsYou === 1 ? 's' : ''} your review

@@ -37,6 +37,35 @@ What is unfinished, uncertain, or should be decided by a human.
 
 ---
 
+### 2026-11-26 · Tour, run tabs and person pills fixed to the design
+
+**Goal**
+Make the onboarding tour, the story tabs and the person pills match the design.
+
+**What changed**
+- `OnboardingTour.tsx`, `transitions.css`: orange gliding spotlight, stops, arc and dot, closing card; `app/tour.ts` (replay), `features/run/tourSteps.ts` (copy, "Open a run", closing text), `App.tsx`.
+- `RunViewTabs.tsx`, `RunReviewPage.tsx`: view name left, tabs right; the tour target moved to the bar.
+- `ActorName.tsx`, `ActorIcon.tsx`, `tokens.css`: `w-fit` pills with opaque steel tokens.
+- Tests: tour unit tests, e2e tour (ten steps, closing card, replay), App test.
+- `docs/DECISIONS.md` 0144.
+
+**Steps, in order**
+1. Rendered the tour artifact step by step and compared with the app. 2. Rewrote the tour's render and CSS. 3. Added the cross-leg count, "Open a run", the closing card and replay. 4. Moved the tour target to the tab bar (a tall target pushed the bubble off screen). 5. Fixed replay being cancelled by the page-leave dismissal.
+
+**Why it was done this way**
+See 0144.
+
+**How to do this by hand**
+Open the tour artifact and the app side by side; walk all ten steps in both, then the closing card.
+
+**Verification**
+`npm run check` (see the pull request) and screenshots of the list, tour steps and the in-progress list.
+
+**Open questions / next**
+Exact pixel pass on the run page; the amber open-items square in the table.
+
+---
+
 ### 2026-11-26 · Remove the old UI and make the site match the design
 
 **Goal**

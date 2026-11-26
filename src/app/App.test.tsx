@@ -105,7 +105,7 @@ describe('App', () => {
       expect(
         screen.queryByRole('heading', { name: 'Welcome to Review agent runs' }),
       ).not.toBeInTheDocument()
-      expect(await screen.findByText('Step 1 of 6')).toBeVisible()
+      expect(await screen.findByText('Step 1 of 10')).toBeVisible()
     })
 
     it('skipping the modal opens neither the modal nor the tour, and remembers it', async () => {
@@ -114,7 +114,7 @@ describe('App', () => {
       expect(
         screen.queryByRole('heading', { name: 'Welcome to Review agent runs' }),
       ).not.toBeInTheDocument()
-      expect(screen.queryByText('Step 1 of 6')).not.toBeInTheDocument()
+      expect(screen.queryByText('Step 1 of 10')).not.toBeInTheDocument()
       expect(window.sessionStorage.getItem(TOUR_SEEN_KEY)).not.toBeNull()
     })
 
